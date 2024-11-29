@@ -54,7 +54,7 @@ import (
 func FetchAndLogExecutionPlan(conn *connection.PGSQLConnection, queryID int64) {
 	var executionPlan string
 	query := fmt.Sprintf("EXPLAIN (FORMAT JSON) SELECT * FROM pg_stat_statements WHERE queryid = %d", queryID)
-	err := conn.QueryRowx(query).Scan(&executionPlan)
+	err := conn.Queryx(query).Scan(&executionPlan)
 	if err != nil {
 		log.Error("Error fetching execution plan for query ID %d: %v", queryID, err)
 		return
