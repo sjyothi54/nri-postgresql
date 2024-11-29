@@ -120,9 +120,9 @@ func PopulateQueryExecutionMetrics(instanceEntity *integration.Entity, conn *con
 				sourceType := fieldType.Tag.Get("source_type")
 
 				if field.Kind() == reflect.Ptr && !field.IsNil() {
-					setMetric(metricSet, metricName, field.Elem().Interface(), sourceType)
+					setQueryExecutionMetrics(metricSet, metricName, field.Elem().Interface(), sourceType)
 				} else if field.Kind() != reflect.Ptr {
-					setMetric(metricSet, metricName, field.Interface(), sourceType)
+					setQueryExecutionMetrics(metricSet, metricName, field.Interface(), sourceType)
 				}
 			}
 
@@ -135,7 +135,7 @@ func PopulateQueryExecutionMetrics(instanceEntity *integration.Entity, conn *con
 
 }
 
-func setMetric(metricSet *metric.Set, name string, value interface{}, sourceType string) {
+func setQueryExecutionMetrics(metricSet *metric.Set, name string, value interface{}, sourceType string) {
 	switch sourceType {
 	case `gauge`:
 		metricSet.SetMetric(name, value, metric.GAUGE)
