@@ -87,7 +87,7 @@ func GetQueryExecutionPlanMetrics(conn *connection.PGSQLConnection) ([]datamodel
 }
 
 // PopulateSlowRunningMetrics fetches slow-running metrics and populates them into the metric set
-func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *connection.PGSQLConnection, query string) {
+func PopulateQueryExecutionMetrics(instanceEntity *integration.Entity, conn *connection.PGSQLConnection, query string) {
 	isExtensionEnabled, err := validations.CheckPgStatStatementsExtensionEnabled(conn)
 	if err != nil {
 		log.Error("Error executing query: %v", err)
