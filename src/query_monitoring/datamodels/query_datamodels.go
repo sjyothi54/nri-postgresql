@@ -44,6 +44,12 @@ type QueryExecutionPlan struct {
 	DatabaseName        *string                `db:"database_name"         metric_name:"executionplan.database_name"         source_type:"attribute"`
 	SchemaName          *string                `db:"schema_name"           metric_name:"executionplan.schema_name"           source_type:"attribute"`
 	ExecutionCount      *int64                 `db:"execution_count"       metric_name:"executionplan.execution_count"       source_type:"gauge"`
+	AvgElapsedTimeMs    *float64               `db:"avg_elapsed_time_ms"   metric_name:"slowquery.avg_elapsed_time_ms"        source_type:"gauge"`
+	AvgCPUTimeMs        *float64               `db:"avg_cpu_time_ms"       metric_name:"slowquery.avg_cpu_time_ms"            source_type:"gauge"`
+	AvgDiskReads        *float64               `db:"avg_disk_reads"        metric_name:"slowquery.avg_disk_reads"             source_type:"gauge"`
+	AvgDiskWrites       *float64               `db:"avg_disk_writes"       metric_name:"slowquery.avg_disk_writes"            source_type:"gauge"`
+	StatementType       *string                `db:"statement_type"        metric_name:"slowquery.statement_type"             source_type:"attribute"`
+	CollectionTimestamp *string                `db:"collection_timestamp"  metric_name:"slowquery.collection_timestamp"       source_type:"attribute"`
 	NodeType            string                 `json:"Node Type"           metric_name:"executionplan.node_type"             source_type:"attribute"`
 	StartupCost         float64                `json:"Startup Cost"        metric_name:"executionplan.startup_cost"          source_type:"gauge"`
 	TotalCost           float64                `json:"Total Cost"          metric_name:"executionplan.total_cost"            source_type:"gauge"`
