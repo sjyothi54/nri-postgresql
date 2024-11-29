@@ -13,6 +13,115 @@ import (
 	"github.com/newrelic/nri-postgresql/src/query_monitoring/validations"
 )
 
+// FetchAndLogExecutionPlan fetches the execution plan for a given query and logs the result
+func FetchAndLogExecutionPlan(conn *connection.PGSQLConnection, queryID int64) ([]datamodels.QueryExecutionPlan, error) {
+	var executionPlan []datamodels.QueryExecutionPlan
+	query := fmt.Sprintf("EXPLAIN (FORMAT JSON) SELECT * FROM pg_stat_statements WHERE queryid = %d", queryID)
+	rows, err := conn.Queryx(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var plan datamodels.QueryExecutionPlan
+		if err := rows.StructScan(&plan); err != nil {
+			return nil, err
+		}
+		executionPlan = append(executionPlan, plan)
+	}
+	log.Info("Execution Plan for Query ID %d: %+v", queryID, executionPlan)
+	return executionPlan, nil
+}
+
+func GetQueryExecutionPlanMetrics(conn *connection.PGSQLConnection) ([]datamodels.QueryExecutionPlan, error) {
+	var slowQueries []datamodels.QueryExecutionPlan
+	var query = queries.SlowQueries
+	rows, err := conn.Queryx(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var slowQuery datamodels.QueryExecutionPlan
+		if err := rows.StructScan(&slowQuery); err != nil {
+			return nil, err
+		}
+		slowQueries = append(slowQueries, slowQuery)
+	}
+
+	for _, query := range slowQueries {
+		log.Info("Slow Query: %+v", query)
+		FetchAndLogExecutionPlan(conn, *query.QueryID)
+	}
+	return slowQueries, nil
+}
+
+// PopulateSlowQueryMetrics fetches slow-running metrics and returns the list of query IDs
+func PopulateSlowQueryMetrics(instanceEntity *integration.Entity, conn *connection.PGSQLConnection, args interface{}) ([]int64, error) {
+	slowQueries, err := GetQueryExecutionPlanMetrics(conn)
+	if err != nil {
+		return nil, err
+	}
+
+	var queryIdList []int64
+	for _, query := range slowQueries {
+		queryIdList = append(queryIdList, *query.QueryID)
+	}
+
+	return queryIdList, nil
+}
+
+// PopulateIndividualQueryDetails fetches individual query details based on the query ID list
+func PopulateIndividualQueryDetails(conn *connection.PGSQLConnection, queryIdList []int64, instanceEntity *integration.Entity, args interface{}) ([]datamodels.QueryExecutionPlan, error) {
+	var individualQueryDetails []datamodels.QueryExecutionPlan
+	for _, queryID := range queryIdList {
+		queryDetails, err := FetchAndLogExecutionPlan(conn, queryID)
+		if err != nil {
+			return nil, err
+		}
+		individualQueryDetails = append(individualQueryDetails, queryDetails...)
+	}
+	return individualQueryDetails, nil
+}
+
+// PopulateExecutionPlans fetches execution plans based on the individual query details
+func PopulateExecutionPlans(conn *connection.PGSQLConnection, individualQueryDetails []datamodels.QueryExecutionPlan, instanceEntity *integration.Entity, args interface{}) ([]datamodels.QueryExecutionPlan, error) {
+	var executionPlanMetrics []datamodels.QueryExecutionPlan
+	for _, queryDetail := range individualQueryDetails {
+		executionPlan, err := FetchAndLogExecutionPlan(conn, *queryDetail.QueryID)
+		if err != nil {
+			return nil, err
+		}
+		executionPlanMetrics = append(executionPlanMetrics, executionPlan...)
+	}
+	return executionPlanMetrics, nil
+}
+
+// Main function to call the above functions and log the results
+func MainFunction(instanceEntity *integration.Entity, conn *connection.PGSQLConnection, args interface{}) {
+	queryIdList, err := PopulateSlowQueryMetrics(instanceEntity, conn, args)
+	if err != nil {
+		log.Errorf("Error populating slow query metrics: %v", err)
+		return
+	}
+
+	individualQueryDetails, err := PopulateIndividualQueryDetails(conn, queryIdList, instanceEntity, args)
+	if err != nil {
+		log.Errorf("Error populating individual query details: %v", err)
+		return
+	}
+	fmt.Println("Query Plan details collected successfully.", individualQueryDetails)
+
+	executionPlanMetrics, err := PopulateExecutionPlans(conn, individualQueryDetails, instanceEntity, args)
+	if err != nil {
+		log.Errorf("Error populating execution plan details: %v", err)
+		return
+	}
+	fmt.Println("Execution plan details collected successfully.", executionPlanMetrics)
+}
+
 // FetchAndLogSlowRunningQueries fetches slow-running queries and logs the results
 //func FetchAndLogSlowRunningQueries(instanceEntity *integration.Entity, conn *connection.PGSQLConnection) {
 //	var executionPlan []datamodels.SlowRunningQuery
@@ -49,51 +158,6 @@ import (
 // 	return executionPlan, nil
 // 	//log.Info("slow-running",executionPlan)
 // }
-
-// FetchAndLogExecutionPlan fetches the execution plan for a given query and logs the result
-func FetchAndLogExecutionPlan(conn *connection.PGSQLConnection, queryID int64) ([]datamodels.QueryExecutionPlan, error) {
-	var executionPlan []datamodels.QueryExecutionPlan
-	query := fmt.Sprintf("EXPLAIN (FORMAT JSON) SELECT * FROM pg_stat_statements WHERE queryid = %d", queryID)
-	rows, err := conn.Queryx(query)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	log.Info("Rows: %v", rows)
-	for rows.Next() {
-		var slowQuery datamodels.QueryExecutionPlan
-		if err := rows.StructScan(&slowQuery); err != nil {
-			return nil, err
-		}
-		executionPlan = append(executionPlan, slowQuery)
-	}
-	log.Info("Execution Plan for Query ID %d: %s", queryID, executionPlan)
-	return executionPlan, nil
-}
-
-func GetQueryExecutionPlanMetrics(conn *connection.PGSQLConnection) ([]datamodels.QueryExecutionPlan, error) {
-	var executionPlan []datamodels.QueryExecutionPlan
-	var query = queries.SlowQueries
-	rows, err := conn.Queryx(query)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var slowQuery datamodels.QueryExecutionPlan
-		if err := rows.StructScan(&slowQuery); err != nil {
-			return nil, err
-		}
-		executionPlan = append(executionPlan, slowQuery)
-	}
-
-	for _, query := range executionPlan {
-		log.Info("Slow Query: %+v", query)
-		FetchAndLogExecutionPlan(conn, *query.QueryID)
-	}
-	return executionPlan, nil
-}
 
 // PopulateQueryExecutionMetrics fetches slow-running metrics and populates them into the metric set
 func PopulateQueryExecutionMetrics(instanceEntity *integration.Entity, conn *connection.PGSQLConnection, query string) {
