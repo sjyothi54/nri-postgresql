@@ -52,7 +52,7 @@ import (
 
 // FetchAndLogExecutionPlan fetches the execution plan for a given query and logs the result
 func FetchAndLogExecutionPlan(conn *connection.PGSQLConnection, queryID int64) ([]datamodels.QueryExecutionPlan, error) {
-	var executionPlan []string
+	var executionPlan []datamodels.QueryExecutionPlan
 	query := fmt.Sprintf("EXPLAIN (FORMAT JSON) SELECT * FROM pg_stat_statements WHERE queryid = %d", queryID)
 	rows, err := conn.Queryx(query)
 	if err != nil {
