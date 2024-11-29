@@ -115,7 +115,7 @@ func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *connec
 			log.Info("Metrics set for slow query: %s in database: %s", *model.QueryID, *model.DatabaseName)
 		}
 	} else {
-		log.Info("Extension 'pg_stat_statements' is not enabled.")
+		// log.Info("Extension 'pg_stat_statements' is not enabled.")
 		return
 	}
 
