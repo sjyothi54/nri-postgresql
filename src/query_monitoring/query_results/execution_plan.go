@@ -20,12 +20,17 @@ func FetchAndLogExecutionPlan(conn *connection.PGSQLConnection, queryText string
 	query := fmt.Sprintf("EXPLAIN (FORMAT JSON) %s", queryText)
 	err := conn.Queryx(query).Scan(&executionPlan)
 	if err != nil {
-		log.Error("Error fetching execution plan for query: %v", err)
-		return "", err
+		return nil, err
 	}
-	log.Info("Execution Plan for Query: %s", executionPlan)
-	return executionPlan, nil
-}
+	defer rows.Close()
+
+	for rows.Next() {
+		var slowQuery datamodels.QueryExecutionPlan
+		if err := rows.StructScan(&slowQuery); err != nil {
+			return nil, err
+		}
+		slowQueries = append(slowQueries, slowQuery)
+	}
 
 func GetQueryExecutionPlanMetrics(conn *connection.PGSQLConnection) ([]datamodels.QueryExecutionPlan, error) {
 	var slowQueries []datamodels.QueryExecutionPlan
