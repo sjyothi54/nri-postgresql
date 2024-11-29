@@ -103,20 +103,20 @@ func PopulateExecutionPlans(conn *connection.PGSQLConnection, individualQueryDet
 func MainFunction(instanceEntity *integration.Entity, conn *connection.PGSQLConnection, args interface{}) {
 	queryIdList, err := PopulateSlowQueryMetrics(instanceEntity, conn, args)
 	if err != nil {
-		log.Errorf("Error populating slow query metrics: %v", err)
+		log.Error("Error populating slow query metrics: %v", err)
 		return
 	}
 
 	individualQueryDetails, err := PopulateIndividualQueryDetails(conn, queryIdList, instanceEntity, args)
 	if err != nil {
-		log.Errorf("Error populating individual query details: %v", err)
+		log.Error("Error populating individual query details: %v", err)
 		return
 	}
 	fmt.Println("Query Plan details collected successfully.", individualQueryDetails)
 
 	executionPlanMetrics, err := PopulateExecutionPlans(conn, individualQueryDetails, instanceEntity, args)
 	if err != nil {
-		log.Errorf("Error populating execution plan details: %v", err)
+		log.Error("Error populating execution plan details: %v", err)
 		return
 	}
 	fmt.Println("Execution plan details collected successfully.", executionPlanMetrics)
