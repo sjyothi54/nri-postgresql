@@ -37,6 +37,8 @@ type BlockingQuery struct {
 }
 
 type QueryExecutionPlan struct {
+	QueryID             *int64                 `db:"query_id"              metric_name:"executionplan.query_id"              source_type:"gauge"`
+	DatabaseName        *string                `db:"database_name"         metric_name:"executionplan.database_name"         source_type:"attribute"`
 	NodeType            string                 `json:"Node Type"              metric_name:"executionplan.node_type"              source_type:"attribute"`
 	StartupCost         float64                `json:"Startup Cost"           metric_name:"executionplan.startup_cost"           source_type:"gauge"`
 	TotalCost           float64                `json:"Total Cost"             metric_name:"executionplan.total_cost"             source_type:"gauge"`

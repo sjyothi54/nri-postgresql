@@ -51,15 +51,15 @@ import (
 // }
 
 // FetchAndLogExecutionPlan fetches the execution plan for a given query and logs the result
-func FetchAndLogExecutionPlan(conn *connection.PGSQLConnection, queryID string) {
+func FetchAndLogExecutionPlan(conn *connection.PGSQLConnection, queryID int64) {
 	var executionPlan string
-	query := fmt.Sprintf("EXPLAIN (FORMAT JSON) SELECT * FROM pg_stat_statements WHERE queryid = '%s'", queryID)
-	err := conn.QueryRow(query).Scan(&executionPlan)
+	query := fmt.Sprintf("EXPLAIN (FORMAT JSON) SELECT * FROM pg_stat_statements WHERE queryid = %d", queryID)
+	err := conn.DB.QueryRow(query).Scan(&executionPlan)
 	if err != nil {
-		log.Error("Error fetching execution plan for query ID %s: %v", queryID, err)
+		log.Error("Error fetching execution plan for query ID %d: %v", queryID, err)
 		return
 	}
-	log.Info("Execution Plan for Query ID %s: %s", queryID, executionPlan)
+	log.Info("Execution Plan for Query ID %d: %s", queryID, executionPlan)
 }
 
 func GetQueryExecutionPlanMetrics(conn *connection.PGSQLConnection) ([]datamodels.QueryExecutionPlan, error) {
@@ -86,7 +86,7 @@ func GetQueryExecutionPlanMetrics(conn *connection.PGSQLConnection) ([]datamodel
 	return slowQueries, nil
 }
 
-// PopulateSlowRunningMetrics fetches slow-running metrics and populates them into the metric set
+// PopulateQueryExecutionMetrics fetches slow-running metrics and populates them into the metric set
 func PopulateQueryExecutionMetrics(instanceEntity *integration.Entity, conn *connection.PGSQLConnection, query string) {
 	isExtensionEnabled, err := validations.CheckPgStatStatementsExtensionEnabled(conn)
 	if err != nil {
@@ -126,7 +126,7 @@ func PopulateQueryExecutionMetrics(instanceEntity *integration.Entity, conn *con
 				}
 			}
 
-			log.Info("Metrics set for slow query: %s in database: %s", *model.QueryID, *model.DatabaseName)
+			log.Info("Metrics set for slow query: %d in database: %s", *model.QueryID, *model.DatabaseName)
 		}
 	} else {
 		log.Info("Extension 'pg_stat_statements' is not enabled.")
