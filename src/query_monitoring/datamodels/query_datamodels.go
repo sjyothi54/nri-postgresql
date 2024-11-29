@@ -36,7 +36,7 @@ type BlockingQuery struct {
 	BlockingDatabase   *string `db:"blocking_database"    metric_name:"blockingquery.blocking_database"    source_type:"attribute"`
 }
 
-type ExecutionPlanNode struct {
+type QueryExecutionPlan struct {
 	NodeType            string                 `json:"Node Type"              metric_name:"executionplan.node_type"              source_type:"attribute"`
 	StartupCost         float64                `json:"Startup Cost"           metric_name:"executionplan.startup_cost"           source_type:"gauge"`
 	TotalCost           float64                `json:"Total Cost"             metric_name:"executionplan.total_cost"             source_type:"gauge"`
@@ -57,5 +57,5 @@ type ExecutionPlanNode struct {
 	TempReadBlocks      int64                  `json:"Temp Read Blocks"       metric_name:"executionplan.temp_read_blocks"       source_type:"gauge"`
 	TempWrittenBlocks   int64                  `json:"Temp Written Blocks"    metric_name:"executionplan.temp_written_blocks"    source_type:"gauge"`
 	AdditionalInfo      map[string]interface{} `json:"-"                      metric_name:"executionplan.additional_info"        source_type:"attribute"`
-	Plans               []ExecutionPlanNode    `json:"Plans,omitempty"        metric_name:"executionplan.plans"                 source_type:"attribute"`
+	Plans               []QueryExecutionPlan   `json:"Plans,omitempty"        metric_name:"executionplan.plans"                 source_type:"attribute"`
 }
