@@ -1,5 +1,5 @@
 // Package connection contains the PGSQLConnection type and methods for manipulating and querying a PostgreSQL connection
-package psqlconnection
+package performance_db_connection
 
 import (
 	"fmt"
@@ -64,7 +64,6 @@ func DefaultConnectionInfo(al *args.ArgumentList) Info {
 	}
 }
 
-// NewConnection creates a new PGSQLConnection from args
 func (ci *connectionInfo) NewConnection(database string) (*PGSQLConnection, error) {
 	db, err := sqlx.Open("postgres", createConnectionURL(ci, database))
 	if err != nil {
