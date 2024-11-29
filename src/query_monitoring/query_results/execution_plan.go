@@ -18,19 +18,14 @@ import (
 func FetchAndLogExecutionPlan(conn *connection.PGSQLConnection, queryText string) (string, error) {
 	var executionPlan string
 	query := fmt.Sprintf("EXPLAIN (FORMAT JSON) %s", queryText)
-	err := conn.Queryx(query).Scan(&executionPlan)
+	err := conn.QueryRowx(query).Scan(&executionPlan)
 	if err != nil {
-		return nil, err
+		log.Error("Error fetching execution plan for query: %v", err)
+		return "", err
 	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var slowQuery datamodels.QueryExecutionPlan
-		if err := rows.StructScan(&slowQuery); err != nil {
-			return nil, err
-		}
-		slowQueries = append(slowQueries, slowQuery)
-	}
+	log.Info("Execution Plan for Query: %s", executionPlan)
+	return executionPlan, nil
+}
 
 func GetQueryExecutionPlanMetrics(conn *connection.PGSQLConnection) ([]datamodels.QueryExecutionPlan, error) {
 	var slowQueries []datamodels.QueryExecutionPlan
