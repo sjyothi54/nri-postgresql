@@ -59,7 +59,7 @@ func FetchAndLogExecutionPlan(conn *connection.PGSQLConnection, queryID int64) (
 		return nil, err
 	}
 	defer rows.Close()
-
+	log.Info("Rows: %v", rows)
 	for rows.Next() {
 		var slowQuery datamodels.QueryExecutionPlan
 		if err := rows.StructScan(&slowQuery); err != nil {
