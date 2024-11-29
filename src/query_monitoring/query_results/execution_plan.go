@@ -18,7 +18,7 @@ import (
 func FetchAndLogExecutionPlan(conn *connection.PGSQLConnection, queryText string) (string, error) {
 	var executionPlan string
 	query := fmt.Sprintf("EXPLAIN (FORMAT JSON) %s", queryText)
-	err := conn.QueryRowx(query).Scan(&executionPlan)
+	err := conn.Queryx(query).Scan(&executionPlan)
 	if err != nil {
 		log.Error("Error fetching execution plan for query: %v", err)
 		return "", err
