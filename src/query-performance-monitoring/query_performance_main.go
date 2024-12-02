@@ -16,12 +16,12 @@ func QueryPerformanceMain(instanceEntity *integration.Entity, args args.Argument
 	//	fmt.Println("Error in connection")
 	//}
 	fmt.Println("am here")
-	metricSet2 := instanceEntity.NewMetricSet(
+	metricSet3 := instanceEntity.NewMetricSet(
 		"testingV2",
 		attribute.Attr("hostname", "12"),
 		attribute.Attr("port", "22"),
 	)
-	err := metricSet2.SetMetric("testMetric2", 5, metric.GAUGE)
+	err := metricSet3.SetMetric("testMetric2", 5, metric.GAUGE)
 	if err != nil {
 		fmt.Println("errorr")
 		return err
