@@ -2,6 +2,10 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"runtime"
+	"strings"
+
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
@@ -10,12 +14,7 @@ import (
 	"github.com/newrelic/nri-postgresql/src/inventory"
 	"github.com/newrelic/nri-postgresql/src/metrics"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring"
-	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-db-connection"
-	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/query_metrics"
-	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
-	"os"
-	"runtime"
-	"strings"
+	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/"
 )
 
 const (
