@@ -50,11 +50,6 @@ func GetExplainPlanForSlowQueries(conn *performance_db_connection.PGSQLConnectio
 
 	for _, slowQuery := range slowQueries {
 		queryText := *slowQuery.QueryText
-		// Replace parameters with actual values
-		for i, param := range slowQuery.Parameters {
-			placeholder := fmt.Sprintf("$%d", i+1)
-			queryText = strings.Replace(queryText, placeholder, param, -1)
-		}
 
 		explainQuery := fmt.Sprintf("EXPLAIN (FORMAT JSON) (%s)", queryText)
 		fmt.Println("Explain Query: ", explainQuery)
