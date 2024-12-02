@@ -48,7 +48,7 @@ func GetExplainPlanForSlowQueries(conn *performance_db_connection.PGSQLConnectio
 	explainPlans := make(map[string]string)
 
 	for _, queryText := range queryTextList {
-		explainQuery := fmt.Sprintf("EXPLAIN (FORMAT JSON) %s", queryText)
+		explainQuery := fmt.Sprintf("EXPLAIN (FORMAT JSON) (%s)", queryText)
 		rows, err := conn.Queryx(explainQuery)
 		if err != nil {
 			return nil, err
