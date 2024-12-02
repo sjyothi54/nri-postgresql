@@ -79,7 +79,7 @@ func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *perfor
 			}
 		}
 
-		log.Info("Metrics set for slow query: %s in database: %s", *model.QueryID, *model.DatabaseName)
+		//log.Info("Metrics set for slow query: %s in database: %s", *model.QueryID, *model.DatabaseName)
 	}
 
 	return queryIdList, nil
