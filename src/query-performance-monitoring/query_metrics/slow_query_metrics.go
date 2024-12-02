@@ -2,6 +2,7 @@ package query_metrics
 
 import (
 	"errors"
+	"fmt"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
@@ -42,7 +43,7 @@ func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *perfor
 	}
 	if !isExtensionEnabled {
 		log.Info("Extension 'pg_stat_statements' is not enabled.")
-		return nil, errors.New("Extension 'pg_stat_statements' is not enabled.")
+		return nil, errors.New("extension 'pg_stat_statements' is not enabled")
 	}
 	log.Info("Extension 'pg_stat_statements' enabled.")
 	slowQueries, queryIdList, err := GetSlowRunningMetrics(conn)
@@ -53,8 +54,9 @@ func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *perfor
 
 	if len(slowQueries) == 0 {
 		log.Info("No slow-running queries found.")
-		return nil, errors.New("No slow-running queries found.")
+		return nil, errors.New("no slow-running queries found")
 	}
+
 	log.Info("Populate-slow running: %+v", slowQueries)
 
 	for _, model := range slowQueries {
@@ -69,8 +71,10 @@ func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *perfor
 			sourceType := fieldType.Tag.Get("source_type")
 
 			if field.Kind() == reflect.Ptr && !field.IsNil() {
+				fmt.Print("Field is a pointer")
 				common_utils.SetMetric(metricSet, metricName, field.Elem().Interface(), sourceType)
 			} else if field.Kind() != reflect.Ptr {
+				fmt.Println("Field is not a pointer")
 				common_utils.SetMetric(metricSet, metricName, field.Interface(), sourceType)
 			}
 		}
