@@ -38,18 +38,16 @@ func GetSlowRunningMetrics(conn *performance_db_connection.PGSQLConnection) ([]d
 	}
 
 	/*var queryIdListStr []string
-	for _, id := range queryIdList {
-		queryIdListStr = append(queryIdListStr, fmt.Sprintf("%d", id))
-	}*/
+	  for _, id := range queryIdList {
+	      queryIdListStr = append(queryIdListStr, fmt.Sprintf("%d", id))
+	  }*/
 	return slowQueries, queryTextList, nil
 }
 
-func GetExplainPlanForSlowQueries(conn *performance_db_connection.PGSQLConnection, slowQueries []datamodels.SlowRunningQuery) (map[string]string, error) {
+func GetExplainPlanForSlowQueries(conn *performance_db_connection.PGSQLConnection, queryTextList []string) (map[string]string, error) {
 	explainPlans := make(map[string]string)
 
-	for _, slowQuery := range slowQueries {
-		queryText := *slowQuery.QueryText
-
+	for _, queryText := range queryTextList {
 		explainQuery := fmt.Sprintf("EXPLAIN (FORMAT JSON) (%s)", queryText)
 		fmt.Println("Explain Query: ", explainQuery)
 		rows, err := conn.Queryx(explainQuery)
@@ -68,7 +66,7 @@ func GetExplainPlanForSlowQueries(conn *performance_db_connection.PGSQLConnectio
 			explainResult += row + "\n"
 		}
 
-		explainPlans[*slowQuery.QueryText] = explainResult
+		explainPlans[queryText] = explainResult
 	}
 
 	return explainPlans, nil
@@ -97,7 +95,7 @@ func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *perfor
 	}
 	log.Info("Populate-slow running: %+v", slowQueries)
 
-	explainPlans, err := GetExplainPlanForSlowQueries(conn, slowQueries)
+	explainPlans, err := GetExplainPlanForSlowQueries(conn, queryTextList)
 	if err != nil {
 		log.Error("Error fetching explain plans: %v", err)
 		return nil, err
