@@ -48,7 +48,7 @@ func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *perfor
 	log.Info("Extension 'pg_stat_statements' enabled.")
 	slowQueries, queryIdList, err := GetSlowRunningMetrics(conn)
 	if err != nil {
-		log.Error("Error fetching slow-running queries: %v", err)
+		log.Error("Error fetching slow-running queries: %d", err)
 		return nil, err
 	}
 
@@ -57,14 +57,16 @@ func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *perfor
 		return nil, errors.New("No slow-running queries found.")
 	}
 	fmt.Println("Slow Queries: ", slowQueries)
-
+	for _, query := range slowQueries {
+		log.Info("Populate-slow running: QueryID: %d, QueryText: %s, DatabaseName: %s", *query.QueryID, *query.QueryText, *query.DatabaseName)
+	}
 	log.Info("Populate-slow running: %+v", slowQueries)
 
 	for _, model := range slowQueries {
 
-		fmt.Println("Model: ", model)
+		fmt.Println("Model: %v", model)
 
-		metricSet := common_utils.CreateMetricSet(instanceEntity, "PostgresSlowQueries", args)
+		metricSet := common_utils.CreateMetricSet(instanceEntity, "PostgresSlowQueriesV1", args)
 		modelValue := reflect.ValueOf(model)
 		fmt.Println("Model Value: ", modelValue)
 		modelType := reflect.TypeOf(model)
