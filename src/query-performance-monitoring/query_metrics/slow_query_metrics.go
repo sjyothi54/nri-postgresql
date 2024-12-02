@@ -23,7 +23,7 @@ func GetSlowRunningMetrics(conn *performance_db_connection.PGSQLConnection) ([]d
 		return nil, nil, err
 	}
 	defer rows.Close()
-	var queryInfoList []datamodels.QueryInfo
+	var queryInfoList []datamodels.SlowRunningQuery
 	for rows.Next() {
 		var slowQuery datamodels.SlowRunningQuery
 		if err := rows.StructScan(&slowQuery); err != nil {
@@ -31,13 +31,15 @@ func GetSlowRunningMetrics(conn *performance_db_connection.PGSQLConnection) ([]d
 		}
 		slowQueries = append(slowQueries, slowQuery)
 		// Add QueryID and QueryText to the list
-		queryInfo := datamodels.QueryInfo{
+		queryInfo := datamodels.SlowRunningQuery{
 			QueryID:   *slowQuery.QueryID, // Assuming QueryID is a pointer, adjust if necessary
 			QueryText: slowQuery.QueryText,
 		}
 		queryInfoList = append(queryInfoList, queryInfo)
 		log.Info("Slow Query: %+v", slowQuery)
-		log.Info("Query Info: %+v", queryInfo)
+		log.Info("Slow Query Info: %+v", queryInfo)
+		log.Info("Slow Query Info: %+v", queryInfoList)
+
 	}
 
 	return slowQueries, queryInfoList, nil
