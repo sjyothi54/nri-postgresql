@@ -49,6 +49,7 @@ func GetExplainPlanForSlowQueries(conn *performance_db_connection.PGSQLConnectio
 
 	for _, queryText := range queryTextList {
 		explainQuery := fmt.Sprintf("EXPLAIN (FORMAT JSON) (%s)", queryText)
+		fmt.Println("Explain Query: ", explainQuery)
 		rows, err := conn.Queryx(explainQuery)
 		if err != nil {
 			fmt.Println("Error in query: ", err)
