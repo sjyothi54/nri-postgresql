@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strings"
 
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
@@ -44,10 +45,17 @@ func GetSlowRunningMetrics(conn *performance_db_connection.PGSQLConnection) ([]d
 	return slowQueries, queryTextList, nil
 }
 
-func GetExplainPlanForSlowQueries(conn *performance_db_connection.PGSQLConnection, queryTextList []string) (map[string]string, error) {
+func GetExplainPlanForSlowQueries(conn *performance_db_connection.PGSQLConnection, slowQueries []datamodels.SlowRunningQuery) (map[string]string, error) {
 	explainPlans := make(map[string]string)
 
-	for _, queryText := range queryTextList {
+	for _, slowQuery := range slowQueries {
+		queryText := *slowQuery.QueryText
+		// Replace parameters with actual values
+		for i, param := range slowQuery.Parameters {
+			placeholder := fmt.Sprintf("$%d", i+1)
+			queryText = strings.Replace(queryText, placeholder, param, -1)
+		}
+
 		explainQuery := fmt.Sprintf("EXPLAIN (FORMAT JSON) (%s)", queryText)
 		fmt.Println("Explain Query: ", explainQuery)
 		rows, err := conn.Queryx(explainQuery)
@@ -66,7 +74,7 @@ func GetExplainPlanForSlowQueries(conn *performance_db_connection.PGSQLConnectio
 			explainResult += row + "\n"
 		}
 
-		explainPlans[queryText] = explainResult
+		explainPlans[*slowQuery.QueryText] = explainResult
 	}
 
 	return explainPlans, nil
@@ -95,7 +103,7 @@ func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *perfor
 	}
 	log.Info("Populate-slow running: %+v", slowQueries)
 
-	explainPlans, err := GetExplainPlanForSlowQueries(conn, queryTextList)
+	explainPlans, err := GetExplainPlanForSlowQueries(conn, slowQueries)
 	if err != nil {
 		log.Error("Error fetching explain plans: %v", err)
 		return nil, err
