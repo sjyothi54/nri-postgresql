@@ -15,7 +15,7 @@ func QueryPerformanceMain(instanceEntity *integration.Entity, args args.Argument
 	if err != nil {
 		fmt.Println("Error in connection")
 	}
-	queryIdList, err := query_metrics.PopulateSlowRunningMetrics(instanceEntity, conn, args)
+	queryIdList, err := query_metrics.PopulateSlowRunningMetrics(instanceEntity, conn)
 	if err != nil {
 		return
 	}

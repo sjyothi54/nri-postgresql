@@ -6,7 +6,6 @@ import (
 	"github.com/newrelic/infra-integrations-sdk/v3/data/metric"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
-	"github.com/newrelic/nri-postgresql/src/args"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-db-connection"
@@ -36,8 +35,11 @@ func GetSlowRunningMetrics(conn *performance_db_connection.PGSQLConnection) ([]d
 	return slowQueries, qIdList, nil
 }
 
-func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *performance_db_connection.PGSQLConnection, args args.ArgumentList) ([]int64, error) {
+func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *performance_db_connection.PGSQLConnection) ([]int64, error) {
 	isExtensionEnabled, err := validations.CheckPgStatStatementsExtensionEnabled(conn)
+	metricSet2 := instanceEntity.NewMetricSet("PostgresSlowQueriesV2")
+	metricSet2.SetMetric("test_metric", 10, metric.ATTRIBUTE)
+
 	if err != nil {
 		log.Error("Error executing query: %v", err)
 		return nil, err
@@ -62,8 +64,7 @@ func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *perfor
 		log.Info("Populate-slow running: QueryID: %d, QueryText: %s, DatabaseName: %s", *query.QueryID, *query.QueryText, *query.DatabaseName)
 	}
 	log.Info("Populate-slow running: %+v", slowQueries)
-	metricSet2 := instanceEntity.NewMetricSet("PostgresSlowQueriesV2")
-	metricSet2.SetMetric("test_metric", 10, metric.GAUGE)
+
 	//common_utils.SetMetric(metricSet, metricName, field.Elem().Interface(), sourceType)
 	for _, model := range slowQueries {
 
