@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"github.com/newrelic/infra-integrations-sdk/v3/data/attribute"
+	"github.com/newrelic/infra-integrations-sdk/v3/data/metric"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
@@ -86,6 +88,13 @@ func main() {
 			inventory.PopulateInventory(instance, con)
 		}
 	}
+	metricSet2 := instance.NewMetricSet(
+		"testingV1",
+		attribute.Attr("hostname", "12"),
+		attribute.Attr("port", "22"),
+	)
+	metricSet2.SetMetric("testMetric", 1, metric.GAUGE)
+
 	if args.EnableQueryPerformance {
 		query_performance_monitoring.QueryPerformanceMain(instance, args)
 	}
