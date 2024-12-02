@@ -31,4 +31,5 @@ func QueryPerformanceMain(instanceEntity *integration.Entity, args args.Argument
 	//	return
 	//}
 	//fmt.Println("Query ID List: ", queryIdList)
+	return nil
 }
