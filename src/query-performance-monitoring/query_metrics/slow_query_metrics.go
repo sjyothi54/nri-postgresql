@@ -23,33 +23,26 @@ func GetSlowRunningMetrics(conn *performance_db_connection.PGSQLConnection) ([]d
 		return nil, nil, err
 	}
 	defer rows.Close()
-	var queryInfoList []datamodels.SlowRunningQuery
+
+	var queryIdList []int64
 	for rows.Next() {
 		var slowQuery datamodels.SlowRunningQuery
 		if err := rows.StructScan(&slowQuery); err != nil {
 			return nil, nil, err
 		}
 		slowQueries = append(slowQueries, slowQuery)
-		// Add QueryID and QueryText to the list
-		queryInfo := datamodels.SlowRunningQuery{
-			QueryID:   *slowQuery.QueryID, // Assuming QueryID is a pointer, adjust if necessary
-			QueryText: slowQuery.QueryText,
-		}
-		queryInfoList = append(queryInfoList, queryInfo)
+		queryIdList = append(queryIdList, *slowQuery.QueryID)
 		log.Info("Slow Query: %+v", slowQuery)
-		log.Info("Slow Query Info: %+v", queryInfo)
-		log.Info("Slow Query Info: %+v", queryInfoList)
-
 	}
 
-	return slowQueries, queryInfoList, nil
+	return slowQueries, queryIdList, nil
 }
 
-func GetExplainPlanForSlowQueries(conn *performance_db_connection.PGSQLConnection, slowQueries []datamodels.SlowRunningQuery) (map[string]string, error) {
-	explainPlans := make(map[string]string)
+func GetExplainPlanForSlowQueries(conn *performance_db_connection.PGSQLConnection, slowQueries []datamodels.SlowRunningQuery) (map[int64]string, error) {
+	explainPlans := make(map[int64]string)
 
 	for _, slowQuery := range slowQueries {
-		explainQuery := fmt.Sprintf("EXPLAIN (FORMAT JSON) %s", slowQuery.QueryText)
+		explainQuery := fmt.Sprintf("EXPLAIN (FORMAT JSON) %s", *slowQuery.QueryText)
 		rows, err := conn.Queryx(explainQuery)
 		if err != nil {
 			return nil, err
@@ -101,7 +94,6 @@ func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *perfor
 	}
 
 	for _, model := range slowQueries {
-
 		metricSet := common_utils.CreateMetricSet(instanceEntity, "PostgresSlowQueries", args)
 		modelValue := reflect.ValueOf(model)
 		modelType := reflect.TypeOf(model)
@@ -118,8 +110,8 @@ func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *perfor
 			}
 		}
 
-		log.Info("Metrics set for slow query: %s in database: %s", *model.QueryID, *model.DatabaseName)
-		log.Info("Explain plan for query %s: %s", *model.QueryID, explainPlans[*model.QueryID])
+		log.Info("Metrics set for slow query: %d in database: %s", *model.QueryID, *model.DatabaseName)
+		log.Info("Explain plan for query %d: %s", *model.QueryID, explainPlans[*model.QueryID])
 	}
 
 	return queryIdList, nil
