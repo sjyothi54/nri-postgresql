@@ -15,7 +15,7 @@ import (
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
 )
 
-func GetSlowRunningMetrics(conn *performance_db_connection.PGSQLConnection) ([]datamodels.SlowRunningQuery, []int64, error) {
+func GetSlowRunningMetrics(conn *performance_db_connection.PGSQLConnection) ([]datamodels.SlowRunningQuery, []string, error) {
 	var slowQueries []datamodels.SlowRunningQuery
 	var query = queries.SlowQueries
 	rows, err := conn.Queryx(query)
@@ -24,25 +24,31 @@ func GetSlowRunningMetrics(conn *performance_db_connection.PGSQLConnection) ([]d
 	}
 	defer rows.Close()
 
-	var queryIdList []int64
+	//var queryIdList []int64
+	var queryTextList []string
 	for rows.Next() {
 		var slowQuery datamodels.SlowRunningQuery
 		if err := rows.StructScan(&slowQuery); err != nil {
 			return nil, nil, err
 		}
 		slowQueries = append(slowQueries, slowQuery)
-		queryIdList = append(queryIdList, *slowQuery.QueryID)
+		//queryIdList = append(queryIdList, *slowQuery.QueryID)
+		queryTextList = append(queryTextList, *slowQuery.QueryText)
 		log.Info("Slow Query: %+v", slowQuery)
 	}
 
-	return slowQueries, queryIdList, nil
+	/*var queryIdListStr []string
+	for _, id := range queryIdList {
+		queryIdListStr = append(queryIdListStr, fmt.Sprintf("%d", id))
+	}*/
+	return slowQueries, queryTextList, nil
 }
 
-func GetExplainPlanForSlowQueries(conn *performance_db_connection.PGSQLConnection, queryIdList []int64) (map[int64]string, error) {
-	explainPlans := make(map[int64]string)
+func GetExplainPlanForSlowQueries(conn *performance_db_connection.PGSQLConnection, queryIdListStr []string) (map[string]string, error) {
+	explainPlans := make(map[string]string)
 
-	for _, queryId := range queryIdList {
-		explainQuery := fmt.Sprintf("EXPLAIN (FORMAT JSON) SELECT * FROM pg_stat_statements WHERE queryid = %d", queryId)
+	for _, queryText := range queryIdListStr {
+		explainQuery := fmt.Sprintf("EXPLAIN (FORMAT JSON) SELECT * FROM pg_stat_statements WHERE query = %s", queryText)
 		rows, err := conn.Queryx(explainQuery)
 		if err != nil {
 			return nil, err
@@ -58,13 +64,13 @@ func GetExplainPlanForSlowQueries(conn *performance_db_connection.PGSQLConnectio
 			explainResult += row + "\n"
 		}
 
-		explainPlans[queryId] = explainResult
+		explainPlans[queryText] = explainResult
 	}
 
 	return explainPlans, nil
 }
 
-func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *performance_db_connection.PGSQLConnection, args args.ArgumentList) ([]int64, error) {
+func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *performance_db_connection.PGSQLConnection, args args.ArgumentList) ([]string, error) {
 	isExtensionEnabled, err := validations.CheckPgStatStatementsExtensionEnabled(conn)
 	if err != nil {
 		log.Error("Error executing query: %v", err)
@@ -75,7 +81,7 @@ func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *perfor
 		return nil, errors.New("Extension 'pg_stat_statements' is not enabled.")
 	}
 	log.Info("Extension 'pg_stat_statements' enabled.")
-	slowQueries, queryIdList, err := GetSlowRunningMetrics(conn)
+	slowQueries, queryTextList, err := GetSlowRunningMetrics(conn)
 	if err != nil {
 		log.Error("Error fetching slow-running queries: %v", err)
 		return nil, err
@@ -87,13 +93,13 @@ func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *perfor
 	}
 	log.Info("Populate-slow running: %+v", slowQueries)
 
-	explainPlans, err := GetExplainPlanForSlowQueries(conn, queryIdList)
+	explainPlans, err := GetExplainPlanForSlowQueries(conn, queryTextList)
 	if err != nil {
 		log.Error("Error fetching explain plans: %v", err)
 		return nil, err
 	}
 
-	for _, model := range slowQueries {
+	for _, model := range explainPlans {
 		metricSet := common_utils.CreateMetricSet(instanceEntity, "PostgreSQLQueryExplainGo", args)
 		modelValue := reflect.ValueOf(model)
 		modelType := reflect.TypeOf(model)
@@ -110,12 +116,12 @@ func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *perfor
 			}
 		}
 
-		log.Info("Metrics set for slow query: %d in database: %s", *model.QueryID, *model.DatabaseName)
-		log.Info("Explain plan for query %d: %s", *model.QueryID, explainPlans[*model.QueryID])
+		log.Info("Metrics set for slow query text: %s ", explainPlans[model])
+		//log.Info("Explain plan for query %d: %s", *model.QueryText)
 	}
 
 	log.Info("Final slow queries: %+v", slowQueries)
-	log.Info("Final query IDs: %+v", queryIdList)
+	log.Info("Final query IDs: %+v", queryTextList)
 
-	return queryIdList, nil
+	return queryTextList, nil
 }
