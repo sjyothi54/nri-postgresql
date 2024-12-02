@@ -71,8 +71,8 @@ func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *perfor
 
 		fmt.Printf("Model: %v\n", model)
 
-		metricSet := instanceEntity.NewMetricSet("PostgresSlowQueriesV1", attribute.Attr("hostname", args.Hostname),
-			attribute.Attr("port", args.Port))
+		metricSet := instanceEntity.NewMetricSet("PostgresSlowQueriesV1", attribute.Attr("hostname", "asas"),
+			attribute.Attr("port", "asasasasa"))
 
 		modelValue := reflect.ValueOf(model)
 		fmt.Println("Model Value: ", modelValue)
