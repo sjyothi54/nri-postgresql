@@ -3,6 +3,7 @@ package query_metrics
 import (
 	"errors"
 	"fmt"
+	"github.com/newrelic/infra-integrations-sdk/v3/data/attribute"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
@@ -66,7 +67,9 @@ func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *perfor
 
 		fmt.Printf("Model: %v\n", model)
 
-		metricSet := common_utils.CreateMetricSet(instanceEntity, "PostgresSlowQueriesV1", args)
+		metricSet := instanceEntity.NewMetricSet("PostgresSlowQueriesV1", attribute.Attr("hostname", args.Hostname),
+			attribute.Attr("port", args.Port))
+
 		modelValue := reflect.ValueOf(model)
 		fmt.Println("Model Value: ", modelValue)
 		modelType := reflect.TypeOf(model)
@@ -85,7 +88,6 @@ func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *perfor
 				common_utils.SetMetric(metricSet, metricName, field.Interface(), sourceType)
 			}
 		}
-		common_utils.SetMetric(metricSet, "event_type", "PostgresSlowQueriesSample", "event_type")
 		log.Info("Metrics set for slow query: %s in database: %s", *model.QueryID, *model.DatabaseName)
 	}
 
