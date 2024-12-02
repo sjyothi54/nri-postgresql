@@ -9,7 +9,7 @@ import (
 	"github.com/newrelic/nri-postgresql/src/args"
 )
 
-func QueryPerformanceMain(instanceEntity *integration.Entity, args args.ArgumentList) error {
+func QueryPerformanceMain(instanceEntity *integration.Entity, args args.ArgumentList) {
 	//connectionInfo := performance_db_connection.DefaultConnectionInfo(&args)
 	//conn, err := connectionInfo.NewConnection(args.Database)
 	//if err != nil {
@@ -24,12 +24,12 @@ func QueryPerformanceMain(instanceEntity *integration.Entity, args args.Argument
 	err := metricSet3.SetMetric("testMetric2", 5, metric.GAUGE)
 	if err != nil {
 		fmt.Println("errorr")
-		return err
+		return
 	}
 	//queryIdList, err := query_metrics.PopulateSlowRunningMetrics(instanceEntity, conn)
 	//if err != nil {
 	//	return
 	//}
 	//fmt.Println("Query ID List: ", queryIdList)
-	return nil
+	return
 }
