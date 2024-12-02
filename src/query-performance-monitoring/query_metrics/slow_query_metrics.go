@@ -35,6 +35,9 @@ func GetSlowRunningMetrics(conn *performance_db_connection.PGSQLConnection) ([]d
 		log.Info("Slow Query: %+v", slowQuery)
 	}
 
+	log.Info("Collected slow queries: %+v", slowQueries)
+	log.Info("Collected query IDs: %+v", queryIdList)
+
 	return slowQueries, queryIdList, nil
 }
 
@@ -113,6 +116,9 @@ func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *perfor
 		log.Info("Metrics set for slow query: %d in database: %s", *model.QueryID, *model.DatabaseName)
 		log.Info("Explain plan for query %d: %s", *model.QueryID, explainPlans[*model.QueryID])
 	}
+
+	log.Info("Final slow queries: %+v", slowQueries)
+	log.Info("Final query IDs: %+v", queryIdList)
 
 	return queryIdList, nil
 }
