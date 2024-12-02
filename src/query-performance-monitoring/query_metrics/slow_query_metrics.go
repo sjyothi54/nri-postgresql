@@ -2,6 +2,7 @@ package query_metrics
 
 import (
 	"errors"
+	"fmt"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
@@ -55,13 +56,19 @@ func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *perfor
 		log.Info("No slow-running queries found.")
 		return nil, errors.New("No slow-running queries found.")
 	}
+	fmt.Println("Slow Queries: ", slowQueries)
+
 	log.Info("Populate-slow running: %+v", slowQueries)
 
 	for _, model := range slowQueries {
 
+		fmt.Println("Model: ", model)
+
 		metricSet := common_utils.CreateMetricSet(instanceEntity, "PostgresSlowQueries", args)
 		modelValue := reflect.ValueOf(model)
+		fmt.Println("Model Value: ", modelValue)
 		modelType := reflect.TypeOf(model)
+		fmt.Println("Model Type: ", modelType)
 		for i := 0; i < modelValue.NumField(); i++ {
 			field := modelValue.Field(i)
 			fieldType := modelType.Field(i)
