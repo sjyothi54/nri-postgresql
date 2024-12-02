@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/newrelic/infra-integrations-sdk/v3/data/attribute"
+	"github.com/newrelic/infra-integrations-sdk/v3/data/metric"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
@@ -82,9 +83,11 @@ func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *perfor
 
 			if field.Kind() == reflect.Ptr && !field.IsNil() {
 				fmt.Println("in ifffff")
-				common_utils.SetMetric(metricSet, metricName, field.Elem().Interface(), sourceType)
+				metricSet.SetMetric(metricName, field.Elem().Interface(), metric.GAUGE)
+				//common_utils.SetMetric(metricSet, metricName, field.Elem().Interface(), sourceType)
 			} else if field.Kind() != reflect.Ptr {
 				fmt.Println("in else ifffff")
+				metricSet.SetMetric(metricName, field.Elem().Interface(), metric.GAUGE)
 				common_utils.SetMetric(metricSet, metricName, field.Interface(), sourceType)
 			}
 		}
