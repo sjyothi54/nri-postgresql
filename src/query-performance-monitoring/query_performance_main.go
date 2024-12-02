@@ -16,13 +16,13 @@ func QueryPerformanceMain(instanceEntity *integration.Entity, args args.Argument
 	if err != nil {
 		fmt.Println("Error in connection")
 	}
-	queryIdList, err := query_metrics.PopulateSlowRunningMetrics(instanceEntity, conn, args)
+	queryTextList, err := query_metrics.PopulateSlowRunningMetrics(instanceEntity, conn, args)
 	if err != nil {
 		return
 	}
-	fmt.Println("Query ID List: ", queryIdList)
+	fmt.Println("Query ID List: ", queryTextList)
 
-	explainPlans, err := query_metrics.GetExplainPlanForSlowQueries(conn, queryIdList)
+	explainPlans, err := query_metrics.GetExplainPlanForSlowQueries(conn, queryTextList)
 	if err != nil {
 		fmt.Println("Error fetching explain plans: ", err)
 		return
