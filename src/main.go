@@ -86,9 +86,7 @@ func main() {
 			inventory.PopulateInventory(instance, con)
 		}
 	}
-	if args.EnableQueryPerformance {
-		query_performance_monitoring.QueryPerformanceMain(instance, args)
-	}
+	query_performance_monitoring.QueryPerformanceMain(instance, args)
 
 	if err = pgIntegration.Publish(); err != nil {
 		log.Error(err.Error())

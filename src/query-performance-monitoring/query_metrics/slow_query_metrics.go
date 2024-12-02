@@ -59,7 +59,7 @@ func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *perfor
 
 	for _, model := range slowQueries {
 
-		metricSet := common_utils.CreateMetricSet(instanceEntity, "PostgresSlowQueries", args)
+		metricSet := common_utils.CreateMetricSet(instanceEntity, "PostgresSlowQueriesV4", args)
 		modelValue := reflect.ValueOf(model)
 		modelType := reflect.TypeOf(model)
 		for i := 0; i < modelValue.NumField(); i++ {
