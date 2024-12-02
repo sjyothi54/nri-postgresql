@@ -18,6 +18,7 @@ func QueryPerformanceMain(instanceEntity *integration.Entity, args args.Argument
 	}
 	queryTextList, err := query_metrics.PopulateSlowRunningMetrics(instanceEntity, conn, args)
 	if err != nil {
+		fmt.Println("Error fetching slow running metrics: ", err)
 		return
 	}
 	fmt.Println("Query ID List: ", queryTextList)
