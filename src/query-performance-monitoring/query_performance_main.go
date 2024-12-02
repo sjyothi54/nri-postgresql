@@ -3,6 +3,7 @@ package query_performance_monitoring
 // this is the main go file for the query_monitoring package
 import (
 	"fmt"
+
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/nri-postgresql/src/args"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-db-connection"
@@ -20,4 +21,11 @@ func QueryPerformanceMain(instanceEntity *integration.Entity, args args.Argument
 		return
 	}
 	fmt.Println("Query ID List: ", queryIdList)
+
+	explainPlans, err := query_metrics.GetExplainPlanForSlowQueries(conn, queryIdList)
+	if err != nil {
+		fmt.Println("Error fetching explain plans: ", err)
+		return
+	}
+	fmt.Println("Explain Plans: ", explainPlans)
 }
