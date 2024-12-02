@@ -95,12 +95,12 @@ func main() {
 	)
 	metricSet2.SetMetric("testMetric", 1, metric.GAUGE)
 
-	if args.EnableQueryPerformance {
-		err := query_performance_monitoring.QueryPerformanceMain(instance, args)
-		if err != nil {
-			return
-		}
+	//if args.EnableQueryPerformance {
+	err = query_performance_monitoring.QueryPerformanceMain(instance, args)
+	if err != nil {
+		return
 	}
+	//}
 
 	if err = pgIntegration.Publish(); err != nil {
 		log.Error(err.Error())
