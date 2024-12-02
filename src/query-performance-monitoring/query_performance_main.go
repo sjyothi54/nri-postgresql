@@ -2,6 +2,7 @@ package query_performance_monitoring
 
 // this is the main go file for the query_monitoring package
 import (
+	"fmt"
 	"github.com/newrelic/infra-integrations-sdk/v3/data/metric"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/nri-postgresql/src/args"
@@ -13,6 +14,7 @@ func QueryPerformanceMain(instanceEntity *integration.Entity, args args.Argument
 	//if err != nil {
 	//	fmt.Println("Error in connection")
 	//}
+	fmt.Println("am here")
 	metricSet2 := instanceEntity.NewMetricSet("PostgresSlowQueriesV3")
 	metricSet2.SetMetric("test_metric", 10, metric.ATTRIBUTE)
 
