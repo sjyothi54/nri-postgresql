@@ -44,11 +44,11 @@ func GetSlowRunningMetrics(conn *performance_db_connection.PGSQLConnection) ([]d
 	return slowQueries, queryTextList, nil
 }
 
-func GetExplainPlanForSlowQueries(conn *performance_db_connection.PGSQLConnection, queryIdListStr []string) (map[string]string, error) {
+func GetExplainPlanForSlowQueries(conn *performance_db_connection.PGSQLConnection, queryTextList []string) (map[string]string, error) {
 	explainPlans := make(map[string]string)
 
-	for _, queryText := range queryIdListStr {
-		explainQuery := fmt.Sprintf("EXPLAIN (FORMAT JSON) SELECT * FROM pg_stat_statements WHERE query = %s", queryText)
+	for _, queryText := range queryTextList {
+		explainQuery := fmt.Sprintf("EXPLAIN (FORMAT JSON) %s", queryText)
 		rows, err := conn.Queryx(explainQuery)
 		if err != nil {
 			return nil, err
