@@ -78,8 +78,10 @@ func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *perfor
 			sourceType := fieldType.Tag.Get("source_type")
 
 			if field.Kind() == reflect.Ptr && !field.IsNil() {
+				fmt.Println("in ifffff")
 				common_utils.SetMetric(metricSet, metricName, field.Elem().Interface(), sourceType)
 			} else if field.Kind() != reflect.Ptr {
+				fmt.Println("in else ifffff")
 				common_utils.SetMetric(metricSet, metricName, field.Interface(), sourceType)
 			}
 		}
