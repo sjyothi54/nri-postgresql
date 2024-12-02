@@ -10,6 +10,9 @@ import (
 	"github.com/newrelic/nri-postgresql/src/inventory"
 	"github.com/newrelic/nri-postgresql/src/metrics"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring"
+	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-db-connection"
+	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/query_metrics"
+	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
 	"os"
 	"runtime"
 	"strings"
@@ -89,6 +92,30 @@ func main() {
 	if args.EnableQueryPerformance {
 		query_performance_monitoring.QueryPerformanceMain(instance, args)
 	}
+
+	// Create a new connection
+	conn, err := performance_db_connection.NewConnection(args)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Check if the pg_stat_statements extension is enabled
+	isExtensionEnabled, err := validations.CheckPgStatStatementsExtensionEnabled(conn)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if !isExtensionEnabled {
+		log.Info("Extension 'pg_stat_statements' is not enabled.")
+		return
+	}
+
+	// Call the function to populate slow-running metrics
+	queryIdList, err := query_metrics.PopulateSlowRunningMetrics(instance, conn, args)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Info("Query ID List: %+v", queryIdList)
 
 	if err = pgIntegration.Publish(); err != nil {
 		log.Error(err.Error())
