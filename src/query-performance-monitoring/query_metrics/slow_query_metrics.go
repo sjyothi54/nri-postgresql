@@ -83,7 +83,7 @@ func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *perfor
 				common_utils.SetMetric(metricSet, metricName, field.Interface(), sourceType)
 			}
 		}
-
+		common_utils.SetMetric(metricSet, "event_type", "PostgresSlowQueriesSample", "event_type")
 		log.Info("Metrics set for slow query: %s in database: %s", *model.QueryID, *model.DatabaseName)
 	}
 
