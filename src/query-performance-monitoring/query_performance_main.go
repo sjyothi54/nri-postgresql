@@ -21,7 +21,11 @@ func QueryPerformanceMain(instanceEntity *integration.Entity, args args.Argument
 		attribute.Attr("hostname", "12"),
 		attribute.Attr("port", "22"),
 	)
-	metricSet2.SetMetric("testMetric2", 5, metric.GAUGE)
+	err := metricSet2.SetMetric("testMetric2", 5, metric.GAUGE)
+	if err != nil {
+		fmt.Println("errorr")
+		return
+	}
 	//queryIdList, err := query_metrics.PopulateSlowRunningMetrics(instanceEntity, conn)
 	//if err != nil {
 	//	return
