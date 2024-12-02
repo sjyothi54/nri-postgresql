@@ -63,7 +63,10 @@ func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *perfor
 		log.Info("Populate-slow running: QueryID: %d, QueryText: %s, DatabaseName: %s", *query.QueryID, *query.QueryText, *query.DatabaseName)
 	}
 	log.Info("Populate-slow running: %+v", slowQueries)
-
+	metricSet2 := instanceEntity.NewMetricSet("PostgresSlowQueriesV1", attribute.Attr("hostname", args.Hostname),
+		attribute.Attr("port", args.Port))
+	metricSet2.SetMetric("test_metric", 10, metric.GAUGE)
+	//common_utils.SetMetric(metricSet, metricName, field.Elem().Interface(), sourceType)
 	for _, model := range slowQueries {
 
 		fmt.Printf("Model: %v\n", model)
