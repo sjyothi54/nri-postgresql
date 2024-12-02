@@ -36,8 +36,6 @@ func GetSlowRunningMetrics(conn *performance_db_connection.PGSQLConnection) ([]d
 	}
 
 	return slowQueries, queryIdList, nil
-	log.Info("Collected slow queries: %+v", slowQueries)
-	log.Info("Collected query IDs: %+v", queryIdList)
 }
 
 func GetExplainPlanForSlowQueries(conn *performance_db_connection.PGSQLConnection, queryIdList []int64) (map[int64]string, error) {
