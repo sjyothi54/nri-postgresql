@@ -22,7 +22,7 @@ func QueryPerformanceMain(instanceEntity *integration.Entity, args args.Argument
 		return
 	}
 	fmt.Println("Query ID List: ", slowQueriesList)
-	query_metrics.ExecutionPlanMetrics(slowQueriesList)
+	query_metrics.ExecutionPlanMetrics(conn, slowQueriesList)
 	//err = query_metrics.PopulateWaitEventMetrics(instanceEntity, conn, args)
 	//if err != nil {
 	//	fmt.Printf("Error in fetching wait event metrics: %v", err)
