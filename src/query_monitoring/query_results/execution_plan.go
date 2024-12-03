@@ -21,8 +21,16 @@ func ExecutionPlanQuery(conn *connection.PGSQLConnection, slowQueries []datamode
 			return nil, fmt.Errorf("error preparing query: %w", err)
 		}
 
-		explainQuery := fmt.Sprintf("EXPLAIN (FORMAT JSON) EXECUTE %s", stmtName)
-		rows, err := conn.Queryx(explainQuery)
+		explainQuery := fmt.Sprintf("EXPLAIN (FORMAT JSON) EXECUTE %s(", stmtName)
+		for j := range slowQuery.Params {
+			if j > 0 {
+				explainQuery += ", "
+			}
+			explainQuery += fmt.Sprintf("$%d", j+1)
+		}
+		explainQuery += ")"
+
+		rows, err := conn.Queryx(explainQuery, slowQuery.Params...)
 		if err != nil {
 			return nil, fmt.Errorf("error executing explain query: %w", err)
 		}
