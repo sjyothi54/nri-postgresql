@@ -17,6 +17,7 @@ func ExecutionPlanMetrics(conn *performance_db_connection.PGSQLConnection, slowQ
 		fmt.Printf(executePrepareStatement)
 		_, err := conn.Queryx(executePrepareStatement)
 		if err != nil {
+			fmt.Println("Error in executing prepare")
 			return
 		}
 		parameterRows, err := conn.Queryx("select * from pg_prepared_statements")
