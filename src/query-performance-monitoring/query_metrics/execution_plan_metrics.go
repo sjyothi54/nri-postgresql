@@ -27,6 +27,7 @@ func ExecutionPlanMetrics(conn *performance_db_connection.PGSQLConnection, slowQ
 
 		fmt.Println("Query Variable: ", rows)
 		for rows.Next() {
+			fmt.Println("Row: ", rows)
 			var parameterData datamodels.Execution_plan_perform_data
 			if err := rows.StructScan(&parameterData); err != nil {
 				fmt.Println("Error in scanning row")
