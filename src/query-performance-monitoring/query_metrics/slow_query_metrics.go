@@ -4,7 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
-	"strings"
+
+	// "strings"
 
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
@@ -16,6 +17,35 @@ import (
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
 )
 
+func GetSlowRunningMetrics(conn *performance_db_connection.PGSQLConnection) ([]datamodels.SlowRunningQuery, []string, error) {
+	var slowQueries []datamodels.SlowRunningQuery
+	var query = queries.SlowQueries
+	rows, err := conn.Queryx(query)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer rows.Close()
+
+	//var queryIdList []int64
+	var queryTextList []string
+	for rows.Next() {
+		var slowQuery datamodels.SlowRunningQuery
+		if err := rows.StructScan(&slowQuery); err != nil {
+			return nil, nil, err
+		}
+		slowQueries = append(slowQueries, slowQuery)
+		//queryIdList = append(queryIdList, *slowQuery.QueryID)
+		queryTextList = append(queryTextList, *slowQuery.QueryText)
+		log.Info("Slow Query: %+v", slowQuery)
+	}
+
+	/*var queryIdListStr []string
+	  for _, id := range queryIdList {
+	      queryIdListStr = append(queryIdListStr, fmt.Sprintf("%d", id))
+	  }*/
+	return slowQueries, queryTextList, nil
+}
+
 func GetExplainPlanForSlowQueries(conn *performance_db_connection.PGSQLConnection, queryTextList []string) (map[string]string, error) {
 	explainPlans := make(map[string]string)
 
@@ -24,13 +54,13 @@ func GetExplainPlanForSlowQueries(conn *performance_db_connection.PGSQLConnectio
 
 		// Prepare the statement
 		prepareQuery := fmt.Sprintf("PREPARE plan%d AS %s", idx, queryText)
-		_, err := conn.Exec(prepareQuery)
+		_, err := conn.Queryx(prepareQuery)
 		if err != nil {
 			fmt.Println("Error preparing query: ", err)
 			return nil, err
 		}
 
-		defer conn.Exec(fmt.Sprintf("DEALLOCATE plan%d;", idx)) // Deferred deallocation of prepared statement
+		defer conn.Queryx(fmt.Sprintf("DEALLOCATE plan%d;", idx)) // Deferred deallocation of prepared statement
 
 		// Execute the prepared statement
 		explainQuery := fmt.Sprintf("EXPLAIN (FORMAT JSON) EXECUTE plan%d;", idx)
