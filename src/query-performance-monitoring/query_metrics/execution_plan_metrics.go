@@ -19,12 +19,21 @@ func ExecutionPlanMetrics(conn *performance_db_connection.PGSQLConnection, slowQ
 		if err != nil {
 			return
 		}
-		queryVariable, err := conn.Queryx("select * from pg_prepared_statements")
+		parameterRows, err := conn.Queryx("select * from pg_prepared_statements")
 		if err != nil {
 			fmt.Println("Error in executing prepared statement")
 		}
-		defer queryVariable.Close()
-		fmt.Println("Query Variable: ", *queryVariable)
+
+		defer parameterRows.Close()
+		fmt.Println("Query Variable: ", *parameterRows)
+		for parameterRows.Next() {
+			var parameterData datamodels.Execution_plan_perform_data
+			if err := parameterRows.StructScan(&parameterData); err != nil {
+				fmt.Println("Error in scanning row")
+				continue
+			}
+			fmt.Println("parameterData", parameterData)
+		}
 
 		//fmt.Println("Query ID: ", slowQueryMetric.QueryId)
 		//fmt.Println("Query Text: ", slowQueryMetric.QueryText)
