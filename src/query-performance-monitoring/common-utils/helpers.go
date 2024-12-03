@@ -39,7 +39,7 @@ func SetMetric(metricSet *metric.Set, name string, value interface{}, sourceType
 
 func SetMetricsParser(instanceEntity *integration.Entity, eventName string, args args.ArgumentList, model interface{}) {
 	log.Info("model: %+v", model)
-	metricSet := CreateMetricSet(instanceEntity, "PostgresSlowQueriesV8", args)
+	metricSet := CreateMetricSet(instanceEntity, eventName, args)
 	modelValue := reflect.ValueOf(model)
 	modelType := reflect.TypeOf(model)
 	for i := 0; i < modelValue.NumField(); i++ {
