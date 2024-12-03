@@ -52,16 +52,21 @@ func GetExplainPlanForSlowQueries(conn *performance_db_connection.PGSQLConnectio
 	for idx, queryText := range queryTextList {
 		fmt.Println("Query Text: ", queryText)
 
+		// Use query identifiers to avoid name clashes in the session
+		planName := fmt.Sprintf("plan%d", idx)
+
 		// Prepare the statement
-		prepareQuery := fmt.Sprintf("PREPARE plan%d AS %s", idx, queryText)
-		_, err := conn.Queryx(prepareQuery)
-		if err != nil {
+		prepareQuery := fmt.Sprintf("PREPARE %s AS %s;", planName, queryText)
+		if _, err := conn.Queryx(prepareQuery); err != nil {
 			fmt.Println("Error preparing query: ", err)
 			return nil, err
 		}
 
+		// Remember to deallocate the prepared statement to free server resources
+		defer conn.Queryx(fmt.Sprintf("DEALLOCATE %s;", planName))
+
 		// Execute the prepared statement
-		explainQuery := fmt.Sprintf("EXPLAIN (FORMAT JSON) EXECUTE plan%d;", idx)
+		explainQuery := fmt.Sprintf("EXPLAIN (FORMAT JSON) EXECUTE %s;", planName)
 		fmt.Println("Explain Query: ", explainQuery)
 
 		rows, err := conn.Queryx(explainQuery)
@@ -81,13 +86,6 @@ func GetExplainPlanForSlowQueries(conn *performance_db_connection.PGSQLConnectio
 		}
 
 		explainPlans[queryText] = explainResult
-
-		// Deallocate the prepared statement
-		_, err = conn.Queryx(fmt.Sprintf("DEALLOCATE plan%d;", idx))
-		if err != nil {
-			fmt.Println("Error deallocating prepared statement: ", err)
-			return nil, err
-		}
 	}
 
 	return explainPlans, nil
