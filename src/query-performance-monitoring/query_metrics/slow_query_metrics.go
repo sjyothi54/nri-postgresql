@@ -115,12 +115,12 @@ func GetExplainPlanForSlowQueries(conn *performance_db_connection.PGSQLConnectio
 		explainPlans[planName] = explainResult
 
 		// Deallocate the prepared plan to clean up
-		deallocQuery := fmt.Sprintf("DEALLOCATE %s;", planName)
-		fmt.Printf("Deallocating Statement: %s\n", deallocQuery)
+		// deallocQuery := fmt.Sprintf("DEALLOCATE %s;", planName)
+		// fmt.Printf("Deallocating Statement: %s\n", deallocQuery)
 
-		if _, err := conn.Queryx(deallocQuery); err != nil {
-			fmt.Printf("Error deallocating statement: %s, %v\n", planName, err)
-		}
+		// if _, err := conn.Queryx(deallocQuery); err != nil {
+		// 	fmt.Printf("Error deallocating statement: %s, %v\n", planName, err)
+		// }
 	}
 
 	return explainPlans, nil
