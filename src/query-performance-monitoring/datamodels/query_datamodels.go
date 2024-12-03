@@ -3,17 +3,17 @@ package datamodels
 import "database/sql"
 
 type SlowRunningQuery struct {
-	QueryID             sql.NullInt64   `db:"query_id"              metric_name:"slowquery.query_id"                   source_type:"gauge"`
-	QueryText           sql.NullString  `db:"query_text"            metric_name:"slowquery.query_text"                 source_type:"attribute"`
-	DatabaseName        sql.NullString  `db:"database_name"         metric_name:"slowquery.database_name"              source_type:"attribute"`
-	SchemaName          sql.NullString  `db:"schema_name"           metric_name:"slowquery.schema_name"                source_type:"attribute"`
-	ExecutionCount      sql.NullInt64   `db:"execution_count"       metric_name:"slowquery.execution_count"            source_type:"gauge"`
-	AvgElapsedTimeMs    sql.NullFloat64 `db:"avg_elapsed_time_ms"   metric_name:"slowquery.avg_elapsed_time_ms"        source_type:"gauge"`
-	AvgCPUTimeMs        sql.NullFloat64 `db:"avg_cpu_time_ms"       metric_name:"slowquery.avg_cpu_time_ms"            source_type:"gauge"`
-	AvgDiskReads        sql.NullFloat64 `db:"avg_disk_reads"        metric_name:"slowquery.avg_disk_reads"             source_type:"gauge"`
-	AvgDiskWrites       sql.NullFloat64 `db:"avg_disk_writes"       metric_name:"slowquery.avg_disk_writes"            source_type:"gauge"`
-	StatementType       sql.NullString  `db:"statement_type"        metric_name:"slowquery.statement_type"             source_type:"attribute"`
-	CollectionTimestamp sql.NullString  `db:"collection_timestamp"  metric_name:"slowquery.collection_timestamp"       source_type:"attribute"`
+	QueryID             sql.NullInt64   `db:"query_id"   json:"query_id"            metric_name:"slowquery.query_id"                   source_type:"gauge"`
+	QueryText           sql.NullString  `db:"query_text" json:"query_text"            metric_name:"slowquery.query_text"                 source_type:"attribute"`
+	DatabaseName        sql.NullString  `db:"database_name" json:"database_name"         metric_name:"slowquery.database_name"              source_type:"attribute"`
+	SchemaName          sql.NullString  `db:"schema_name" json:"schema_name"           metric_name:"slowquery.schema_name"                source_type:"attribute"`
+	ExecutionCount      sql.NullInt64   `db:"execution_count" json:"execution_count"      metric_name:"slowquery.execution_count"            source_type:"gauge"`
+	AvgElapsedTimeMs    sql.NullFloat64 `db:"avg_elapsed_time_ms" json:"avg_elapsed_time_ms"   metric_name:"slowquery.avg_elapsed_time_ms"        source_type:"gauge"`
+	AvgCPUTimeMs        sql.NullFloat64 `db:"avg_cpu_time_ms"  json:"avg_cpu_time_ms"      metric_name:"slowquery.avg_cpu_time_ms"            source_type:"gauge"`
+	AvgDiskReads        sql.NullFloat64 `db:"avg_disk_reads" json:"avg_disk_reads"        metric_name:"slowquery.avg_disk_reads"             source_type:"gauge"`
+	AvgDiskWrites       sql.NullFloat64 `db:"avg_disk_writes"  json:"avg_disk_writes"      metric_name:"slowquery.avg_disk_writes"            source_type:"gauge"`
+	StatementType       sql.NullString  `db:"statement_type"   json:"statement_type"     metric_name:"slowquery.statement_type"             source_type:"attribute"`
+	CollectionTimestamp sql.NullString  `db:"collection_timestamp" json:"collection_timestamp"  metric_name:"slowquery.collection_timestamp"       source_type:"attribute"`
 }
 type WaitEventQuery struct {
 	WaitEventName       *string  `db:"wait_event_name"       metric_name:"waitevent.wait_event_name"            source_type:"attribute"`
