@@ -26,9 +26,6 @@ func getSlowRunningMetrics(conn *performance_db_connection.PGSQLConnection) ([]d
 		if err := rows.StructScan(&slowQuery); err != nil {
 			return nil, nil, err
 		}
-		//if slowQuery.QueryID != nil && *slowQuery.QueryID != 0 {
-		//	qIdList = append(qIdList, *slowQuery.QueryID)
-		//}
 		slowQueries = append(slowQueries, slowQuery)
 	}
 
@@ -58,27 +55,8 @@ func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *perfor
 		return nil, errors.New("no slow-running queries found")
 	}
 
-	//log.Info("Populate-slow running: %+v", slowQueries)
-
 	for _, model := range slowQueries {
 		common_utils.SetMetricsParser(instanceEntity, "PostgresSlowQueriesV12", args, model)
-
-		//metricSet := common_utils.CreateMetricSet(instanceEntity, "PostgresSlowQueriesV11", args)
-		//modelValue := reflect.ValueOf(model)
-		//modelType := reflect.TypeOf(model)
-		//for i := 0; i < modelValue.NumField(); i++ {
-		//	field := modelValue.Field(i)
-		//	fieldType := modelType.Field(i)
-		//	metricName := fieldType.Tag.Get("metric_name")
-		//	sourceType := fieldType.Tag.Get("source_type")
-		//
-		//	if field.Kind() == reflect.Ptr && !field.IsNil() {
-		//		common_utils.SetMetric(metricSet, metricName, field.Elem().Interface(), sourceType)
-		//	} else if field.Kind() != reflect.Ptr {
-		//		common_utils.SetMetric(metricSet, metricName, field.Interface(), sourceType)
-		//	}
-		//}
-
 	}
 
 	return queryIdList, nil

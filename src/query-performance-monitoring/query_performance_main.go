@@ -16,22 +16,21 @@ func QueryPerformanceMain(instanceEntity *integration.Entity, args args.Argument
 		fmt.Print("Error in connection")
 		return
 	}
-	_, err = query_metrics.PopulateSlowRunningMetrics(instanceEntity, conn, args)
+	queryIdList, err := query_metrics.PopulateSlowRunningMetrics(instanceEntity, conn, args)
 	if err != nil {
 		fmt.Printf("Error in fetching slow running metrics: %v", err)
 		return
 	}
-	//fmt.Println("Query ID List: ", queryIdList)
-	//err = query_metrics.PopulateWaitEventMetrics(instanceEntity, conn, args)
-	//if err != nil {
-	//	fmt.Printf("Error in fetching wait event metrics: %v", err)
-	//	return
-	//}
-	//fmt.Print("herreeee")
-	//
-	//err = query_metrics.PopulateBlockingSessionMetrics(instanceEntity, conn, args)
-	//if err != nil {
-	//	fmt.Printf("Error in fetching blocking session metrics: %v", err)
-	//	return
-	//}
+	fmt.Println("Query ID List: ", queryIdList)
+	err = query_metrics.PopulateWaitEventMetrics(instanceEntity, conn, args)
+	if err != nil {
+		fmt.Printf("Error in fetching wait event metrics: %v", err)
+		return
+	}
+
+	err = query_metrics.PopulateBlockingSessionMetrics(instanceEntity, conn, args)
+	if err != nil {
+		fmt.Printf("Error in fetching blocking session metrics: %v", err)
+		return
+	}
 }
