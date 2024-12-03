@@ -23,7 +23,7 @@ func ExecutionPlanMetrics(conn *performance_db_connection.PGSQLConnection, slowQ
 		if err := rows.Scan(&query); err != nil {
 			log.Fatal(err)
 		}
-		fmt.Printf("Name: %s, Parameter Types: %s\n", query)
+		fmt.Printf("Name: %s", query)
 	}
 
 	fmt.Println("Query Variable testtt: ", rows)
