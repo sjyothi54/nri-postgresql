@@ -14,26 +14,26 @@ func QueryPerformanceMain(instanceEntity *integration.Entity, args args.Argument
 	connectionInfo := performance_db_connection.DefaultConnectionInfo(&args)
 	conn, err := connectionInfo.NewConnection(args.Database)
 	if err != nil {
-		common_utils.FatalIfError(err)
+		common_utils.FatalIfErr(err)
 	}
 	queryIdList, err := query_metrics.PopulateSlowRunningMetrics(instanceEntity, conn, args)
 	if err != nil {
 		fmt.Printf("Error in fetching slow running metrics: %v", err)
-		common_utils.FatalIfError(err)
+		common_utils.FatalIfErr(err)
 		return
 	}
 	fmt.Println("Query ID List: ", queryIdList)
 	err = query_metrics.PopulateWaitEventMetrics(instanceEntity, conn, args)
 	if err != nil {
 		fmt.Printf("Error in fetching wait event metrics: %v", err)
-		common_utils.FatalIfError(err)
+		common_utils.FatalIfErr(err)
 		return
 	}
 
 	err = query_metrics.PopulateBlockingSessionMetrics(instanceEntity, conn, args)
 	if err != nil {
 		fmt.Printf("Error in fetching blocking session metrics: %v", err)
-		common_utils.FatalIfError(err)
+		common_utils.FatalIfErr(err)
 		return
 	}
 }
