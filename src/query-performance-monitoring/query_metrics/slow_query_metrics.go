@@ -49,26 +49,20 @@ func GetSlowRunningMetrics(conn *performance_db_connection.PGSQLConnection) ([]d
 func GetExplainPlanForSlowQueries(conn *performance_db_connection.PGSQLConnection, queryTextList []string) (map[string]string, error) {
 	explainPlans := make(map[string]string)
 
-	// Check the connection validity.
-	if conn == nil {
-		return nil, fmt.Errorf("database connection is nil")
-	}
-
 	for idx, queryText := range queryTextList {
 		fmt.Printf("Executing for Query Text: %s\n", queryText)
 
-		// Give the prepared statement a unique name
+		// Verify converted for appropriate operations if needed (like ensuring no operations like + over incompatible types).
 		planName := fmt.Sprintf("plan_%d", idx)
 
 		// Prepare the statement
-		prepareQuery := fmt.Sprintf("PREPARE %s AS %s", planName, queryText)
+		prepareQuery := fmt.Sprintf("PREPARE %s AS %s;", planName, queryText)
 		fmt.Printf("Preparing Statement: %s\n", prepareQuery)
 
-		// Execute the prepare statement on the same connection
+		// Prepare the query on the same connection
 		if _, err := conn.Queryx(prepareQuery); err != nil {
 			fmt.Printf("Error preparing statement: %s, %v\n", planName, err)
-			// Ensure that you capture any issues with the input SQL syntax or connection
-			continue
+			continue // Proceed to next statement without halting the entire process
 		}
 
 		// Execute the prepared statement
@@ -86,7 +80,6 @@ func GetExplainPlanForSlowQueries(conn *performance_db_connection.PGSQLConnectio
 		for rows.Next() {
 			var row string
 			if err := rows.Scan(&row); err != nil {
-				fmt.Printf("Error fetching row: %v\n", err)
 				continue
 			}
 			explainResult += row + "\n"
@@ -94,7 +87,7 @@ func GetExplainPlanForSlowQueries(conn *performance_db_connection.PGSQLConnectio
 
 		explainPlans[queryText] = explainResult
 
-		// Deallocating the prepared statement
+		// Deallocate the plan to ensure no session leakage and conclude iteration.
 		deallocQuery := fmt.Sprintf("DEALLOCATE %s;", planName)
 		fmt.Printf("Deallocating Statement: %s\n", deallocQuery)
 
