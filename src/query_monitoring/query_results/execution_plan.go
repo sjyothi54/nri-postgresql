@@ -18,7 +18,14 @@ func ExecutionPlanQuery(conn *connection.PGSQLConnection) error {
 		log.Error("Error executing query: ", err.Error())
 		return err
 	}
-	log.Info("rows1", *rows1)
+	for rows1.Next() {
+		var name string
+		if err := rows1.Scan(&name); err != nil {
+			log.Error("Error scanning row: ", err.Error())
+			return err
+		}
+		log.Info("name: ", name)
+	}
 	defer rows1.Close()
 	return nil
 }
