@@ -82,7 +82,7 @@ func GetExplainPlanForSlowQueries(conn *performance_db_connection.PGSQLConnectio
 func replaceParametersWithValues(conn *performance_db_connection.PGSQLConnection, queryText string) (string, error) {
 	var actualQueryText string
 	query := `SELECT query FROM pg_stat_activity WHERE query = $1`
-	err := conn.DB.QueryRow(query, queryText).Scan(&actualQueryText)
+	err := conn.QueryRow(query, queryText).Scan(&actualQueryText)
 	if err != nil {
 		return "", err
 	}
