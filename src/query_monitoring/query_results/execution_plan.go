@@ -15,7 +15,7 @@ func ExecutionPlanQuery(conn *connection.PGSQLConnection, slowQueries []datamode
 		fmt.Println("Query Text: ", queryText)
 		stmtName := fmt.Sprintf("stmt_%d", i)
 		fmt.Println("Statement Name: ", stmtName)
-		prepareQuery := fmt.Sprintf("PREPARE %s AS %s", stmtName, queryText)
+		prepareQuery := fmt.Sprintf("PREPARE %s AS %s", stmtName, *queryText)
 		_, err := conn.Queryx(prepareQuery)
 		if err != nil {
 			return nil, fmt.Errorf("error preparing query: %w", err)
