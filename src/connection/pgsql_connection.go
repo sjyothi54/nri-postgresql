@@ -98,8 +98,8 @@ func (p PGSQLConnection) Query(v interface{}, query string) error {
 }
 
 // Queryx runs a query and returns a set of rows
-func (p PGSQLConnection) Queryx(query string) (*sqlx.Rows, error) {
-	return p.connection.Queryx(query)
+func (p PGSQLConnection) Queryx(query string, args ...interface{}) (*sqlx.Rows, error) {
+	return p.connection.Queryx(query, args...)
 }
 
 type extensions map[string]map[string]bool
