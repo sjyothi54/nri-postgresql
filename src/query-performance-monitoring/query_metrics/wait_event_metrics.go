@@ -50,7 +50,7 @@ func PopulateWaitEventMetrics(instanceEntity *integration.Entity, conn *performa
 
 	if len(waitEventMetrics) == 0 {
 		log.Info("No wait-event metrics found.")
-		return errors.New("no wait-event metrics found")
+		return nil
 	}
 
 	log.Info("WaitEventMetrics %+v", waitEventMetrics)
