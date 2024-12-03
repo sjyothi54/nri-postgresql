@@ -39,7 +39,7 @@ func SetMetric(metricSet *metric.Set, name string, value interface{}, sourceType
 
 func SetMetricsParser(instanceEntity *integration.Entity, eventName string, args args.ArgumentList, model interface{}) {
 	log.Info("model: %+v", model)
-	metricSet := CreateMetricSet(instanceEntity, eventName, args)
+	metricSetIngestion := CreateMetricSet(instanceEntity, eventName, args)
 	modelValue := reflect.ValueOf(model)
 	modelType := reflect.TypeOf(model)
 	for i := 0; i < modelValue.NumField(); i++ {
@@ -49,9 +49,9 @@ func SetMetricsParser(instanceEntity *integration.Entity, eventName string, args
 		sourceType := fieldType.Tag.Get("source_type")
 
 		if field.Kind() == reflect.Ptr && !field.IsNil() {
-			SetMetric(metricSet, metricName, field.Elem().Interface(), sourceType)
+			SetMetric(metricSetIngestion, metricName, field.Elem().Interface(), sourceType)
 		} else if field.Kind() != reflect.Ptr {
-			SetMetric(metricSet, metricName, field.Interface(), sourceType)
+			SetMetric(metricSetIngestion, metricName, field.Interface(), sourceType)
 		}
 	}
 }
