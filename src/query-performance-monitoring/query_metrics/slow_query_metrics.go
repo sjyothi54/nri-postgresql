@@ -46,39 +46,39 @@ func GetSlowRunningMetrics(conn *performance_db_connection.PGSQLConnection) ([]d
 }
 
 func GetExplainPlanForSlowQueries(conn *performance_db_connection.PGSQLConnection, queryTextList []string) (map[string]string, error) {
-	explainPlans := make(map[string]string)
+    explainPlans := make(map[string]string)
 
-	for _, queryText := range queryTextList {
-		// Replace parameter placeholders with dummy values
-		explainQuery := replaceParametersWithDummyValues(queryText)
-		explainQuery = fmt.Sprintf("EXPLAIN (FORMAT JSON) %s", explainQuery)
-		fmt.Println("Explain Query: ", explainQuery)
-		rows, err := conn.Queryx(explainQuery)
-		if err != nil {
-			fmt.Println("Error in query: ", err)
-			return nil, err
-		}
-		defer rows.Close()
+    for _, queryText := range queryTextList {
+        // Replace parameter placeholders with dummy values
+        explainQuery := replaceParametersWithDummyValues(queryText)
+        explainQuery = fmt.Sprintf("EXPLAIN (FORMAT JSON) %s", explainQuery)
+        fmt.Println("Explain Query: ", explainQuery)
+        rows, err := conn.Queryx(explainQuery)
+        if err != nil {
+            fmt.Println("Error in query: ", err)
+            return nil, err
+        }
+        defer rows.Close()
 
-		var explainResult string
-		for rows.Next() {
-			var row string
-			if err := rows.Scan(&row); err != nil {
-				return nil, err
-			}
-			explainResult += row + "\n"
-		}
+        var explainResult string
+        for rows.Next() {
+            var row string
+            if err := rows.Scan(&row); err != nil {
+                return nil, err
+            }
+            explainResult += row + "\n"
+        }
 
-		explainPlans[queryText] = explainResult
-	}
+        explainPlans[queryText] = explainResult
+    }
 
-	return explainPlans, nil
+    return explainPlans, nil
 }
 
 func replaceParametersWithDummyValues(query string) string {
-	// Replace $1, $2, etc. with dummy values (e.g., 1, 'dummy', etc.)
-	// This is a simple example and may need to be adapted for more complex queries
-	return strings.ReplaceAll(query, "$1", "1")
+    // Replace $1, $2, etc. with dummy values (e.g., 1, 'dummy', etc.)
+    // This is a simple example and may need to be adapted for more complex queries
+    return strings.ReplaceAll(query, "$1", "1")
 }
 
 func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *performance_db_connection.PGSQLConnection, args args.ArgumentList) ([]string, error) {
