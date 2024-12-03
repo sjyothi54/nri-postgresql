@@ -49,8 +49,11 @@ func GetExplainPlanForSlowQueries(conn *performance_db_connection.PGSQLConnectio
 
 	for _, queryText := range queryTextList {
 		// Replace parameters with actual values if needed
-		// Assuming we have a function to replace parameters with actual values
-		queryTextWithParams := replaceParametersWithValues(queryText)
+		queryTextWithParams, err := replaceParametersWithValues(conn, queryText)
+		if err != nil {
+			fmt.Println("Error replacing parameters: ", err)
+			return nil, err
+		}
 		explainQuery := fmt.Sprintf("EXPLAIN (FORMAT JSON) %s", queryTextWithParams)
 		fmt.Println("Explain Query: ", explainQuery)
 		rows, err := conn.Queryx(explainQuery)
@@ -76,10 +79,14 @@ func GetExplainPlanForSlowQueries(conn *performance_db_connection.PGSQLConnectio
 }
 
 // Function to replace parameters with actual values
-func replaceParametersWithValues(queryText string) string {
-	// Implement the logic to replace parameters with actual values
-	// This is a placeholder implementation
-	return queryText
+func replaceParametersWithValues(conn *performance_db_connection.PGSQLConnection, queryText string) (string, error) {
+	var actualQueryText string
+	query := `SELECT query FROM pg_stat_activity WHERE query = $1`
+	err := conn.QueryRowx(query, queryText).Scan(&actualQueryText)
+	if err != nil {
+		return "", err
+	}
+	return actualQueryText, nil
 }
 
 func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *performance_db_connection.PGSQLConnection, args args.ArgumentList) ([]string, error) {
