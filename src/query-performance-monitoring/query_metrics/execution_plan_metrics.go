@@ -13,7 +13,7 @@ func ExecutionPlanMetrics(conn *performance_db_connection.PGSQLConnection, slowQ
 		queryText := slowQueryMetric.QueryText
 		fmt.Println("Query Text: ", *queryText)
 
-		executePrepareStatement := "Prepare test as " + *queryText
+		executePrepareStatement := "Prepare test as select * from actor"
 		fmt.Printf(executePrepareStatement)
 		_, err := conn.Queryx(executePrepareStatement)
 		if err != nil {
