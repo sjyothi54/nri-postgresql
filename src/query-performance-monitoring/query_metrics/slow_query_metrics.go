@@ -1,7 +1,6 @@
 package query_metrics
 
 import (
-	"context"
 	"errors"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
@@ -11,15 +10,12 @@ import (
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-db-connection"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
-	"time"
 )
 
 func getSlowRunningMetrics(conn *performance_db_connection.PGSQLConnection) ([]datamodels.SlowRunningQuery, []string, error) {
 	var slowQueries []datamodels.SlowRunningQuery
 	var query = queries.SlowQueries
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	rows, err := conn.QueryxContext(ctx, query)
+	rows, err := conn.Queryx(query)
 	if err != nil {
 		return nil, nil, err
 	}
