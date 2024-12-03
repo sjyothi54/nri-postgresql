@@ -4,7 +4,6 @@ import (
 	"github.com/newrelic/infra-integrations-sdk/v3/data/attribute"
 	"github.com/newrelic/infra-integrations-sdk/v3/data/metric"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
-	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
 	"reflect"
 )
@@ -38,7 +37,7 @@ func SetMetric(metricSet *metric.Set, name string, value interface{}, sourceType
 }
 
 func SetMetricsParser(instanceEntity *integration.Entity, eventName string, args args.ArgumentList, model interface{}) {
-	log.Info("model: %+v", model)
+	//log.Info("model: %+v", model)
 	metricSetIngestion := CreateMetricSet(instanceEntity, eventName, args)
 	modelValue := reflect.ValueOf(model)
 	modelType := reflect.TypeOf(model)
