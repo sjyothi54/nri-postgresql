@@ -37,7 +37,6 @@ func SetMetric(metricSet *metric.Set, name string, value interface{}, sourceType
 }
 
 func SetMetricsParser(instanceEntity *integration.Entity, eventName string, args args.ArgumentList, model interface{}) {
-	//log.Info("model: %+v", model)
 	metricSetIngestion := CreateMetricSet(instanceEntity, eventName, args)
 	modelValue := reflect.ValueOf(model)
 	modelType := reflect.TypeOf(model)
