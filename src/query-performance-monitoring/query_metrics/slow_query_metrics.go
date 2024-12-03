@@ -50,42 +50,50 @@ func GetExplainPlanForSlowQueries(conn *performance_db_connection.PGSQLConnectio
 	explainPlans := make(map[string]string)
 
 	for idx, queryText := range queryTextList {
-		fmt.Println("Query Text: ", queryText)
+		fmt.Printf("Executing for Query Text: %s\n", queryText)
 
-		// Use query identifiers to avoid name clashes in the session
+		// Define unique name for prepared statement per query
 		planName := fmt.Sprintf("plan%d", idx)
 
 		// Prepare the statement
 		prepareQuery := fmt.Sprintf("PREPARE %s AS %s;", planName, queryText)
-		if _, err := conn.Queryx(prepareQuery); err != nil {
-			fmt.Println("Error preparing query: ", err)
-			return nil, err
-		}
+		fmt.Printf("Preparing Statement: %s\n", prepareQuery)
 
-		// Remember to deallocate the prepared statement to free server resources
-		defer conn.Queryx(fmt.Sprintf("DEALLOCATE %s;", planName))
+		if _, err := conn.Queryx(prepareQuery); err != nil {
+			fmt.Printf("Error preparing statement: %s, %v\n", planName, err)
+			continue // Log and continue to next statement on error
+		}
 
 		// Execute the prepared statement
 		explainQuery := fmt.Sprintf("EXPLAIN (FORMAT JSON) EXECUTE %s;", planName)
-		fmt.Println("Explain Query: ", explainQuery)
+		fmt.Printf("Executing Query: %s\n", explainQuery)
 
 		rows, err := conn.Queryx(explainQuery)
 		if err != nil {
-			fmt.Println("Error executing query: ", err)
-			return nil, err
+			fmt.Printf("Error executing prepared statement: %s, %v\n", planName, err)
+			continue // Proceed to cleanup and next execution if failure
 		}
-		defer rows.Close()
 
 		var explainResult string
 		for rows.Next() {
 			var row string
 			if err := rows.Scan(&row); err != nil {
-				return nil, err
+				fmt.Printf("Error fetching row: %v\n", err)
+				continue // Continue on row scan error
 			}
 			explainResult += row + "\n"
 		}
+		rows.Close() // Ensure all resources are released
 
 		explainPlans[queryText] = explainResult
+
+		// Deallocate the prepared statement to avoid session pollution
+		deallocQuery := fmt.Sprintf("DEALLOCATE %s;", planName)
+		fmt.Printf("Deallocating Statement: %s\n", deallocQuery)
+
+		if _, err := conn.Queryx(deallocQuery); err != nil {
+			fmt.Printf("Error deallocating statement: %s, %v\n", planName, err)
+		}
 	}
 
 	return explainPlans, nil
