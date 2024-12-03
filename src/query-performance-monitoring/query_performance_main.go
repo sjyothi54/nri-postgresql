@@ -29,6 +29,7 @@ func QueryPerformanceMain(instanceEntity *integration.Entity, args args.Argument
 		common_utils.FatalIfErr(err)
 		return
 	}
+	fmt.Print("herreeee")
 
 	err = query_metrics.PopulateBlockingSessionMetrics(instanceEntity, conn, args)
 	if err != nil {
