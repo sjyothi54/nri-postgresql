@@ -8,7 +8,7 @@ import (
 
 func ExecutionPlanMetrics(conn *performance_db_connection.PGSQLConnection, slowQueriesList []datamodels.SlowRunningQuery) error {
 
-	rows, err := conn.Queryx("select * from pg_prepared_statements;")
+	rows, err := conn.Queryx("select name,parameter_types from pg_prepared_statements;")
 	if err != nil {
 		fmt.Println("Error in executing prepared statement")
 	}
