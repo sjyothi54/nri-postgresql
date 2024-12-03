@@ -49,19 +49,26 @@ func GetSlowRunningMetrics(conn *performance_db_connection.PGSQLConnection) ([]d
 func GetExplainPlanForSlowQueries(conn *performance_db_connection.PGSQLConnection, queryTextList []string) (map[string]string, error) {
 	explainPlans := make(map[string]string)
 
+	// Check the connection validity.
+	if conn == nil {
+		return nil, fmt.Errorf("database connection is nil")
+	}
+
 	for idx, queryText := range queryTextList {
 		fmt.Printf("Executing for Query Text: %s\n", queryText)
 
-		// Define unique name for prepared statement per query
-		planName := fmt.Sprintf("plan%d", idx)
+		// Give the prepared statement a unique name
+		planName := fmt.Sprintf("plan_%d", idx)
 
 		// Prepare the statement
-		prepareQuery := fmt.Sprintf("PREPARE %s AS %s;", planName, queryText)
+		prepareQuery := fmt.Sprintf("PREPARE %s AS %s", planName, queryText)
 		fmt.Printf("Preparing Statement: %s\n", prepareQuery)
 
+		// Execute the prepare statement on the same connection
 		if _, err := conn.Queryx(prepareQuery); err != nil {
 			fmt.Printf("Error preparing statement: %s, %v\n", planName, err)
-			continue // Log and continue to next statement on error
+			// Ensure that you capture any issues with the input SQL syntax or connection
+			continue
 		}
 
 		// Execute the prepared statement
@@ -71,23 +78,23 @@ func GetExplainPlanForSlowQueries(conn *performance_db_connection.PGSQLConnectio
 		rows, err := conn.Queryx(explainQuery)
 		if err != nil {
 			fmt.Printf("Error executing prepared statement: %s, %v\n", planName, err)
-			continue // Proceed to cleanup and next execution if failure
+			continue
 		}
+		defer rows.Close()
 
 		var explainResult string
 		for rows.Next() {
 			var row string
 			if err := rows.Scan(&row); err != nil {
 				fmt.Printf("Error fetching row: %v\n", err)
-				continue // Continue on row scan error
+				continue
 			}
 			explainResult += row + "\n"
 		}
-		rows.Close() // Ensure all resources are released
 
 		explainPlans[queryText] = explainResult
 
-		// Deallocate the prepared statement to avoid session pollution
+		// Deallocating the prepared statement
 		deallocQuery := fmt.Sprintf("DEALLOCATE %s;", planName)
 		fmt.Printf("Deallocating Statement: %s\n", deallocQuery)
 
