@@ -24,7 +24,7 @@ func ExecutionPlanMetrics(conn *performance_db_connection.PGSQLConnection, slowQ
 			fmt.Println("Error in executing prepared statement")
 		}
 		defer queryVariable.Close()
-		fmt.Println("Query Variable: ", queryVariable)
+		fmt.Println("Query Variable: ", *queryVariable)
 
 		//fmt.Println("Query ID: ", slowQueryMetric.QueryId)
 		//fmt.Println("Query Text: ", slowQueryMetric.QueryText)
