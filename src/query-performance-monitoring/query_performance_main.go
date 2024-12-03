@@ -14,14 +14,15 @@ func QueryPerformanceMain(instanceEntity *integration.Entity, args args.Argument
 	connectionInfo := performance_db_connection.DefaultConnectionInfo(&args)
 	conn, err := connectionInfo.NewConnection(args.Database)
 	if err != nil {
-		fmt.Println("Error in connection")
+		fmt.Println("Error in connection: ", err)
+		return
 	}
 	queryTextList, err := query_metrics.PopulateSlowRunningMetrics(instanceEntity, conn, args)
 	if err != nil {
 		fmt.Println("Error fetching slow running metrics: ", err)
 		return
 	}
-	fmt.Println("Query ID List: ", queryTextList)
+	fmt.Println("Query Text List: ", queryTextList)
 
 	explainPlans, err := query_metrics.GetExplainPlanForSlowQueries(conn, queryTextList)
 	if err != nil {
