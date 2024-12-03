@@ -5,6 +5,7 @@ import (
 	"github.com/newrelic/infra-integrations-sdk/v3/data/attribute"
 	"github.com/newrelic/infra-integrations-sdk/v3/data/metric"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
+	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
 	"reflect"
 )
@@ -37,10 +38,9 @@ func SetMetric(metricSet *metric.Set, name string, value interface{}, sourceType
 	}
 }
 
-func FatalIfError(err error) {
+func FatalIfErr(err error) {
 	if err != nil {
-		fmt.Errorf("Error: %v", err)
-		panic(err)
+		log.Fatal(err)
 	}
 }
 
