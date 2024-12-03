@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strings"
 
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
@@ -48,13 +49,9 @@ func GetExplainPlanForSlowQueries(conn *performance_db_connection.PGSQLConnectio
 	explainPlans := make(map[string]string)
 
 	for _, queryText := range queryTextList {
-		// Replace parameters with actual values if needed
-		queryTextWithParams, err := replaceParametersWithValues(conn, queryText)
-		if err != nil {
-			fmt.Println("Error replacing parameters: ", err)
-			return nil, err
-		}
-		explainQuery := fmt.Sprintf("EXPLAIN (FORMAT JSON) %s", queryTextWithParams)
+		// Replace parameter placeholders with dummy values
+		explainQuery := replaceParametersWithDummyValues(queryText)
+		explainQuery = fmt.Sprintf("EXPLAIN (FORMAT JSON) %s", explainQuery)
 		fmt.Println("Explain Query: ", explainQuery)
 		rows, err := conn.Queryx(explainQuery)
 		if err != nil {
@@ -78,15 +75,10 @@ func GetExplainPlanForSlowQueries(conn *performance_db_connection.PGSQLConnectio
 	return explainPlans, nil
 }
 
-// Function to replace parameters with actual values
-func replaceParametersWithValues(conn *performance_db_connection.PGSQLConnection, queryText string) (string, error) {
-	var actualQueryText string
-	query := `SELECT query FROM pg_stat_activity WHERE query = $1`
-	rows, err := conn.Queryx(query, queryText).Scan(&actualQueryText)
-	if err != nil {
-		return "", err
-	}
-	return actualQueryText, nil
+func replaceParametersWithDummyValues(query string) string {
+	// Replace $1, $2, etc. with dummy values (e.g., 1, 'dummy', etc.)
+	// This is a simple example and may need to be adapted for more complex queries
+	return strings.ReplaceAll(query, "$1", "1")
 }
 
 func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *performance_db_connection.PGSQLConnection, args args.ArgumentList) ([]string, error) {
