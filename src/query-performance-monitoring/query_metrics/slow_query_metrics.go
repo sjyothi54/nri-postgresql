@@ -69,6 +69,7 @@ func GetExplainPlanForSlowQueries(conn *performance_db_connection.PGSQLConnectio
 		}
 
 		planName := fmt.Sprintf("plan_%d", idx)
+		fmt.Printf("Plan Name: %s\n", planName)
 
 		// Prepare the statement
 		prepareQuery := fmt.Sprintf("PREPARE %s AS %s;", planName, queryText)
