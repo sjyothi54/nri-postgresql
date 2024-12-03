@@ -56,52 +56,65 @@ func containsIllegalOperation(queryText string) bool {
 	return false
 }
 
-func GetExplainPlanForSlowQueries(conn *performance_db_connection.PGSQLConnection, queryTextList []string) (map[string]string, error) {
+func StoreQueryAndGetExplainPlan(conn *performance_db_connection.PGSQLConnection, queryTextList []string) (map[string]string, error) {
 	explainPlans := make(map[string]string)
 
 	for idx, queryText := range queryTextList {
-		fmt.Printf("Query Text: %s\n", queryText)
+		fmt.Printf("Original Query Text: %s\n", queryText)
 
-		// Check and revise queries to avoid mismatched operations
-		if containsIllegalOperation(queryText) {
-			fmt.Printf("Skipping query due to illegal operations: %s\n", queryText)
-			continue
-		}
-
+		// Assign a unique name for the prepared statement
 		planName := fmt.Sprintf("plan_%d", idx)
 
-		// Prepare the statement
-		prepareQuery := fmt.Sprintf("PREPARE %s AS %s;", planName, queryText)
+		// Prepare the SQL query
+		prepareQuery := fmt.Sprintf("PREPARE %s AS %s", planName, queryText)
 		fmt.Printf("Preparing Statement: %s\n", prepareQuery)
 
+		// Execute the preparation
 		if _, err := conn.Queryx(prepareQuery); err != nil {
 			fmt.Printf("Error preparing statement: %s, %v\n", planName, err)
 			continue
 		}
-		fmt.Printf("Plan Name: %s\n", planName)
-		// Execute the prepared statement
-		explainQuery := fmt.Sprintf("EXPLAIN (FORMAT JSON) EXECUTE %s;", planName)
-		fmt.Printf("Executing Query: %s\n", explainQuery)
 
-		rows, err := conn.Queryx(explainQuery)
+		// Verify existence in pg_prepared_statements
+		verifyQuery := fmt.Sprintf("SELECT name FROM pg_prepared_statements WHERE name = '%s';", planName)
+		verifyRows, err := conn.Queryx(verifyQuery)
 		if err != nil {
-			fmt.Printf("Error executing prepared statement: %s, %v\n", planName, err)
+			fmt.Printf("Error verifying prepared statement existence: %s, %v\n", planName, err)
 			continue
 		}
-		defer rows.Close()
+
+		if !verifyRows.Next() {
+			fmt.Printf("Prepared statement not found in pg_prepared_statements: %s\n", planName)
+			verifyRows.Close()
+			continue
+		}
+
+		verifyRows.Close()
+
+		// Execute EXPLAIN for the prepared statement
+		explainQuery := fmt.Sprintf("EXPLAIN (FORMAT JSON) EXECUTE %s;", planName)
+		fmt.Printf("Executing EXPLAIN for: %s\n", planName)
+
+		explainRows, err := conn.Queryx(explainQuery)
+		if err != nil {
+			fmt.Printf("Error executing EXPLAIN for prepared statement: %s, %v\n", planName, err)
+			continue
+		}
+		defer explainRows.Close()
 
 		var explainResult string
-		for rows.Next() {
+		for explainRows.Next() {
 			var row string
-			if err := rows.Scan(&row); err != nil {
+			if err := explainRows.Scan(&row); err != nil {
+				fmt.Printf("Error reading EXPLAIN result row: %v\n", err)
 				continue
 			}
 			explainResult += row + "\n"
 		}
 
-		explainPlans[queryText] = explainResult
+		explainPlans[planName] = explainResult
 
-		// Deallocate the plan
+		// Deallocate the prepared plan to clean up
 		deallocQuery := fmt.Sprintf("DEALLOCATE %s;", planName)
 		fmt.Printf("Deallocating Statement: %s\n", deallocQuery)
 
