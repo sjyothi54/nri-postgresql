@@ -55,7 +55,7 @@ func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *perfor
 		return nil, errors.New("no slow-running queries found")
 	}
 
-	log.Info("Populate-slow running: %+v", slowQueries)
+	//log.Info("Populate-slow running: %+v", slowQueries)
 
 	for _, model := range slowQueries {
 		common_utils.SetMetricsParser(instanceEntity, "PostgresqlSlowQueryMetricsV1", args, model)
