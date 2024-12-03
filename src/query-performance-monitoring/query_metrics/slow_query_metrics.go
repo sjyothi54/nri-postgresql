@@ -11,7 +11,7 @@ import (
 	"github.com/newrelic/nri-postgresql/src/args"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
-	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-db-connection"
+	"github.com.newrelic/nri-postgresql/src/query-performance-monitoring/performance-db-connection"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
 )
@@ -78,7 +78,9 @@ func GetExplainPlanForSlowQueries(conn *performance_db_connection.PGSQLConnectio
 func replaceParametersWithDummyValues(query string) string {
     // Replace $1, $2, etc. with dummy values (e.g., 1, 'dummy', etc.)
     // This is a simple example and may need to be adapted for more complex queries
-    return strings.ReplaceAll(query, "$1", "1")
+    query = strings.ReplaceAll(query, "$1", "1")
+    query = strings.ReplaceAll(query, "$2", "'dummy'")
+    return query
 }
 
 func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *performance_db_connection.PGSQLConnection, args args.ArgumentList) ([]string, error) {
