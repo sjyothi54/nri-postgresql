@@ -15,7 +15,7 @@ func ExecutionPlanQuery(conn *connection.PGSQLConnection) error {
 	}
 
 	// Print the output of pg_prepared_statements
-	rows, err := conn.Queryx("SELECT * FROM pg_prepared_statements")
+	rows, err := conn.Queryx("SELECT * FROM pg_prepared_statements;")
 	if err != nil {
 		return fmt.Errorf("error querying pg_prepared_statements: %w", err)
 	}
