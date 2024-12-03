@@ -69,7 +69,6 @@ func GetExplainPlanForSlowQueries(conn *performance_db_connection.PGSQLConnectio
 		}
 
 		planName := fmt.Sprintf("plan_%d", idx)
-		fmt.Printf("Plan Name: %s\n", planName)
 
 		// Prepare the statement
 		prepareQuery := fmt.Sprintf("PREPARE %s AS %s;", planName, queryText)
@@ -79,7 +78,7 @@ func GetExplainPlanForSlowQueries(conn *performance_db_connection.PGSQLConnectio
 			fmt.Printf("Error preparing statement: %s, %v\n", planName, err)
 			continue
 		}
-
+		fmt.Printf("Plan Name: %s\n", planName)
 		// Execute the prepared statement
 		explainQuery := fmt.Sprintf("EXPLAIN (FORMAT JSON) EXECUTE %s;", planName)
 		fmt.Printf("Executing Query: %s\n", explainQuery)
