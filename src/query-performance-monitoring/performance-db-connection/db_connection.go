@@ -2,6 +2,7 @@
 package performance_db_connection
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 
@@ -146,6 +147,10 @@ func (p PGSQLConnection) HaveExtensionInSchema(extensionName, schemaName string)
 	}
 
 	return true
+}
+
+func (con PGSQLConnection) QueryxContext(ctx context.Context, query string, args ...interface{}) (*sqlx.Rows, error) {
+	return con.QueryxContext(ctx, query, args...)
 }
 
 // createConnectionURL creates the connection string. A list of paramters
