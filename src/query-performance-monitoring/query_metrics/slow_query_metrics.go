@@ -2,7 +2,6 @@ package query_metrics
 
 import (
 	"errors"
-	"fmt"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
@@ -11,10 +10,9 @@ import (
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-db-connection"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
-	"reflect"
 )
 
-func GetSlowRunningMetrics(conn *performance_db_connection.PGSQLConnection) ([]datamodels.SlowRunningQuery, []int64, error) {
+func getSlowRunningMetrics(conn *performance_db_connection.PGSQLConnection) ([]datamodels.SlowRunningQuery, []int64, error) {
 	var slowQueries []datamodels.SlowRunningQuery
 	var query = queries.SlowQueries
 	rows, err := conn.Queryx(query)
@@ -46,7 +44,7 @@ func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *perfor
 		return nil, errors.New("extension 'pg_stat_statements' is not enabled")
 	}
 	log.Info("Extension 'pg_stat_statements' enabled.")
-	slowQueries, queryIdList, err := GetSlowRunningMetrics(conn)
+	slowQueries, queryIdList, err := getSlowRunningMetrics(conn)
 	if err != nil {
 		log.Error("Error fetching slow-running queries: %v", err)
 		return nil, err
@@ -60,26 +58,7 @@ func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *perfor
 	log.Info("Populate-slow running: %+v", slowQueries)
 
 	for _, model := range slowQueries {
-
-		metricSet := common_utils.CreateMetricSet(instanceEntity, "PostgresSlowQueriesV4", args)
-		modelValue := reflect.ValueOf(model)
-		modelType := reflect.TypeOf(model)
-		for i := 0; i < modelValue.NumField(); i++ {
-			field := modelValue.Field(i)
-			fieldType := modelType.Field(i)
-			metricName := fieldType.Tag.Get("metric_name")
-			sourceType := fieldType.Tag.Get("source_type")
-
-			if field.Kind() == reflect.Ptr && !field.IsNil() {
-				fmt.Print("Field is a pointer")
-				common_utils.SetMetric(metricSet, metricName, field.Elem().Interface(), sourceType)
-			} else if field.Kind() != reflect.Ptr {
-				fmt.Println("Field is not a pointer")
-				common_utils.SetMetric(metricSet, metricName, field.Interface(), sourceType)
-			}
-		}
-
-		//log.Info("Metrics set for slow query: %s in database: %s", *model.QueryID, *model.DatabaseName)
+		common_utils.SetMetricsParser(instanceEntity, "PostgresqlSlowQueryMetricsV1", args, model)
 	}
 
 	return queryIdList, nil
