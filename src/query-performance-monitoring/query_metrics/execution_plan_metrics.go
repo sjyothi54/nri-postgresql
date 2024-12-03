@@ -11,6 +11,9 @@ func ExecutionPlanMetrics(slowQueriesList []datamodels.SlowRunningQuery) {
 		fmt.Print("Slow Query ", i, ": ", slowQueryMetric)
 		queryText := slowQueryMetric.QueryText
 		fmt.Println("Query Text: ", *queryText)
+
+		executePrepareStatement := "Prepare test as " + *queryText
+		fmt.Printf(executePrepareStatement)
 		//fmt.Println("Query ID: ", slowQueryMetric.QueryId)
 		//fmt.Println("Query Text: ", slowQueryMetric.QueryText)
 		//fmt.Println("Execution Plan: ", slowQueryMetric.QueryPlan)
