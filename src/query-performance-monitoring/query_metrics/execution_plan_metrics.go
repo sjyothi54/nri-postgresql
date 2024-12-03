@@ -9,10 +9,11 @@ import (
 
 func ExecutionPlanMetrics(conn *performance_db_connection.PGSQLConnection, slowQueriesList []datamodels.SlowRunningQuery) error {
 
-	rows, err := conn.Queryx("SELECT query FROM pg_stat_statements")
+	rows, err := conn.Queryx("SELECT query FROM pg_stat_statements;")
 	if err != nil {
 		log.Fatal(err)
 	}
+	fmt.Print("Rows: ", rows)
 	err = rows.Close()
 	if err != nil {
 		return err
