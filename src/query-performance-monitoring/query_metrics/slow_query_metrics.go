@@ -56,7 +56,7 @@ func containsIllegalOperation(queryText string) bool {
 	return false
 }
 
-func StoreQueryAndGetExplainPlan(conn *performance_db_connection.PGSQLConnection, queryTextList []string) (map[string]string, error) {
+func GetExplainPlanForSlowQueries(conn *performance_db_connection.PGSQLConnection, queryTextList []string) (map[string]string, error) {
 	explainPlans := make(map[string]string)
 
 	for idx, queryText := range queryTextList {
