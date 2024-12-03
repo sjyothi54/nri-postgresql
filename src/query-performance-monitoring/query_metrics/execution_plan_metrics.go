@@ -2,16 +2,28 @@ package query_metrics
 
 import (
 	"fmt"
+	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
 	performance_db_connection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-db-connection"
 )
 
 func ExecutionPlanMetrics(conn *performance_db_connection.PGSQLConnection, slowQueriesList []datamodels.SlowRunningQuery) error {
 
-	rows, err := conn.Queryx("select name,parameter_types from pg_prepared_statements;")
+	rows, err := conn.Queryx("SELECT query FROM pg_stat_statements")
 	if err != nil {
-		fmt.Println("Error in executing prepared statement")
+		log.Fatal(err)
+	}
+	err = rows.Close()
+	if err != nil {
 		return err
+	}
+	// Print results
+	for rows.Next() {
+		var query string
+		if err := rows.Scan(&query); err != nil {
+			log.Fatal(err)
+		}
+		fmt.Printf("Name: %s, Parameter Types: %s\n", query)
 	}
 
 	fmt.Println("Query Variable testtt: ", rows)

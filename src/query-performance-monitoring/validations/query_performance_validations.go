@@ -1,20 +1,11 @@
 package validations
 
 import (
-	"fmt"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	performance_db_connection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-db-connection"
 )
 
 func CheckPgStatStatementsExtensionEnabled(conn *performance_db_connection.PGSQLConnection) (bool, error) {
-	rows1, err := conn.Queryx("select name,parameter_types from pg_prepared_statements;")
-	if err != nil {
-		fmt.Println("Error in executing prepared statement")
-
-	}
-
-	fmt.Println("Query Variable testtt: ", rows1)
-
 	rows, err := conn.Queryx("SELECT count(*) FROM pg_extension WHERE extname = 'pg_stat_statements'")
 	if err != nil {
 		log.Error("Error executing query: ", err.Error())
