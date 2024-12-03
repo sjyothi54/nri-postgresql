@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"reflect"
 
-	// "strings"
+	"strings"
 
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
@@ -46,23 +46,37 @@ func GetSlowRunningMetrics(conn *performance_db_connection.PGSQLConnection) ([]d
 	return slowQueries, queryTextList, nil
 }
 
+func containsIllegalOperation(queryText string) bool {
+	illegalOperations := []string{"DROP", "DELETE", "UPDATE"}
+	for _, op := range illegalOperations {
+		if strings.Contains(strings.ToUpper(queryText), op) {
+			return true
+		}
+	}
+	return false
+}
+
 func GetExplainPlanForSlowQueries(conn *performance_db_connection.PGSQLConnection, queryTextList []string) (map[string]string, error) {
 	explainPlans := make(map[string]string)
 
 	for idx, queryText := range queryTextList {
-		fmt.Printf("Executing for Query Text: %s\n", queryText)
+		fmt.Printf("Query Text: %s\n", queryText)
 
-		// Verify converted for appropriate operations if needed (like ensuring no operations like + over incompatible types).
+		// Check and revise queries to avoid mismatched operations
+		if containsIllegalOperation(queryText) {
+			fmt.Printf("Skipping query due to illegal operations: %s\n", queryText)
+			continue
+		}
+
 		planName := fmt.Sprintf("plan_%d", idx)
 
 		// Prepare the statement
 		prepareQuery := fmt.Sprintf("PREPARE %s AS %s;", planName, queryText)
 		fmt.Printf("Preparing Statement: %s\n", prepareQuery)
 
-		// Prepare the query on the same connection
 		if _, err := conn.Queryx(prepareQuery); err != nil {
 			fmt.Printf("Error preparing statement: %s, %v\n", planName, err)
-			continue // Proceed to next statement without halting the entire process
+			continue
 		}
 
 		// Execute the prepared statement
@@ -87,7 +101,7 @@ func GetExplainPlanForSlowQueries(conn *performance_db_connection.PGSQLConnectio
 
 		explainPlans[queryText] = explainResult
 
-		// Deallocate the plan to ensure no session leakage and conclude iteration.
+		// Deallocate the plan
 		deallocQuery := fmt.Sprintf("DEALLOCATE %s;", planName)
 		fmt.Printf("Deallocating Statement: %s\n", deallocQuery)
 
