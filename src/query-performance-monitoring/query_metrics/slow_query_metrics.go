@@ -10,7 +10,6 @@ import (
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-db-connection"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
-	"reflect"
 )
 
 func getSlowRunningMetrics(conn *performance_db_connection.PGSQLConnection) ([]datamodels.SlowRunningQuery, []int64, error) {
@@ -62,23 +61,23 @@ func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *perfor
 	//log.Info("Populate-slow running: %+v", slowQueries)
 
 	for _, model := range slowQueries {
-		//common_utils.SetMetricsParser(instanceEntity, "PostgresSlowQueriesV7", args, model)
+		common_utils.SetMetricsParser(instanceEntity, "PostgresSlowQueriesV10", args, model)
 
-		metricSet := common_utils.CreateMetricSet(instanceEntity, "PostgresSlowQueriesV8", args)
-		modelValue := reflect.ValueOf(model)
-		modelType := reflect.TypeOf(model)
-		for i := 0; i < modelValue.NumField(); i++ {
-			field := modelValue.Field(i)
-			fieldType := modelType.Field(i)
-			metricName := fieldType.Tag.Get("metric_name")
-			sourceType := fieldType.Tag.Get("source_type")
-
-			if field.Kind() == reflect.Ptr && !field.IsNil() {
-				common_utils.SetMetric(metricSet, metricName, field.Elem().Interface(), sourceType)
-			} else if field.Kind() != reflect.Ptr {
-				common_utils.SetMetric(metricSet, metricName, field.Interface(), sourceType)
-			}
-		}
+		//metricSet := common_utils.CreateMetricSet(instanceEntity, "PostgresSlowQueriesV8", args)
+		//modelValue := reflect.ValueOf(model)
+		//modelType := reflect.TypeOf(model)
+		//for i := 0; i < modelValue.NumField(); i++ {
+		//	field := modelValue.Field(i)
+		//	fieldType := modelType.Field(i)
+		//	metricName := fieldType.Tag.Get("metric_name")
+		//	sourceType := fieldType.Tag.Get("source_type")
+		//
+		//	if field.Kind() == reflect.Ptr && !field.IsNil() {
+		//		common_utils.SetMetric(metricSet, metricName, field.Elem().Interface(), sourceType)
+		//	} else if field.Kind() != reflect.Ptr {
+		//		common_utils.SetMetric(metricSet, metricName, field.Interface(), sourceType)
+		//	}
+		//}
 
 	}
 

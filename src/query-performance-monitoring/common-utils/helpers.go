@@ -1,10 +1,10 @@
 package common_utils
 
 import (
-	"fmt"
 	"github.com/newrelic/infra-integrations-sdk/v3/data/attribute"
 	"github.com/newrelic/infra-integrations-sdk/v3/data/metric"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
+	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
 	"reflect"
 )
@@ -38,7 +38,8 @@ func SetMetric(metricSet *metric.Set, name string, value interface{}, sourceType
 }
 
 func SetMetricsParser(instanceEntity *integration.Entity, eventName string, args args.ArgumentList, model interface{}) {
-	metricSet := CreateMetricSet(instanceEntity, eventName, args)
+	log.Info("model: %+v", model)
+	metricSet := CreateMetricSet(instanceEntity, "PostgresSlowQueriesV8", args)
 	modelValue := reflect.ValueOf(model)
 	modelType := reflect.TypeOf(model)
 	for i := 0; i < modelValue.NumField(); i++ {
@@ -48,10 +49,8 @@ func SetMetricsParser(instanceEntity *integration.Entity, eventName string, args
 		sourceType := fieldType.Tag.Get("source_type")
 
 		if field.Kind() == reflect.Ptr && !field.IsNil() {
-			fmt.Print("Field is a pointer")
 			SetMetric(metricSet, metricName, field.Elem().Interface(), sourceType)
 		} else if field.Kind() != reflect.Ptr {
-			fmt.Println("Field is not a pointer")
 			SetMetric(metricSet, metricName, field.Interface(), sourceType)
 		}
 	}
