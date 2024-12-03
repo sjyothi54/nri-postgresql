@@ -1,6 +1,7 @@
 package validations
 
 import (
+	"fmt"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	performance_db_connection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-db-connection"
 )
@@ -12,6 +13,7 @@ func CheckPgStatStatementsExtensionEnabled(conn *performance_db_connection.PGSQL
 		return false, err
 	}
 	defer rows.Close()
+	fmt.Print("Rows CheckPgStatStatementsExtensionEnabled: ", rows)
 	var count int
 	if !rows.Next() {
 		return false, nil
