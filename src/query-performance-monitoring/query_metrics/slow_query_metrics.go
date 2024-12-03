@@ -31,7 +31,7 @@ func getSlowRunningMetrics(conn *performance_db_connection.PGSQLConnection) ([]d
 		slowQueries = append(slowQueries, slowQuery)
 		//queryTextList = append(queryTextList, queryText)
 	}
-	fmt.Print("SlowQueries: ", slowQueries)
+	fmt.Print("SlowQueriesFetched: ", slowQueries)
 	return slowQueries, queryTextList, nil
 }
 
