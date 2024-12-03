@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/nri-postgresql/src/args"
-	common_utils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-db-connection"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/query_metrics"
 )
@@ -14,19 +13,17 @@ func QueryPerformanceMain(instanceEntity *integration.Entity, args args.Argument
 	connectionInfo := performance_db_connection.DefaultConnectionInfo(&args)
 	conn, err := connectionInfo.NewConnection(args.Database)
 	if err != nil {
-		common_utils.FatalIfErr(err)
+		fmt.Print("Error in connection")
 	}
 	queryIdList, err := query_metrics.PopulateSlowRunningMetrics(instanceEntity, conn, args)
 	if err != nil {
 		fmt.Printf("Error in fetching slow running metrics: %v", err)
-		common_utils.FatalIfErr(err)
 		return
 	}
 	fmt.Println("Query ID List: ", queryIdList)
 	err = query_metrics.PopulateWaitEventMetrics(instanceEntity, conn, args)
 	if err != nil {
 		fmt.Printf("Error in fetching wait event metrics: %v", err)
-		common_utils.FatalIfErr(err)
 		return
 	}
 	fmt.Print("herreeee")
@@ -34,7 +31,6 @@ func QueryPerformanceMain(instanceEntity *integration.Entity, args args.Argument
 	err = query_metrics.PopulateBlockingSessionMetrics(instanceEntity, conn, args)
 	if err != nil {
 		fmt.Printf("Error in fetching blocking session metrics: %v", err)
-		common_utils.FatalIfErr(err)
 		return
 	}
 }
