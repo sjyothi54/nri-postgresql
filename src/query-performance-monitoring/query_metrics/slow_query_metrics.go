@@ -60,8 +60,6 @@ func GetExplainPlanForSlowQueries(conn *performance_db_connection.PGSQLConnectio
 			return nil, err
 		}
 
-		defer conn.Queryx(fmt.Sprintf("DEALLOCATE plan%d;", idx)) // Deferred deallocation of prepared statement
-
 		// Execute the prepared statement
 		explainQuery := fmt.Sprintf("EXPLAIN (FORMAT JSON) EXECUTE plan%d;", idx)
 		fmt.Println("Explain Query: ", explainQuery)
@@ -83,6 +81,13 @@ func GetExplainPlanForSlowQueries(conn *performance_db_connection.PGSQLConnectio
 		}
 
 		explainPlans[queryText] = explainResult
+
+		// Deallocate the prepared statement
+		_, err = conn.Queryx(fmt.Sprintf("DEALLOCATE plan%d;", idx))
+		if err != nil {
+			fmt.Println("Error deallocating prepared statement: ", err)
+			return nil, err
+		}
 	}
 
 	return explainPlans, nil
