@@ -12,7 +12,10 @@ func ExecutionPlanQuery(conn *connection.PGSQLConnection, slowQueries []datamode
 
 	for i, slowQuery := range slowQueries {
 		queryText := slowQuery.QueryText
-		fmt.Println("Query Text: ", queryText)
+		if queryText == nil {
+			return nil, fmt.Errorf("query text is nil for query %d", i)
+		}
+		fmt.Println("Query Text: ", *queryText)
 		stmtName := fmt.Sprintf("stmt_%d", i)
 		fmt.Println("Statement Name: ", stmtName)
 		prepareQuery := fmt.Sprintf("PREPARE %s AS %s", stmtName, *queryText)
