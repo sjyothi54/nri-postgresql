@@ -11,7 +11,10 @@ func ExecutionPlanMetrics(conn *performance_db_connection.PGSQLConnection, slowQ
 	rows, err := conn.Queryx("select name,parameter_types from pg_prepared_statements;")
 	if err != nil {
 		fmt.Println("Error in executing prepared statement")
+		return err
 	}
+
+	fmt.Println("Query Variable testtt: ", rows)
 
 	for rows.Next() {
 		var name, statement, prepareTime, parameterTypes, fromSQL string
