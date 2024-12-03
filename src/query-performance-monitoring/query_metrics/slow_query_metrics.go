@@ -10,8 +10,8 @@ import (
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
-	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
-	"github.com.newrelic/nri-postgresql/src/query-performance-monitoring/performance-db-connection"
+	"github.com.newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
+	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-db-connection"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
 )
@@ -80,6 +80,8 @@ func replaceParametersWithDummyValues(query string) string {
     // This is a simple example and may need to be adapted for more complex queries
     query = strings.ReplaceAll(query, "$1", "1")
     query = strings.ReplaceAll(query, "$2", "'dummy'")
+    query = strings.ReplaceAll(query, "array_to_string(", "array_to_string(ARRAY[")
+    query = strings.ReplaceAll(query, ", 1)", ", ',')")
     return query
 }
 
