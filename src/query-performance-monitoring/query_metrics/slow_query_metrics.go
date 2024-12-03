@@ -5,11 +5,12 @@ import (
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
-	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
+	common_utils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-db-connection"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
+	"reflect"
 )
 
 func getSlowRunningMetrics(conn *performance_db_connection.PGSQLConnection) ([]datamodels.SlowRunningQuery, []int64, error) {
@@ -59,7 +60,22 @@ func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *perfor
 	//log.Info("Populate-slow running: %+v", slowQueries)
 
 	for _, model := range slowQueries {
-		common_utils.SetMetricsParser(instanceEntity, "PostgresqlSlowQueryMetricsV1", args, model)
+		metricSet := common_utils.CreateMetricSet(instanceEntity, "PostgresSlowQueriesV5", args)
+		modelValue := reflect.ValueOf(model)
+		modelType := reflect.TypeOf(model)
+		for i := 0; i < modelValue.NumField(); i++ {
+			field := modelValue.Field(i)
+			fieldType := modelType.Field(i)
+			metricName := fieldType.Tag.Get("metric_name")
+			sourceType := fieldType.Tag.Get("source_type")
+
+			if field.Kind() == reflect.Ptr && !field.IsNil() {
+				common_utils.SetMetric(metricSet, metricName, field.Elem().Interface(), sourceType)
+			} else if field.Kind() != reflect.Ptr {
+				common_utils.SetMetric(metricSet, metricName, field.Interface(), sourceType)
+			}
+		}
+
 	}
 
 	return queryIdList, nil
