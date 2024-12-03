@@ -3,7 +3,7 @@ package query_metrics
 import (
 	"errors"
 	"fmt"
-	"reflect",
+	"reflect"
 	"strings"
 
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
