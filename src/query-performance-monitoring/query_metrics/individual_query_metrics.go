@@ -7,7 +7,7 @@ import (
 	"github.com/newrelic/nri-postgresql/src/args"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
 	performance_db_connection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-db-connection"
-	"strings"
+	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
 )
 
 func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *performance_db_connection.PGSQLConnection, args args.ArgumentList, queryIDList []*int64) ([]datamodels.QueryPlanMetrics, error) {
@@ -16,7 +16,7 @@ func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *perform
 		return nil, nil
 	}
 	// Building the placeholder string for the IN clause
-	query := "SELECT queryId, query FROM pg_stat_monitor WHERE query like 'select * from actor%' and queryId IN ("
+	//query := "SELECT queryId, query FROM pg_stat_monitor WHERE query like 'select * from actor%' and queryId IN ("
 
 	// Convert each queryId to a string and join them with commas
 	var idStrings []string
@@ -27,13 +27,13 @@ func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *perform
 	//}
 
 	// Finalize the query string
-	query += strings.Join(idStrings, ", ") + ")"
+	//query += strings.Join(idStrings, ", ") + ")"
 
-	//_, err := conn.Queryx("SELECT queryId, query FROM pg_stat_monitor WHERE queryid ='-2897619393085837224'")
-	//if err != nil {
-	//	fmt.Errorf("Error executing query: %v", err)
-	//	return nil, err
-	//}
+	_, err := conn.Queryx(queries.InidividualQuerySearch)
+	if err != nil {
+		fmt.Errorf("Error executing query: %v", err)
+		return nil, err
+	}
 	var individualQueryMetricList []datamodels.QueryPlanMetrics
 	//defer rows.Close()
 	//for rows.Next() {

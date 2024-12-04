@@ -92,8 +92,5 @@ const (
       WHERE NOT blocked_locks.granted;`
 
 	InidividualQuerySearch = `
-				SELECT  
-				queryId AS query_id,
-				query AS query_text from pg_stat_monitor where queryId in (%s);
-`
+		SELECT queryId, query FROM pg_stat_monitor WHERE queryid ='-2897619393085837224'`
 )
