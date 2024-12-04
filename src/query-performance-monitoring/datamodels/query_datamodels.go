@@ -37,6 +37,6 @@ type BlockingQuery struct {
 }
 
 type QueryPlanMetrics struct {
-	QueryID   string `json:"queryid" db:"queryid"`
+	QueryID   string `json:"queryId" db:"queryid"`
 	QueryText string `json:"query" db:"query"`
 }
