@@ -54,7 +54,7 @@ func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *perform
 	}
 
 	for _, model := range individualQueriesMetricsList {
-		fmt.Print("model", model)
+
 		common_utils.SetMetricsParser(instanceEntity, "PostgresqlIndividualMetricsV1", args, model)
 
 		//metricSetIngestion := instanceEntity.NewMetricSet("PostgresIndividualQueriesV18")
@@ -72,6 +72,7 @@ func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *perform
 		//		common_utils.SetMetric(metricSetIngestion, metricName, field.Interface(), sourceType)
 		//	}
 		//}
+		break
 	}
 
 	return individualQueriesMetricsList, nil
