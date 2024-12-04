@@ -59,21 +59,6 @@ func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *perfor
 
 	for _, model := range slowQueries {
 		common_utils.SetMetricsParser(instanceEntity, "PostgresSlowQueriesV18", args, model)
-		//metricSetIngestion := instanceEntity.NewMetricSet("PostgresSlowQueriesV18")
-		//modelValue := reflect.ValueOf(model)
-		//modelType := reflect.TypeOf(model)
-		//for i := 0; i < modelValue.NumField(); i++ {
-		//	field := modelValue.Field(i)
-		//	fieldType := modelType.Field(i)
-		//	metricName := fieldType.Tag.Get("metric_name")
-		//	sourceType := fieldType.Tag.Get("source_type")
-		//
-		//	if field.Kind() == reflect.Ptr && !field.IsNil() {
-		//		common_utils.SetMetric(metricSetIngestion, metricName, field.Elem().Interface(), sourceType)
-		//	} else if field.Kind() != reflect.Ptr {
-		//		common_utils.SetMetric(metricSetIngestion, metricName, field.Interface(), sourceType)
-		//	}
-		//}
 	}
 
 	return queryIdList, nil
