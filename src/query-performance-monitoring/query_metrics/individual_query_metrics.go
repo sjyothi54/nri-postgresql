@@ -48,14 +48,16 @@ func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *perform
 
 	// Finalize the query string
 	//query += strings.Join(idStrings, ", ") + ")"
+	test := common_utils.CreateMetricSet(instanceEntity, "PostgresIndividualQueriesV19", args)
+	err := test.SetMetric("test", "test", metric.ATTRIBUTE)
 
 	individualQueriesMetricsList, err := getIndividualMetrics(conn)
 	if err != nil {
 		return nil, err
 	}
 
-	test := common_utils.CreateMetricSet(instanceEntity, "PostgresIndividualQueriesV18", args)
-	err = test.SetMetric("test", "test", metric.ATTRIBUTE)
+	test1 := common_utils.CreateMetricSet(instanceEntity, "PostgresIndividualQueriesV18", args)
+	err = test1.SetMetric("test", "test", metric.ATTRIBUTE)
 	if err != nil {
 		return nil, err
 	}
