@@ -21,9 +21,9 @@ func ExecutionPlan(conn *connection.PGSQLConnection) {
 	}
 	defer rows.Close()
 
-	queryMap := make(map[int64]string)
+	queryMap := make(map[string]string)
 	for rows.Next() {
-		var queryID int64
+		var queryID string
 		var queryText string
 		if err := rows.Scan(&queryID, &queryText); err != nil {
 			log.Error("Error scanning row: %v", err)
@@ -34,7 +34,7 @@ func ExecutionPlan(conn *connection.PGSQLConnection) {
 
 	// Debug log to print queryMap
 	for queryID, queryText := range queryMap {
-		log.Debug("QueryMap - Query ID: %d, Query: %s", queryID, queryText)
+		log.Debug("QueryMap - Query ID: %s, Query: %s", queryID, queryText)
 	}
 
 	for _, slowQuery := range slowQueries {

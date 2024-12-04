@@ -1,7 +1,7 @@
 package datamodels
 
 type SlowRunningQuery struct {
-	QueryID             *int64   `db:"query_id"              metric_name:"slowquery.query_id"                   source_type:"gauge"`
+	QueryID             *string  `db:"query_id"              metric_name:"slowquery.query_id"                   source_type:"gauge"`
 	QueryText           *string  `db:"query_text"            metric_name:"slowquery.query_text"                 source_type:"attribute"`
 	DatabaseName        *string  `db:"database_name"         metric_name:"slowquery.database_name"              source_type:"attribute"`
 	SchemaName          *string  `db:"schema_name"           metric_name:"slowquery.schema_name"                source_type:"attribute"`
