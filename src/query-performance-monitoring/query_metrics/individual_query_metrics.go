@@ -64,7 +64,7 @@ func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *perform
 	}
 
 	var queryTextRow1 = individualQueriesMetricsList[0].QueryText
-	log.Info("queryTextRow1", queryTextRow1)
+	log.Info("queryTextRow1", *queryTextRow1)
 	test3 := common_utils.CreateMetricSet(instanceEntity, "PostgresIndividualQueriesV22", args)
 	err = test3.SetMetric("queryText", queryTextRow1, metric.ATTRIBUTE)
 	if err != nil {
