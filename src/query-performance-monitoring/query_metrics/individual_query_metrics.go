@@ -1,6 +1,7 @@
 package query_metrics
 
 import (
+	"fmt"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
@@ -51,6 +52,7 @@ func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *perform
 	if err != nil {
 		return nil, err
 	}
+	fmt.Print("individualQueriesMetricsList", individualQueriesMetricsList)
 
 	for _, model := range individualQueriesMetricsList {
 		common_utils.SetMetricsParser(instanceEntity, "PostgresqlIndividualMetricsV1", args, model)
