@@ -90,6 +90,6 @@ const (
       JOIN pg_stat_statements as blocking_statements on blocking_activity.query_id = blocking_statements.queryid
       WHERE NOT blocked_locks.granted;
 `
-	ExecutionPlanQuery        = `SELECT query,queryid from pg_stat_monitor where query like 'select * from country where%';`
-	ExecutionPlanMonitorQuery = `SELECT query, queryid FROM pg_stat_monitor;`
+	ExecutionPlanQuery  = `SELECT query,queryid from pg_stat_monitor where query like 'select * from country where%';`
+	Executionstatements = `SELECT query,queryid from pg_stat_statements where query like 'select * from country where%';`
 )

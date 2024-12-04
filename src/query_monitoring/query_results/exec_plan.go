@@ -45,4 +45,29 @@ func ExecutionPlan(conn *connection.PGSQLConnection) {
 			log.Info("No matching query found for Query ID: %s", *slowQuery.QueryID)
 		}
 	}
+
+	// Execute and print results of ExecutionPlanQuery
+	executeAndPrintQuery(conn, queries.ExecutionPlanQuery)
+
+	// Execute and print results of Executionstatements
+	executeAndPrintQuery(conn, queries.Executionstatements)
+}
+
+func executeAndPrintQuery(conn *connection.PGSQLConnection, query string) {
+	rows, err := conn.Queryx(query)
+	if err != nil {
+		log.Error("Error executing query: %v", err)
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var queryText string
+		var queryID string
+		if err := rows.Scan(&queryText, &queryID); err != nil {
+			log.Error("Error scanning row: %v", err)
+			return
+		}
+		log.Info("Query ID: %s, Query: %s", queryID, queryText)
+	}
 }
