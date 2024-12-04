@@ -15,7 +15,7 @@ func ExecutionPlanMetrics(conn *performance_db_connection.PGSQLConnection, query
 		return nil
 	}
 	// Building the placeholder string for the IN clause
-	query := "SELECT queryId, query FROM pg_stat_monitor WHERE queryId IN ("
+	query := "SELECT queryId, query FROM pg_stat_monitor WHERE query like '%select * from actor%' queryId IN ("
 
 	// Convert each queryId to a string and join them with commas
 	var idStrings []string
