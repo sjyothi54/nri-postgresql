@@ -44,6 +44,7 @@ func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *perform
 			log.Error("Failed to scan query metrics row: %v", err)
 			return nil, err
 		}
+		fmt.Println("IndividualQueryMetric", individualQueryMetric)
 		individualQueryMetricList = append(individualQueryMetricList, individualQueryMetric)
 	}
 
