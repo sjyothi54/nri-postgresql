@@ -2,7 +2,6 @@ package query_metrics
 
 import (
 	"errors"
-	"fmt"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
@@ -32,8 +31,6 @@ func getSlowRunningMetrics(conn *performance_db_connection.PGSQLConnection) ([]d
 		queryIdList = append(queryIdList, slowQuery.QueryID)
 
 	}
-
-	fmt.Print("Slow Queries: ", slowQueries)
 
 	return slowQueries, queryIdList, nil
 }
