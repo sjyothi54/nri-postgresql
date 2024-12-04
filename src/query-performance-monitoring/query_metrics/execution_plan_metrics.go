@@ -1,6 +1,7 @@
 package query_metrics
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
@@ -26,6 +27,18 @@ func PopulateQueryExecutionMetrics(queryPlanMetrics []datamodels.QueryPlanMetric
 			continue
 		}
 		fmt.Print("execPlanJSON:", execPlanJSON)
+
+		var execPlan []map[string]interface{}
+		err = json.Unmarshal([]byte(execPlanJSON), &execPlan)
+		if err != nil {
+			log.Error("Failed to unmarshal execution plan: %v", err)
+			continue
+		}
+		firstJson := execPlan[0]
+
+		fmt.Println(firstJson)
+		//common_utils.SetMetricsParser()
+
 	}
 	return nil
 }
