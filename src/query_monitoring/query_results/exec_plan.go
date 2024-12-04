@@ -15,6 +15,7 @@ func ExecutionPlan(conn *connection.PGSQLConnection) {
 
 	query := queries.ExecutionPlanQuery
 	rows, err := conn.Queryx(query)
+	log.Info("Queryrows", rows)
 	if err != nil {
 		log.Error("Error executing query: %v", err)
 		return
