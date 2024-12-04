@@ -1,7 +1,6 @@
 package common_utils
 
 import (
-	"fmt"
 	"github.com/newrelic/infra-integrations-sdk/v3/data/attribute"
 	"github.com/newrelic/infra-integrations-sdk/v3/data/metric"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
@@ -44,7 +43,6 @@ func SetMetricsParser(instanceEntity *integration.Entity, eventName string, args
 	for i := 0; i < modelValue.NumField(); i++ {
 		field := modelValue.Field(i)
 		fieldType := modelType.Field(i)
-		fmt.Print("fieldType: ", fieldType)
 		metricName := fieldType.Tag.Get("metric_name")
 		sourceType := fieldType.Tag.Get("source_type")
 
