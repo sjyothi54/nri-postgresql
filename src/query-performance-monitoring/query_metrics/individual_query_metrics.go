@@ -5,16 +5,17 @@ import (
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
+	common_utils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
 	performance_db_connection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-db-connection"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
 )
 
 func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *performance_db_connection.PGSQLConnection, args args.ArgumentList, queryIDList []*int64) ([]datamodels.QueryPlanMetrics, error) {
-	if len(queryIDList) == 0 {
-		log.Warn("queryIDList is empty")
-		return nil, nil
-	}
+	//if len(queryIDList) == 0 {
+	//	log.Warn("queryIDList is empty")
+	//	return nil, nil
+	//}
 	// Building the placeholder string for the IN clause
 	//query := "SELECT queryId, query FROM pg_stat_monitor WHERE query like 'select * from actor%' and queryId IN ("
 
@@ -29,44 +30,44 @@ func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *perform
 	// Finalize the query string
 	//query += strings.Join(idStrings, ", ") + ")"
 
-	inidividualQueries, err := conn.Queryx(queries.InidividualQuerySearch)
+	individualQueries, err := conn.Queryx(queries.InidividualQuerySearch)
 	if err != nil {
 		fmt.Errorf("Error executing query: %v", err)
 		return nil, err
 	}
-	fmt.Printf("InidividualQueries: %+v\n\n", inidividualQueries)
+	fmt.Printf("InidividualQueries: %+v\n\n", individualQueries)
 	var individualQueryMetricList []datamodels.QueryPlanMetrics
-	//defer rows.Close()
-	//for rows.Next() {
-	//	var individualQueryMetric datamodels.QueryPlanMetrics
-	//	if err := rows.StructScan(&individualQueryMetric); err != nil {
-	//		log.Error("Failed to scan query metrics row: %v", err)
-	//		return nil, err
-	//	}
-	//	individualQueryMetricList = append(individualQueryMetricList, individualQueryMetric)
-	//}
+	defer individualQueries.Close()
+	for individualQueries.Next() {
+		var individualQueryMetric datamodels.QueryPlanMetrics
+		if err := individualQueries.StructScan(&individualQueryMetric); err != nil {
+			log.Error("Failed to scan query metrics row: %v", err)
+			return nil, err
+		}
+		individualQueryMetricList = append(individualQueryMetricList, individualQueryMetric)
+	}
 
 	fmt.Println("PostgresqlIndividualMetricsV1PostgresqlIndividualMetricsV1", individualQueryMetricList)
 	//
-	//for _, model := range individualQueryMetricList {
-	//	common_utils.SetMetricsParser(instanceEntity, "PostgresqlIndividualMetricsV1", args, model)
-	//
-	//	//metricSetIngestion := instanceEntity.NewMetricSet("PostgresIndividualQueriesV18")
-	//	//modelValue := reflect.ValueOf(model)
-	//	//modelType := reflect.TypeOf(model)
-	//	//for i := 0; i < modelValue.NumField(); i++ {
-	//	//	field := modelValue.Field(i)
-	//	//	fieldType := modelType.Field(i)
-	//	//	metricName := fieldType.Tag.Get("metric_name")
-	//	//	sourceType := fieldType.Tag.Get("source_type")
-	//	//
-	//	//	if field.Kind() == reflect.Ptr && !field.IsNil() {
-	//	//		common_utils.SetMetric(metricSetIngestion, metricName, field.Elem().Interface(), sourceType)
-	//	//	} else if field.Kind() != reflect.Ptr {
-	//	//		common_utils.SetMetric(metricSetIngestion, metricName, field.Interface(), sourceType)
-	//	//	}
-	//	//}
-	//}
+	for _, model := range individualQueryMetricList {
+		common_utils.SetMetricsParser(instanceEntity, "PostgresqlIndividualMetricsV1", args, model)
+
+		//metricSetIngestion := instanceEntity.NewMetricSet("PostgresIndividualQueriesV18")
+		//modelValue := reflect.ValueOf(model)
+		//modelType := reflect.TypeOf(model)
+		//for i := 0; i < modelValue.NumField(); i++ {
+		//	field := modelValue.Field(i)
+		//	fieldType := modelType.Field(i)
+		//	metricName := fieldType.Tag.Get("metric_name")
+		//	sourceType := fieldType.Tag.Get("source_type")
+		//
+		//	if field.Kind() == reflect.Ptr && !field.IsNil() {
+		//		common_utils.SetMetric(metricSetIngestion, metricName, field.Elem().Interface(), sourceType)
+		//	} else if field.Kind() != reflect.Ptr {
+		//		common_utils.SetMetric(metricSetIngestion, metricName, field.Interface(), sourceType)
+		//	}
+		//}
+	}
 
 	return individualQueryMetricList, nil
 }
