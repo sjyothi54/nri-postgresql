@@ -29,11 +29,11 @@ func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *perform
 	// Finalize the query string
 	query += strings.Join(idStrings, ", ") + ")"
 
-	_, err := conn.Queryx("SELECT queryId, query FROM pg_stat_monitor WHERE queryid ='-2897619393085837224'")
-	if err != nil {
-		fmt.Errorf("Error executing query: %v", err)
-		return nil, err
-	}
+	//_, err := conn.Queryx("SELECT queryId, query FROM pg_stat_monitor WHERE queryid ='-2897619393085837224'")
+	//if err != nil {
+	//	fmt.Errorf("Error executing query: %v", err)
+	//	return nil, err
+	//}
 	var individualQueryMetricList []datamodels.QueryPlanMetrics
 	//defer rows.Close()
 	//for rows.Next() {
