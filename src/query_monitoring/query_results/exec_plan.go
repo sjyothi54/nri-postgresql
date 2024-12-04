@@ -32,6 +32,25 @@ func ExecutionPlan(conn *connection.PGSQLConnection) {
 		queryMap[queryID] = queryText
 	}
 
+	// Fetch query IDs and texts from pg_stat_monitor
+	monitorQuery := queries.ExecutionPlanMonitorQuery
+	monitorRows, err := conn.Queryx(monitorQuery)
+	if err != nil {
+		log.Error("Error executing monitor query: %v", err)
+		return
+	}
+	defer monitorRows.Close()
+
+	for monitorRows.Next() {
+		var queryID string
+		var queryText string
+		if err := monitorRows.Scan(&queryID, &queryText); err != nil {
+			log.Error("Error scanning monitor row: %v", err)
+			return
+		}
+		queryMap[queryID] = queryText
+	}
+
 	// Debug log to print queryMap
 	for queryID, queryText := range queryMap {
 		log.Debug("QueryMap - Query ID: %s, Query: %s", queryID, queryText)
@@ -39,9 +58,13 @@ func ExecutionPlan(conn *connection.PGSQLConnection) {
 
 	for _, slowQuery := range slowQueries {
 		// Debug log to print slowQuery.QueryID
+		if slowQuery.QueryID == nil {
+			log.Debug("SlowQuery - Query ID is nil")
+			continue
+		}
 		log.Debug("SlowQuery - Query ID: %d", *slowQuery.QueryID)
 		if queryText, exists := queryMap[*slowQuery.QueryID]; exists {
-			log.Info("Matching Query ID: %d, Query: %s", *slowQuery.QueryID, queryText)
+			log.Info("Matching Query ID: %s, Query: %s", *slowQuery.QueryID, queryText)
 		} else {
 			log.Info("No matching query found for Query ID: %d", *slowQuery.QueryID)
 		}
