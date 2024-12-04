@@ -27,7 +27,7 @@ const (
     ORDER BY
         avg_elapsed_time_ms DESC -- Order by the average elapsed time in descending order
     LIMIT
-        5;`
+        10;`
 
 	WaitEvents = `WITH wait_history AS (
         SELECT
