@@ -8,6 +8,7 @@ import (
 	common_utils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
 	performance_db_connection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-db-connection"
+	"reflect"
 	"strings"
 )
 
@@ -49,7 +50,23 @@ func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *perform
 	fmt.Println("PostgresqlIndividualMetricsV1PostgresqlIndividualMetricsV1", individualQueryMetricList)
 
 	for _, model := range individualQueryMetricList {
-		common_utils.SetMetricsParser(instanceEntity, "PostgresqlIndividualMetricsV1", args, model)
+		//common_utils.SetMetricsParser(instanceEntity, "PostgresqlIndividualMetricsV1", args, model)
+
+		metricSetIngestion := instanceEntity.NewMetricSet("PostgresSlowQueriesV18")
+		modelValue := reflect.ValueOf(model)
+		modelType := reflect.TypeOf(model)
+		for i := 0; i < modelValue.NumField(); i++ {
+			field := modelValue.Field(i)
+			fieldType := modelType.Field(i)
+			metricName := fieldType.Tag.Get("metric_name")
+			sourceType := fieldType.Tag.Get("source_type")
+
+			if field.Kind() == reflect.Ptr && !field.IsNil() {
+				common_utils.SetMetric(metricSetIngestion, metricName, field.Elem().Interface(), sourceType)
+			} else if field.Kind() != reflect.Ptr {
+				common_utils.SetMetric(metricSetIngestion, metricName, field.Interface(), sourceType)
+			}
+		}
 	}
 
 	return individualQueryMetricList, nil
