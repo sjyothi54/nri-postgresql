@@ -11,11 +11,11 @@ import (
 	"strings"
 )
 
-func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *performance_db_connection.PGSQLConnection, args args.ArgumentList, queryIDList []*int64) error {
+func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *performance_db_connection.PGSQLConnection, args args.ArgumentList, queryIDList []*int64) ([]datamodels.QueryPlanMetrics, error) {
 	fmt.Println("Query ID List: ", queryIDList)
 	if len(queryIDList) == 0 {
 		log.Warn("queryIDList is empty")
-		return nil
+		return nil, nil
 	}
 	// Building the placeholder string for the IN clause
 	query := "SELECT queryId, query FROM pg_stat_monitor WHERE query like 'select * from actor%' and queryId IN ("
@@ -34,7 +34,7 @@ func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *perform
 	rows, err := conn.Queryx(query)
 	if err != nil {
 		fmt.Errorf("Error executing query: %v", err)
-		return err
+		return nil, err
 	}
 	var inidividualQueryMetricList []datamodels.QueryPlanMetrics
 	defer rows.Close()
@@ -42,7 +42,7 @@ func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *perform
 		var individualQueryMetric datamodels.QueryPlanMetrics
 		if err := rows.StructScan(&individualQueryMetric); err != nil {
 			log.Error("Failed to scan query metrics row: %v", err)
-			return err
+			return nil, err
 		}
 		inidividualQueryMetricList = append(inidividualQueryMetricList, individualQueryMetric)
 	}
@@ -57,5 +57,5 @@ func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *perform
 		common_utils.SetMetricsParser(instanceEntity, "PostgresqlIndividualMetricsV1", args, model)
 	}
 
-	return nil
+	return inidividualQueryMetricList, nil
 }
