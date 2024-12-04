@@ -1,76 +1,52 @@
 package query_metrics
 
 import (
+	"fmt"
+	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
 	performance_db_connection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-db-connection"
+	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
+
+	"strings"
 )
 
-func ExecutionPlanMetrics(conn *performance_db_connection.PGSQLConnection, slowQueriesList []datamodels.SlowRunningQuery) error {
+func ExecutionPlanMetrics(conn *performance_db_connection.PGSQLConnection, queryIDList []*int64) error {
+	fmt.Println("Query ID List: ", queryIDList)
+	if len(queryIDList) == 0 {
+		log.Warn("queryIDList is empty")
+		return nil
+	}
+	// Building the placeholder string for the IN clause
+	placeholders := make([]string, len(queryIDList))
+	for i := range queryIDList {
+		placeholders[i] = "?"
+	}
 
-	//rows, err := conn.Queryx("SELECT query FROM pg_stat_statements;")
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//fmt.Print("Rows: ", len(rows))
-	//err = rows.Close()
-	//if err != nil {
-	//	return err
-	//}
-	//// Print results
-	//for rows.Next() {
-	//	var query string
-	//	if err := rows.Scan(&query); err != nil {
-	//		log.Fatal(err)
-	//	}
-	//	fmt.Printf("Name: %s", query)
-	//}
-	//
-	//fmt.Println("Query Variable testtt: ", rows)
-	//
-	//for rows.Next() {
-	//	var name, statement, prepareTime, parameterTypes, fromSQL string
-	//	if err := rows.Scan(&name, &statement, &prepareTime, &parameterTypes, &fromSQL); err != nil {
-	//		return fmt.Errorf("error scanning row: %w", err)
-	//	}
-	//	fmt.Printf("Name: %s, Statement: %s, Prepare Time: %s, Parameter Types: %s, From SQL: %s\n",
-	//		name, statement, prepareTime, parameterTypes, fromSQL)
-	//}
-	//
-	//fmt.Println("Query Variable: ", rows)
-	//
-	////for i, slowQueryMetric := range slowQueriesList {
-	////	fmt.Print("Slow Query ", i, ": ", slowQueryMetric)
-	////	queryText := slowQueryMetric.QueryText
-	////	fmt.Println("Query Text: ", *queryText)
-	////
-	////	executePrepareStatement := "Prepare test as select * from actor"
-	////	fmt.Printf(executePrepareStatement)
-	////	_, err := conn.Queryx(executePrepareStatement)
-	////	if err != nil {
-	////		fmt.Println("Error in executing prepare")
-	////		return
-	////	}
-	////	fmt.Println("eeeeeeeeee")
-	////	rows, err := conn.Queryx("select * from pg_prepared_statements")
-	////	if err != nil {
-	////		fmt.Println("Error in executing prepared statement")
-	////	}
-	////
-	////	fmt.Println("Query Variable: ", rows)
-	////	for rows.Next() {
-	////		fmt.Println("Row: ", rows)
-	////		var parameterData datamodels.Execution_plan_perform_data
-	////		if err := rows.StructScan(&parameterData); err != nil {
-	////			fmt.Println("Error in scanning row")
-	////			continue
-	////		}
-	////		fmt.Println("parameterData", parameterData)
-	////	}
-	////
-	////	//fmt.Println("Query ID: ", slowQueryMetric.QueryId)
-	////	//fmt.Println("Query Text: ", slowQueryMetric.QueryText)
-	////	//fmt.Println("Execution Plan: ", slowQueryMetric.QueryPlan)
-	////}
-	//// This function is used to fetch the execution plan metrics
+	// Joining the placeholders to form the IN clause
+	inClause := strings.Join(placeholders, ", ")
+
+	query := fmt.Sprintf(queries.InidividualQuerySearch, inClause)
+	fmt.Printf("query: %s\n", query)
+	args := make([]interface{}, len(queryIDList))
+	for i, id := range queryIDList {
+		args[i] = id
+	}
+	rows, err := conn.Queryx(query)
+	if err != nil {
+		fmt.Errorf("Error executing query: %v", err)
+		return err
+	}
+	var metricList []datamodels.QueryPlanMetrics
+	defer rows.Close()
+	for rows.Next() {
+		var metric datamodels.QueryPlanMetrics
+		if err := rows.StructScan(&metric); err != nil {
+			log.Error("Failed to scan query metrics row: %v", err)
+			return err
+		}
+		metricList = append(metricList, metric)
+	}
+
+	fmt.Println(metricList)
 	return nil
 }

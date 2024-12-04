@@ -36,7 +36,7 @@ type BlockingQuery struct {
 	BlockingDatabase   *string `db:"blocking_database"    metric_name:"blockingquery.blocking_database"    source_type:"attribute"`
 }
 
-type Execution_plan_perform_data struct {
-	name            *int64
-	parameter_types *string
+type QueryPlanMetrics struct {
+	QueryID   string `json:"queryid" db:"queryid"`
+	QueryText string `json:"query" db:"query"`
 }

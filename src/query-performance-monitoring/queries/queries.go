@@ -90,6 +90,11 @@ const (
           AND blocked_locks.pid <> blocking_locks.pid
       JOIN pg_stat_activity AS blocking_activity ON blocking_locks.pid = blocking_activity.pid
       JOIN pg_stat_statements as blocking_statements on blocking_activity.query_id = blocking_statements.queryid
-      WHERE NOT blocked_locks.granted;
+      WHERE NOT blocked_locks.granted;`
+
+	InidividualQuerySearch = `
+				SELECT  
+				queryId AS query_id,
+				query AS query_text from pg_stat_monitor where queryId in (%s);
 `
 )

@@ -13,9 +13,9 @@ import (
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
 )
 
-func getSlowRunningMetrics(conn *performance_db_connection.PGSQLConnection) ([]datamodels.SlowRunningQuery, []string, error) {
+func getSlowRunningMetrics(conn *performance_db_connection.PGSQLConnection) ([]datamodels.SlowRunningQuery, []*int64, error) {
 	var slowQueries []datamodels.SlowRunningQuery
-	var queryTextList []string
+	var queryIdList []*int64
 	var query = queries.SlowQueries
 	rows, err := conn.Queryx(query)
 	if err != nil {
@@ -29,40 +29,40 @@ func getSlowRunningMetrics(conn *performance_db_connection.PGSQLConnection) ([]d
 			return nil, nil, err
 		}
 		slowQueries = append(slowQueries, slowQuery)
-		//queryTextList = append(queryTextList, *slowQuery.QueryText)
+		queryIdList = append(queryIdList, slowQuery.QueryID)
 
 	}
 
 	fmt.Print("Slow Queries: ", slowQueries)
 
-	return slowQueries, queryTextList, nil
+	return slowQueries, queryIdList, nil
 }
 
-func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *performance_db_connection.PGSQLConnection, args args.ArgumentList) ([]datamodels.SlowRunningQuery, error) {
+func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *performance_db_connection.PGSQLConnection, args args.ArgumentList) ([]datamodels.SlowRunningQuery, []*int64, error) {
 	isExtensionEnabled, err := validations.CheckPgStatStatementsExtensionEnabled(conn)
 	if err != nil {
 		log.Error("Error executing query: %v", err)
-		return nil, err
+		return nil, nil, err
 	}
 	if !isExtensionEnabled {
 		log.Info("Extension 'pg_stat_statements' is not enabled.")
-		return nil, errors.New("extension 'pg_stat_statements' is not enabled")
+		return nil, nil, errors.New("extension 'pg_stat_statements' is not enabled")
 	}
 	log.Info("Extension 'pg_stat_statements' enabled.")
-	slowQueries, _, err := getSlowRunningMetrics(conn)
+	slowQueries, querIdList, err := getSlowRunningMetrics(conn)
 	if err != nil {
 		log.Error("Error fetching slow-running queries: %v", err)
-		return nil, err
+		return nil, nil, err
 	}
 
 	if len(slowQueries) == 0 {
 		log.Info("No slow-running queries found.")
-		return nil, errors.New("no slow-running queries found")
+		return nil, nil, errors.New("no slow-running queries found")
 	}
 
 	for _, model := range slowQueries {
 		common_utils.SetMetricsParser(instanceEntity, "PostgresSlowQueriesV18", args, model)
 	}
 
-	return slowQueries, nil
+	return slowQueries, querIdList, nil
 }
