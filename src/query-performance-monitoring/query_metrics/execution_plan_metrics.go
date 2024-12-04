@@ -1,10 +1,12 @@
 package query_metrics
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
+	common_utils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
 	performance_db_connection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-db-connection"
 )
@@ -20,26 +22,24 @@ func PopulateQueryExecutionMetrics(queryPlanMetrics []datamodels.QueryPlanMetric
 		if !rows.Next() {
 			return nil
 		}
-
-		var executionPlanMetric datamodels.QueryExecutionPlanMetrics
-		if err := rows.Scan(&executionPlanMetric); err != nil {
+		var execPlanJSON string
+		if err := rows.Scan(&execPlanJSON); err != nil {
 			log.Error("Error scanning row: ", err.Error())
 			continue
 		}
-		fmt.Println(executionPlanMetric)
 		//fmt.Print("execPlanJSON:", execPlanJSON)
 
-		//var execPlan []map[string]interface{}
-		//err = json.Unmarshal([]byte(execPlanJSON), &execPlan)
-		//if err != nil {
-		//	log.Error("Failed to unmarshal execution plan: %v", err)
-		//	continue
-		//}
-		//firstJson := execPlan[0]
-		//
-		//fmt.Println("mappppppppp", firstJson)
+		var execPlan []map[string]interface{}
+		err = json.Unmarshal([]byte(execPlanJSON), &execPlan)
+		if err != nil {
+			log.Error("Failed to unmarshal execution plan: %v", err)
+			continue
+		}
+		firstJson := execPlan[0]
 
-		//common_utils.SetMetricsParser(instanceEntity, "PostgresqlExecutionPlanMetricsV2", args, firstJson)
+		fmt.Println("mappppppppp", firstJson)
+
+		common_utils.SetMetricsParser(instanceEntity, "PostgresqlExecutionPlanMetricsV2", args, firstJson)
 
 	}
 	return nil
