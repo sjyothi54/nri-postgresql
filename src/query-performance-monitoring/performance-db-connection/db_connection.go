@@ -70,6 +70,10 @@ func (ci *connectionInfo) NewConnection(database string) (*PGSQLConnection, erro
 		return nil, err
 	}
 
+	var currentSchema string
+	db.QueryRow("select current_schema();").Scan(&currentSchema)
+	fmt.Println("Current Schema : ", currentSchema)
+
 	return &PGSQLConnection{
 		connection: db,
 	}, nil
