@@ -16,6 +16,7 @@ func getIndividualMetrics(conn *performance_db_connection.PGSQLConnection) ([]da
 	var individualQuerySearch = queries.IndividualQuerySearch
 	individualQueriesRows, err := conn.Queryx(individualQuerySearch)
 	if err != nil {
+		fmt.Print("Error in fetching individual query metrics: %v", err)
 		return nil, err
 	}
 	for individualQueriesRows.Next() {
