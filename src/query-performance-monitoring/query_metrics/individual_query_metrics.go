@@ -2,6 +2,7 @@ package query_metrics
 
 import (
 	"fmt"
+	"github.com/newrelic/infra-integrations-sdk/v3/data/metric"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/nri-postgresql/src/args"
 	common_utils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
@@ -53,6 +54,8 @@ func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *perform
 		return nil, err
 	}
 
+	test := common_utils.CreateMetricSet(instanceEntity, "PostgresIndividualQueriesV18", args)
+	test.SetMetric("test", "test", metric.ATTRIBUTE)
 	for _, model := range individualQueriesMetricsList {
 
 		common_utils.SetMetricsParser(instanceEntity, "PostgresqlIndividualMetricsV1", args, model)
