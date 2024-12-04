@@ -1,7 +1,6 @@
 package query_metrics
 
 import (
-	"fmt"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
@@ -10,6 +9,23 @@ import (
 	performance_db_connection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-db-connection"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
 )
+
+func getIndividualMetrics(conn *performance_db_connection.PGSQLConnection) ([]datamodels.QueryPlanMetrics, error) {
+	individualQueries, err := conn.Queryx(queries.IndividualQuerySearch)
+	if err != nil {
+		return nil, err
+	}
+	var individualQueryMetricList []datamodels.QueryPlanMetrics
+	for individualQueries.Next() {
+		var individualQueryMetric datamodels.QueryPlanMetrics
+		if err := individualQueries.StructScan(&individualQueryMetric); err != nil {
+			log.Error("Failed to scan query metrics row: %v", err)
+			return nil, err
+		}
+		individualQueryMetricList = append(individualQueryMetricList, individualQueryMetric)
+	}
+	return individualQueryMetricList, nil
+}
 
 func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *performance_db_connection.PGSQLConnection, args args.ArgumentList, queryIDList []*int64) ([]datamodels.QueryPlanMetrics, error) {
 	//if len(queryIDList) == 0 {
@@ -30,27 +46,12 @@ func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *perform
 	// Finalize the query string
 	//query += strings.Join(idStrings, ", ") + ")"
 
-	individualQueries, err := conn.Queryx(queries.IndividualQuerySearch)
+	individualQueriesMetricsList, err := getIndividualMetrics(conn)
 	if err != nil {
-		fmt.Errorf("Error executing query: %v", err)
 		return nil, err
 	}
-	fmt.Printf("InidividualQueries: %+v\n\n", individualQueries)
-	var individualQueryMetricList []datamodels.QueryPlanMetrics
-	defer individualQueries.Close()
-	for individualQueries.Next() {
-		var individualQueryMetric datamodels.QueryPlanMetrics
-		if err := individualQueries.StructScan(&individualQueryMetric); err != nil {
-			log.Error("Failed to scan query metrics row: %v", err)
-			return nil, err
-		}
-		fmt.Println("IndividualQueryMetric", individualQueryMetric)
-		individualQueryMetricList = append(individualQueryMetricList, individualQueryMetric)
-	}
 
-	fmt.Println("PostgresqlIndividualMetricsV1PostgresqlIndividualMetricsV1", individualQueryMetricList)
-	//
-	for _, model := range individualQueryMetricList {
+	for _, model := range individualQueriesMetricsList {
 		common_utils.SetMetricsParser(instanceEntity, "PostgresqlIndividualMetricsV1", args, model)
 
 		//metricSetIngestion := instanceEntity.NewMetricSet("PostgresIndividualQueriesV18")
@@ -70,5 +71,5 @@ func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *perform
 		//}
 	}
 
-	return individualQueryMetricList, nil
+	return individualQueriesMetricsList, nil
 }
