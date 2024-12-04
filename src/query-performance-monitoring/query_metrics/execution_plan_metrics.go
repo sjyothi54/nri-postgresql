@@ -6,7 +6,6 @@ import (
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
-	common_utils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
 	performance_db_connection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-db-connection"
 )
@@ -39,7 +38,7 @@ func PopulateQueryExecutionMetrics(queryPlanMetrics []datamodels.QueryPlanMetric
 
 		fmt.Println("mappppppppp", firstJson)
 
-		common_utils.SetMetricsParser(instanceEntity, "PostgresqlExecutionPlanMetricsV2", args, firstJson)
+		//common_utils.SetMetricsParser(instanceEntity, "PostgresqlExecutionPlanMetricsV2", args, firstJson)
 
 	}
 	return nil
