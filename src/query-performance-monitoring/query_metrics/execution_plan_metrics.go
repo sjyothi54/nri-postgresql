@@ -26,7 +26,6 @@ func PopulateQueryExecutionMetrics(queryPlanMetrics []datamodels.QueryPlanMetric
 			log.Error("Error scanning row: ", err.Error())
 			continue
 		}
-		//fmt.Print("execPlanJSON:", execPlanJSON)
 
 		var execPlan []map[string]interface{}
 		err = json.Unmarshal([]byte(execPlanJSON), &execPlan)
@@ -34,9 +33,22 @@ func PopulateQueryExecutionMetrics(queryPlanMetrics []datamodels.QueryPlanMetric
 			log.Error("Failed to unmarshal execution plan: %v", err)
 			continue
 		}
-		firstJson := execPlan[0]
+		firstJson, err := json.Marshal(execPlan[0]["Plan"])
+		if err != nil {
+			log.Error("Failed to marshal firstJson: %v", err)
+			continue
+		}
 
-		fmt.Println("mappppppppp", firstJson["Plan"])
+		var execPlanMetrics datamodels.QueryExecutionPlanMetrics
+		err = json.Unmarshal(firstJson, &execPlanMetrics)
+		if err != nil {
+			fmt.Println("Error unmarshalling JSON:", err)
+			return nil
+		}
+
+		fmt.Printf("QueryExecutionPlanMetricsssssss: %+v\n", execPlanMetrics)
+
+		//fmt.Println("mappppppppp", firstJson["Plan"])
 
 		//common_utils.SetMetricsParser(instanceEntity, "PostgresqlExecutionPlanMetricsV2", args, firstJson)
 
