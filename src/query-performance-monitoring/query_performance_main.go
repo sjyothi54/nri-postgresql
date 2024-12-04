@@ -23,7 +23,7 @@ func QueryPerformanceMain(instanceEntity *integration.Entity, args args.Argument
 	//}
 	_, err = query_metrics.PopulateIndividualMetrics(instanceEntity, conn, args, nil)
 	if err != nil {
-		fmt.Print("Error in fetching execution plan metrics check:", err)
+		fmt.Print("Error in fetching execution plan metrics check2:", err)
 		return
 	}
 	//query_metrics.PopulateQueryExecutionMetrics(individualMetrics, instanceEntity, conn, args)
