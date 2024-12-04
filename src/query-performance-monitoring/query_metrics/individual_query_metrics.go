@@ -29,13 +29,13 @@ func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *perform
 	// Finalize the query string
 	query += strings.Join(idStrings, ", ") + ")"
 
-	rows, err := conn.Queryx("SELECT queryId, query FROM pg_stat_monitor WHERE query like 'select * from actor%' ; ")
-	if err != nil {
-		fmt.Errorf("Error executing query: %v", err)
-		return nil, err
-	}
+	//rows, err := conn.Queryx("SELECT queryId, query FROM pg_stat_monitor WHERE query like 'select * from actor%' ; ")
+	//if err != nil {
+	//	fmt.Errorf("Error executing query: %v", err)
+	//	return nil, err
+	//}
 	var individualQueryMetricList []datamodels.QueryPlanMetrics
-	defer rows.Close()
+	//defer rows.Close()
 	//for rows.Next() {
 	//	var individualQueryMetric datamodels.QueryPlanMetrics
 	//	if err := rows.StructScan(&individualQueryMetric); err != nil {
