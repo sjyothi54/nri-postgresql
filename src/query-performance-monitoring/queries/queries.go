@@ -91,6 +91,5 @@ const (
       JOIN pg_stat_statements as blocking_statements on blocking_activity.query_id = blocking_statements.queryid
       WHERE NOT blocked_locks.granted;`
 
-	InidividualQuerySearch = `
-		SELECT queryId, query FROM pg_stat_monitor WHERE queryid ='-2897619393085837224'`
+	InidividualQuerySearch = `SELECT queryId, query FROM pg_stat_monitor`
 )

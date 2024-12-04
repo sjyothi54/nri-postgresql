@@ -29,11 +29,12 @@ func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *perform
 	// Finalize the query string
 	//query += strings.Join(idStrings, ", ") + ")"
 
-	_, err := conn.Queryx(queries.InidividualQuerySearch)
+	inidividualQueries, err := conn.Queryx(queries.InidividualQuerySearch)
 	if err != nil {
 		fmt.Errorf("Error executing query: %v", err)
 		return nil, err
 	}
+	fmt.Printf("InidividualQueries: %+v\n\n", inidividualQueries)
 	var individualQueryMetricList []datamodels.QueryPlanMetrics
 	//defer rows.Close()
 	//for rows.Next() {
