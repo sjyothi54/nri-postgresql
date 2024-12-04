@@ -49,7 +49,7 @@ func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *perfor
 		return nil, nil, errors.New("extension 'pg_stat_statements' is not enabled")
 	}
 	log.Info("Extension 'pg_stat_statements' enabled.")
-	slowQueries, querIdList, err := getSlowRunningMetrics(conn)
+	slowQueries, queryIdList, err := getSlowRunningMetrics(conn)
 	if err != nil {
 		log.Error("Error fetching slow-running queries: %v", err)
 		return nil, nil, err
@@ -64,5 +64,5 @@ func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *perfor
 		common_utils.SetMetricsParser(instanceEntity, "PostgresSlowQueriesV18", args, model)
 	}
 
-	return slowQueries, querIdList, nil
+	return slowQueries, queryIdList, nil
 }
