@@ -23,20 +23,20 @@ func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *perform
 	// Convert each queryId to a string and join them with commas
 	var idStrings []string
 	for _, id := range queryIDList {
-		idStrings = append(idStrings, fmt.Sprintf("%d", *id))
+		if id != nil {
+			idStrings = append(idStrings, fmt.Sprintf("%d", *id))
+		}
 	}
 
 	// Finalize the query string
 	query += strings.Join(idStrings, ", ") + ")"
-
-	fmt.Printf("Queryfinallformatted: %s\n", query)
 
 	rows, err := conn.Queryx(query)
 	if err != nil {
 		fmt.Errorf("Error executing query: %v", err)
 		return nil, err
 	}
-	var inidividualQueryMetricList []datamodels.QueryPlanMetrics
+	var individualQueryMetricList []datamodels.QueryPlanMetrics
 	defer rows.Close()
 	for rows.Next() {
 		var individualQueryMetric datamodels.QueryPlanMetrics
@@ -44,18 +44,12 @@ func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *perform
 			log.Error("Failed to scan query metrics row: %v", err)
 			return nil, err
 		}
-		inidividualQueryMetricList = append(inidividualQueryMetricList, individualQueryMetric)
+		individualQueryMetricList = append(individualQueryMetricList, individualQueryMetric)
 	}
 
-	fmt.Println(inidividualQueryMetricList)
-
-	for _, individualQueryText := range inidividualQueryMetricList {
-		fmt.Println(individualQueryText)
-	}
-
-	for _, model := range inidividualQueryMetricList {
+	for _, model := range individualQueryMetricList {
 		common_utils.SetMetricsParser(instanceEntity, "PostgresqlIndividualMetricsV1", args, model)
 	}
 
-	return inidividualQueryMetricList, nil
+	return individualQueryMetricList, nil
 }
