@@ -21,16 +21,16 @@ func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *perform
 
 	// Convert each queryId to a string and join them with commas
 	var idStrings []string
-	for _, id := range queryIDList {
-		if id != nil {
-			idStrings = append(idStrings, fmt.Sprintf("%d", *id))
-		}
-	}
+	//for _, id := range queryIDList {
+	//	if id != nil {
+	//		idStrings = append(idStrings, fmt.Sprintf("%d", *id))
+	//	}
+	//}
 
 	// Finalize the query string
 	query += strings.Join(idStrings, ", ") + ")"
 
-	rows, err := conn.Queryx(query)
+	rows, err := conn.Queryx("SELECT queryId, query FROM pg_stat_monitor WHERE query like 'select * from actor%' ")
 	if err != nil {
 		fmt.Errorf("Error executing query: %v", err)
 		return nil, err
