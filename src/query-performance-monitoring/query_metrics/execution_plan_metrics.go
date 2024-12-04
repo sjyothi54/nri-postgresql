@@ -17,7 +17,7 @@ func PopulateQueryExecutionMetrics(queryPlanMetrics []datamodels.QueryPlanMetric
 		}
 		defer rows.Close()
 		for rows.Next() {
-			fmt.Print(rows)
+			fmt.Print("rowsss:", rows)
 		}
 	}
 }
