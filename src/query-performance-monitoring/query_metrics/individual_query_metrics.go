@@ -36,14 +36,14 @@ func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *perform
 	}
 	var individualQueryMetricList []datamodels.QueryPlanMetrics
 	defer rows.Close()
-	for rows.Next() {
-		var individualQueryMetric datamodels.QueryPlanMetrics
-		if err := rows.StructScan(&individualQueryMetric); err != nil {
-			log.Error("Failed to scan query metrics row: %v", err)
-			return nil, err
-		}
-		individualQueryMetricList = append(individualQueryMetricList, individualQueryMetric)
-	}
+	//for rows.Next() {
+	//	var individualQueryMetric datamodels.QueryPlanMetrics
+	//	if err := rows.StructScan(&individualQueryMetric); err != nil {
+	//		log.Error("Failed to scan query metrics row: %v", err)
+	//		return nil, err
+	//	}
+	//	individualQueryMetricList = append(individualQueryMetricList, individualQueryMetric)
+	//}
 
 	fmt.Println("PostgresqlIndividualMetricsV1PostgresqlIndividualMetricsV1", individualQueryMetricList)
 	//
