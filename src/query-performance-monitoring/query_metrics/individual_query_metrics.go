@@ -52,7 +52,7 @@ func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *perform
 	for _, model := range individualQueryMetricList {
 		//common_utils.SetMetricsParser(instanceEntity, "PostgresqlIndividualMetricsV1", args, model)
 
-		metricSetIngestion := instanceEntity.NewMetricSet("PostgresSlowQueriesV18")
+		metricSetIngestion := instanceEntity.NewMetricSet("PostgresIndividualQueriesV18")
 		modelValue := reflect.ValueOf(model)
 		modelType := reflect.TypeOf(model)
 		for i := 0; i < modelValue.NumField(); i++ {
