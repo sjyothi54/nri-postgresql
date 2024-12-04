@@ -26,7 +26,7 @@ func PopulateQueryExecutionMetrics(queryPlanMetrics []datamodels.QueryPlanMetric
 			log.Error("Error scanning row: ", err.Error())
 			continue
 		}
-		fmt.Print("execPlanJSON:", execPlanJSON)
+		//fmt.Print("execPlanJSON:", execPlanJSON)
 
 		var execPlan []map[string]interface{}
 		err = json.Unmarshal([]byte(execPlanJSON), &execPlan)
@@ -36,7 +36,7 @@ func PopulateQueryExecutionMetrics(queryPlanMetrics []datamodels.QueryPlanMetric
 		}
 		firstJson := execPlan[0]
 
-		fmt.Println(firstJson)
+		fmt.Println("mappppppppp", firstJson)
 		//common_utils.SetMetricsParser()
 
 	}
