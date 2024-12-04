@@ -22,21 +22,16 @@ func QueryPerformanceMain(instanceEntity *integration.Entity, args args.Argument
 		return
 	}
 	fmt.Println("Query ID List: ", slowQueriesList)
-	rows, err := conn.Queryx("SELECT query FROM pg_stat_statements;")
-	if err != nil {
-		fmt.Printf("Error in fetching query: %v", err)
-	}
-	fmt.Print("Rows: ", rows)
-
 	err = query_metrics.ExecutionPlanMetrics(conn, slowQueriesList)
 	if err != nil {
+		fmt.Printf("Error in fetching execution plan metrics: %v", err)
 		return
 	}
-	//err = query_metrics.PopulateWaitEventMetrics(instanceEntity, conn, args)
-	//if err != nil {
-	//	fmt.Printf("Error in fetching wait event metrics: %v", err)
-	//	return
-	//}
+	err = query_metrics.PopulateWaitEventMetrics(instanceEntity, conn, args)
+	if err != nil {
+		fmt.Printf("Error in fetching wait event metrics: %v", err)
+		return
+	}
 	//
 	//err = query_metrics.PopulateBlockingSessionMetrics(instanceEntity, conn, args)
 	//if err != nil {
