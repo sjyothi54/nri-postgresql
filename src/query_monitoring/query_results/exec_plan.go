@@ -30,6 +30,7 @@ func ExecutionPlan(conn *connection.PGSQLConnection) {
 			return
 		}
 		queryMap[queryID] = queryText
+		log.Debug("Populated QueryMap - Query ID: %s, Query: %s", queryID, queryText)
 	}
 
 	for _, slowQuery := range slowQueries {
@@ -41,7 +42,7 @@ func ExecutionPlan(conn *connection.PGSQLConnection) {
 		if queryText, exists := queryMap[*slowQuery.QueryID]; exists {
 			log.Info("Matching Query ID: %s, Query: %s", *slowQuery.QueryID, queryText)
 		} else {
-			log.Info("No matching query found for Query ID: %d", *slowQuery.QueryID)
+			log.Info("No matching query found for Query ID: %s", *slowQuery.QueryID)
 		}
 	}
 }
