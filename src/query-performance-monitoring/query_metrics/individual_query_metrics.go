@@ -11,14 +11,15 @@ import (
 )
 
 func getIndividualMetrics(conn *performance_db_connection.PGSQLConnection) ([]datamodels.QueryPlanMetrics, error) {
-	individualQueries, err := conn.Queryx(queries.IndividualQuerySearch)
+	var individualQueryMetricList []datamodels.QueryPlanMetrics
+	var individualQuerySearch = queries.IndividualQuerySearch
+	individualQueriesRows, err := conn.Queryx(individualQuerySearch)
 	if err != nil {
 		return nil, err
 	}
-	var individualQueryMetricList []datamodels.QueryPlanMetrics
-	for individualQueries.Next() {
+	for individualQueriesRows.Next() {
 		var individualQueryMetric datamodels.QueryPlanMetrics
-		if err := individualQueries.StructScan(&individualQueryMetric); err != nil {
+		if err := individualQueriesRows.StructScan(&individualQueryMetric); err != nil {
 			log.Error("Failed to scan query metrics row: %v", err)
 			return nil, err
 		}
