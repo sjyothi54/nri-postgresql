@@ -75,7 +75,7 @@ func GetExplainPlanForSlowQueries(conn *performance_db_connection.PGSQLConnectio
 		fmt.Printf("Preparing Statement: %s\n", prepareQuery)
 
 		// Execute the preparation
-		if _, err := conn.Exec(prepareQuery); err != nil {
+		if _, err := conn.Queryx(prepareQuery); err != nil {
 			fmt.Printf("Error preparing statement: %s, %v\n", planName, err)
 			continue
 		}
