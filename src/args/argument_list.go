@@ -11,10 +11,10 @@ import (
 // ArgumentList struct that holds all PostgreSQL arguments
 type ArgumentList struct {
 	sdkArgs.DefaultArgumentList
-	Username                     string `default:"" help:"The username for the PostgreSQL database"`
-	Password                     string `default:"" help:"The password for the specified username"`
-	Hostname                     string `default:"localhost" help:"The PostgreSQL hostname to connect to"`
-	Database                     string `default:"postgres" help:"The PostgreSQL database name to connect to"`
+	Username                     string `default:"postgres" help:"The username for the PostgreSQL database"`
+	Password                     string `default:"Tharun123@" help:"The password for the specified username"`
+	Hostname                     string `default:"104.211.213.123" help:"The PostgreSQL hostname to connect to"`
+	Database                     string `default:"pagila" help:"The PostgreSQL database name to connect to"`
 	Port                         string `default:"5432" help:"The port to connect to the PostgreSQL database"`
 	CollectionList               string `default:"{}" help:"A JSON object which defines the databases, schemas, tables, and indexes to collect. Can also be a JSON array that list databases to be collected. Can also be the string literal 'ALL' to collect everything. Collects nothing by default."`
 	CollectionIgnoreDatabaseList string `default:"[]" help:"A JSON array that list databases that will be excluded from collection. Nothing is excluded by default."`
@@ -31,7 +31,7 @@ type ArgumentList struct {
 	CollectDbLockMetrics         bool   `default:"false" help:"If true, enables collection of lock metrics for the specified database. (Note: requires that the 'tablefunc' extension is installed)"` //nolint: stylecheck
 	CollectBloatMetrics          bool   `default:"true" help:"Enable collecting bloat metrics which can be performance intensive"`
 	ShowVersion                  bool   `default:"false" help:"Print build information and exit"`
-	EnableQueryPerformance       bool   `default:"false" help:"Query performance monitoring disabled by default"`
+	EnableQueryPerformance       bool   `default:"true" help:"Query performance monitoring disabled by default"`
 }
 
 // Validate validates PostgreSQl arguments
