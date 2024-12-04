@@ -31,6 +31,7 @@ func GetSlowRunningMetrics(conn *connection.PGSQLConnection) ([]datamodels.SlowR
 
 	for _, query := range slowQueries {
 		log.Info("Slow Query: %+v", query)
+		log.Info("Slow Query ID: %s", *query.QueryID) // Print the QueryID
 	}
 	return slowQueries, nil
 }
