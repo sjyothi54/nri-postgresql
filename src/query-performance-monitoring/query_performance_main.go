@@ -22,7 +22,7 @@ func QueryPerformanceMain(instanceEntity *integration.Entity, args args.Argument
 		return
 	}
 	fmt.Println("Query ID List: ", slowQueriesList)
-	err = query_metrics.ExecutionPlanMetrics(conn, queryIdList)
+	err = query_metrics.PopulateIndividualMetrics(instanceEntity, conn, args, queryIdList)
 	if err != nil {
 		fmt.Printf("Error in fetching execution plan metrics: %v", err)
 		return

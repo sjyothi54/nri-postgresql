@@ -2,13 +2,16 @@ package query_metrics
 
 import (
 	"fmt"
+	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
+	"github.com/newrelic/nri-postgresql/src/args"
+	common_utils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
 	performance_db_connection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-db-connection"
 	"strings"
 )
 
-func ExecutionPlanMetrics(conn *performance_db_connection.PGSQLConnection, queryIDList []*int64) error {
+func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *performance_db_connection.PGSQLConnection, args args.ArgumentList, queryIDList []*int64) error {
 	fmt.Println("Query ID List: ", queryIDList)
 	if len(queryIDList) == 0 {
 		log.Warn("queryIDList is empty")
@@ -33,17 +36,26 @@ func ExecutionPlanMetrics(conn *performance_db_connection.PGSQLConnection, query
 		fmt.Errorf("Error executing query: %v", err)
 		return err
 	}
-	var metricList []datamodels.QueryPlanMetrics
+	var inidividualQueryMetricList []datamodels.QueryPlanMetrics
 	defer rows.Close()
 	for rows.Next() {
-		var metric datamodels.QueryPlanMetrics
-		if err := rows.StructScan(&metric); err != nil {
+		var individualQueryMetric datamodels.QueryPlanMetrics
+		if err := rows.StructScan(&individualQueryMetric); err != nil {
 			log.Error("Failed to scan query metrics row: %v", err)
 			return err
 		}
-		metricList = append(metricList, metric)
+		inidividualQueryMetricList = append(inidividualQueryMetricList, individualQueryMetric)
 	}
 
-	fmt.Println(metricList)
+	fmt.Println(inidividualQueryMetricList)
+
+	for _, individualQueryText := range inidividualQueryMetricList {
+		fmt.Println(individualQueryText)
+	}
+
+	for _, model := range inidividualQueryMetricList {
+		common_utils.SetMetricsParser(instanceEntity, "PostgresqlIndividualMetricsV1", args, model)
+	}
+
 	return nil
 }
