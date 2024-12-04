@@ -15,7 +15,6 @@ func ExecutionPlan(conn *connection.PGSQLConnection) {
 
 	query := queries.ExecutionPlanQuery
 	rows, err := conn.Queryx(query)
-	log.Info("Queryrows", rows)
 	if err != nil {
 		log.Error("Error executing query: %v", err)
 		return
@@ -33,7 +32,14 @@ func ExecutionPlan(conn *connection.PGSQLConnection) {
 		queryMap[queryID] = queryText
 	}
 
+	// Debug log to print queryMap
+	for queryID, queryText := range queryMap {
+		log.Debug("QueryMap - Query ID: %d, Query: %s", queryID, queryText)
+	}
+
 	for _, slowQuery := range slowQueries {
+		// Debug log to print slowQuery.QueryID
+		log.Debug("SlowQuery - Query ID: %d", *slowQuery.QueryID)
 		if queryText, exists := queryMap[*slowQuery.QueryID]; exists {
 			log.Info("Matching Query ID: %d, Query: %s", *slowQuery.QueryID, queryText)
 		} else {
