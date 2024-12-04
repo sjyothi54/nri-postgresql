@@ -20,7 +20,7 @@ func ExecutionPlanMetrics(conn *performance_db_connection.PGSQLConnection, query
 	// Convert each queryId to a string and join them with commas
 	var idStrings []string
 	for _, id := range queryIDList {
-		idStrings = append(idStrings, fmt.Sprintf("%d", id))
+		idStrings = append(idStrings, fmt.Sprintf("%d", *id))
 	}
 
 	// Finalize the query string
