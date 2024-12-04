@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
-
 	"strings"
 
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
@@ -61,6 +60,12 @@ func GetExplainPlanForSlowQueries(conn *performance_db_connection.PGSQLConnectio
 
 	for idx, queryText := range queryTextList {
 		fmt.Printf("Original Query Text: %s\n", queryText)
+
+		 // Check for illegal operations
+		if containsIllegalOperation(queryText) {
+			fmt.Printf("Skipping query with illegal operation: %s\n", queryText)
+			continue
+		}
 
 		// Assign a unique name for the prepared statement
 		planName := fmt.Sprintf("plan_%d", idx)
