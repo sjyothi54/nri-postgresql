@@ -29,11 +29,23 @@ func metricSet(e *integration.Entity, eventType, hostname string, port string) *
 func SetMetric(metricSet *metric.Set, name string, value interface{}, sourceType string) {
 	switch sourceType {
 	case `gauge`:
-		metricSet.SetMetric(name, value, metric.GAUGE)
+		err := metricSet.SetMetric(name, value, metric.GAUGE)
+		if err != nil {
+			fmt.Println("Error in setting metric1", err)
+			return
+		}
 	case `attribute`:
-		metricSet.SetMetric(name, value, metric.ATTRIBUTE)
+		err := metricSet.SetMetric(name, value, metric.ATTRIBUTE)
+		if err != nil {
+			fmt.Println("Error in setting metric2", err)
+			return
+		}
 	default:
-		metricSet.SetMetric(name, value, metric.ATTRIBUTE)
+		err := metricSet.SetMetric(name, value, metric.ATTRIBUTE)
+		if err != nil {
+			fmt.Println("Error in setting metric3", err)
+			return
+		}
 	}
 }
 
