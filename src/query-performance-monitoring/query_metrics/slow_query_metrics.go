@@ -61,7 +61,7 @@ func GetExplainPlanForSlowQueries(conn *performance_db_connection.PGSQLConnectio
 	for idx, queryText := range queryTextList {
 		fmt.Printf("Original Query Text: %s\n", queryText)
 
-		 // Check for illegal operations
+		// Check for illegal operations
 		if containsIllegalOperation(queryText) {
 			fmt.Printf("Skipping query with illegal operation: %s\n", queryText)
 			continue
@@ -75,7 +75,7 @@ func GetExplainPlanForSlowQueries(conn *performance_db_connection.PGSQLConnectio
 		fmt.Printf("Preparing Statement: %s\n", prepareQuery)
 
 		// Execute the preparation
-		if _, err := conn.Queryx(prepareQuery); err != nil {
+		if _, err := conn.Exec(prepareQuery); err != nil {
 			fmt.Printf("Error preparing statement: %s, %v\n", planName, err)
 			continue
 		}
@@ -120,12 +120,11 @@ func GetExplainPlanForSlowQueries(conn *performance_db_connection.PGSQLConnectio
 		explainPlans[planName] = explainResult
 
 		// Deallocate the prepared plan to clean up
-		// deallocQuery := fmt.Sprintf("DEALLOCATE %s;", planName)
-		// fmt.Printf("Deallocating Statement: %s\n", deallocQuery)
-
-		// if _, err := conn.Queryx(deallocQuery); err != nil {
-		// 	fmt.Printf("Error deallocating statement: %s, %v\n", planName, err)
-		// }
+		deallocQuery := fmt.Sprintf("DEALLOCATE %s;", planName)
+		fmt.Printf("Deallocating Statement: %s\n", deallocQuery)
+		if _, err := conn.Queryx(deallocQuery); err != nil {
+			fmt.Printf("Error deallocating statement: %s, %v\n", planName, err)
+		}
 	}
 
 	return explainPlans, nil
