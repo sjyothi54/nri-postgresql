@@ -91,5 +91,5 @@ const (
       JOIN pg_stat_statements as blocking_statements on blocking_activity.query_id = blocking_statements.queryid
       WHERE NOT blocked_locks.granted;`
 
-	IndividualQuerySearch = `SELECT queryId, query FROM pg_stat_monitor.pg_stat_monitor WHERE query like 'select * from actor%';`
+	IndividualQuerySearch = `SELECT queryId, query FROM pg_stat_monitor WHERE query like 'select * from actor%';`
 )
