@@ -30,7 +30,7 @@ func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *perform
 	// Finalize the query string
 	//query += strings.Join(idStrings, ", ") + ")"
 
-	individualQueries, err := conn.Queryx(queries.InidividualQuerySearch)
+	individualQueries, err := conn.Queryx(queries.IndividualQuerySearch)
 	if err != nil {
 		fmt.Errorf("Error executing query: %v", err)
 		return nil, err
