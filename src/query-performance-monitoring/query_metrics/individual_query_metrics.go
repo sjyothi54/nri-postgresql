@@ -3,7 +3,6 @@ package query_metrics
 import (
 	"fmt"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
-	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
 	common_utils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
@@ -22,7 +21,7 @@ func getIndividualMetrics(conn *performance_db_connection.PGSQLConnection) ([]da
 	for individualQueriesRows.Next() {
 		var individualQueryMetric datamodels.QueryPlanMetrics
 		if err := individualQueriesRows.StructScan(&individualQueryMetric); err != nil {
-			log.Error("Failed to scan query metrics row: %v", err)
+			fmt.Printf("Failed to scan query metrics row: %v\n", err)
 			return nil, err
 		}
 		individualQueryMetricList = append(individualQueryMetricList, individualQueryMetric)
@@ -53,7 +52,6 @@ func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *perform
 	if err != nil {
 		return nil, err
 	}
-	fmt.Print("individualQueriesMetricsList", individualQueriesMetricsList)
 
 	for _, model := range individualQueriesMetricsList {
 		common_utils.SetMetricsParser(instanceEntity, "PostgresqlIndividualMetricsV1", args, model)
