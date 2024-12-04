@@ -33,7 +33,7 @@ func SetMetric(metricSet *metric.Set, name string, value interface{}, sourceType
 	case `attribute`:
 		metricSet.SetMetric(name, value, metric.ATTRIBUTE)
 	default:
-		metricSet.SetMetric(name, value, metric.GAUGE)
+		metricSet.SetMetric(name, value, metric.ATTRIBUTE)
 	}
 }
 
