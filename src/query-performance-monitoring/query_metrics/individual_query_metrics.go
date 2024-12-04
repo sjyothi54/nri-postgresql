@@ -19,7 +19,7 @@ func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *perform
 	//query := "SELECT queryId, query FROM pg_stat_monitor WHERE query like 'select * from actor%' and queryId IN ("
 
 	// Convert each queryId to a string and join them with commas
-	var idStrings []string
+	//var idStrings []string
 	//for _, id := range queryIDList {
 	//	if id != nil {
 	//		idStrings = append(idStrings, fmt.Sprintf("%d", *id))
