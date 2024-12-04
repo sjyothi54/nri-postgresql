@@ -5,8 +5,6 @@ import (
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
 	performance_db_connection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-db-connection"
-	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
-
 	"strings"
 )
 
@@ -17,20 +15,19 @@ func ExecutionPlanMetrics(conn *performance_db_connection.PGSQLConnection, query
 		return nil
 	}
 	// Building the placeholder string for the IN clause
-	placeholders := make([]string, len(queryIDList))
-	for i := range queryIDList {
-		placeholders[i] = "?"
+	query := "SELECT queryId AS query_id, query AS query_text FROM pg_stat_monitor WHERE queryId IN ("
+
+	// Convert each queryId to a string and join them with commas
+	var idStrings []string
+	for _, id := range queryIDList {
+		idStrings = append(idStrings, fmt.Sprintf("%d", id))
 	}
 
-	// Joining the placeholders to form the IN clause
-	inClause := strings.Join(placeholders, ", ")
+	// Finalize the query string
+	query += strings.Join(idStrings, ", ") + ")"
 
-	query := fmt.Sprintf(queries.InidividualQuerySearch, inClause)
-	fmt.Printf("query: %s\n", query)
-	args := make([]interface{}, len(queryIDList))
-	for i, id := range queryIDList {
-		args[i] = id
-	}
+	fmt.Printf("Queryfinallformatted: %s\n", query)
+
 	rows, err := conn.Queryx(query)
 	if err != nil {
 		fmt.Errorf("Error executing query: %v", err)
