@@ -2,8 +2,8 @@ package query_results
 
 import (
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
-
 	"github.com/newrelic/nri-postgresql/src/connection"
+	"github.com/newrelic/nri-postgresql/src/query_monitoring/queries"
 )
 
 func ExecutionPlan(conn *connection.PGSQLConnection) {
@@ -13,7 +13,30 @@ func ExecutionPlan(conn *connection.PGSQLConnection) {
 		return
 	}
 
-	for _, query := range slowQueries {
-		log.Info("Slow Query ID: %s", *query.QueryID)
+	query := queries.ExecutionPlanQuery
+	rows, err := conn.Queryx(query)
+	if err != nil {
+		log.Error("Error executing query: %v", err)
+		return
+	}
+	defer rows.Close()
+
+	queryMap := make(map[int64]string)
+	for rows.Next() {
+		var queryID int64
+		var queryText string
+		if err := rows.Scan(&queryID, &queryText); err != nil {
+			log.Error("Error scanning row: %v", err)
+			return
+		}
+		queryMap[queryID] = queryText
+	}
+
+	for _, slowQuery := range slowQueries {
+		if queryText, exists := queryMap[*slowQuery.QueryID]; exists {
+			log.Info("Matching Query ID: %d, Query: %s", *slowQuery.QueryID, queryText)
+		} else {
+			log.Info("No matching query found for Query ID: %d", *slowQuery.QueryID)
+		}
 	}
 }
