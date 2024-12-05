@@ -12,7 +12,7 @@ const (
         ROUND((pss.total_exec_time / pss.calls)::numeric, 3) AS avg_cpu_time_ms,
         pss.shared_blks_read / pss.calls AS avg_disk_reads,
         pss.shared_blks_written / pss.calls AS avg_disk_writes,
-        pm.query as individual_query
+        pm.query as individual_query,
         CASE
             WHEN pss.query ILIKE 'SELECT%' THEN 'SELECT'
             WHEN pss.query ILIKE 'INSERT%' THEN 'INSERT'
