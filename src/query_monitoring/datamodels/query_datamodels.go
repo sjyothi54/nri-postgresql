@@ -37,5 +37,5 @@ type BlockingQuery struct {
 }
 type IndividualQuery struct {
 	Query   *string `db:"query"                metric_name:"query"                              source_type:"attribute"`
-	QueryId *int64  `db:"queryid"             metric_name:"query_id"                           source_type:"gauge"`
+	QueryId *int64  `db:"queryid"              metric_name:"queryid"                            source_type:"gauge"`
 }
