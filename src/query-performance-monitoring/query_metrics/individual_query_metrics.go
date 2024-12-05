@@ -9,14 +9,15 @@ import (
 	common_utils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
 	performance_db_connection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-db-connection"
-	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
 	"strings"
 )
 
-func getIndividualMetrics(conn *performance_db_connection.PGSQLConnection) ([]datamodels.QueryPlanMetrics, error) {
+func getIndividualMetrics(conn *performance_db_connection.PGSQLConnection, queryIdList []*int64) ([]datamodels.QueryPlanMetrics, error) {
 	var individualQueryMetricList []datamodels.QueryPlanMetrics
-	var individualQuerySearch = queries.IndividualQuerySearch
+	var individualQuerySearch = getIndividualQueryStatementSearchQuery(queryIdList)
+
 	individualQueriesRows, err := conn.Queryx(individualQuerySearch)
+
 	if err != nil {
 		fmt.Printf("Error in fetching individual query metrics: %v", err)
 		return nil, err
@@ -37,24 +38,8 @@ func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *perform
 		log.Warn("queryIDList is empty")
 		return nil, nil
 	}
-	query := "SELECT queryId, query FROM pg_stat_monitor WHERE query like 'select * from actor%' and queryId IN ("
 
-	var idStrings []string
-	for _, id := range queryIDList {
-		if id != nil {
-			idStrings = append(idStrings, fmt.Sprintf("%d", *id))
-		}
-	}
-
-	// Finalize the query string
-	query += strings.Join(idStrings, ", ") + ")"
-
-	fmt.Println("query: ", query)
-
-	test := common_utils.CreateMetricSet(instanceEntity, "PostgresIndividualQueriesV19", args)
-	err := test.SetMetric("test", "test", metric.ATTRIBUTE)
-
-	individualQueriesMetricsList, err := getIndividualMetrics(conn)
+	individualQueriesMetricsList, err := getIndividualMetrics(conn, queryIDList)
 	if err != nil {
 		return nil, err
 	}
@@ -97,4 +82,21 @@ func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *perform
 	}
 
 	return individualQueriesMetricsList, nil
+}
+
+func getIndividualQueryStatementSearchQuery(queryIDList []*int64) string {
+	query := "SELECT queryId, query FROM pg_stat_monitor WHERE query like 'select * from actor%' and queryId IN ("
+
+	var idStrings []string
+	for _, id := range queryIDList {
+		if id != nil {
+			idStrings = append(idStrings, fmt.Sprintf("%d", *id))
+		}
+	}
+
+	// Finalize the query string
+	query += strings.Join(idStrings, ", ") + ")"
+
+	return query
+
 }
