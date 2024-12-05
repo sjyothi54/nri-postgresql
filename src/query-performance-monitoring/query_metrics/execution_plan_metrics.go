@@ -14,8 +14,8 @@ import (
 func PopulateQueryExecutionMetrics(queryPlanMetrics []datamodels.QueryPlanMetrics, instanceEntity *integration.Entity, conn *performance_db_connection.PGSQLConnection, args args.ArgumentList) error {
 	for _, queryPlanMetric := range queryPlanMetrics {
 		fmt.Printf("QueryPlanMetricsssssss: %+v\n\n", queryPlanMetric)
-		query := "EXPLAIN (FORMAT JSON) " + *queryPlanMetric.QueryText
-		rows, err := conn.Queryx(query)
+		//query := "EXPLAIN (FORMAT JSON) " + *queryPlanMetric.QueryText
+		rows, err := conn.Queryx("")
 		if err != nil {
 			continue
 		}
