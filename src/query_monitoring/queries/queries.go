@@ -21,9 +21,11 @@ const (
         END AS statement_type,
         to_char(NOW() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS collection_timestamp
     FROM
-        pg_stat_statements pss
+        pg_stat_statements pss 
     JOIN
         pg_database pd ON pss.dbid = pd.oid
+    WHERE
+        queryid = '3382708387413318035'
     ORDER BY
         avg_elapsed_time_ms DESC;`
 
