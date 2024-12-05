@@ -35,7 +35,7 @@ func SetMetric(metricSet *metric.Set, name string, value interface{}, sourceType
 			return
 		}
 	case `attribute`:
-		err := metricSet.SetMetric(name, value, metric.ATTRIBUTE)
+		err := metricSet.SetMetric(name, fmt.Sprintf("%v", value), metric.ATTRIBUTE)
 		if err != nil {
 			fmt.Println("Error in setting metric", err)
 			return
