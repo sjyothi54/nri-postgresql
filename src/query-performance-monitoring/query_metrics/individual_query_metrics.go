@@ -14,9 +14,11 @@ import (
 
 func getIndividualMetrics(conn *performance_db_connection.PGSQLConnection, queryIdList []*int64) ([]datamodels.QueryPlanMetrics, error) {
 	var individualQueryMetricList []datamodels.QueryPlanMetrics
-	var individualQuerySearch = getIndividualQueryStatementSearchQuery(queryIdList)
+	var individualQuerySearchQuery = getIndividualQueryStatementSearchQuery(queryIdList)
 
-	individualQueriesRows, err := conn.Queryx(individualQuerySearch)
+	fmt.Println("individualQuerySearch::::", individualQuerySearchQuery)
+
+	individualQueriesRows, err := conn.Queryx("select queryid from pg_stat_monitor")
 
 	if err != nil {
 		fmt.Printf("Error in fetching individual query metrics: %v", err)
@@ -28,6 +30,7 @@ func getIndividualMetrics(conn *performance_db_connection.PGSQLConnection, query
 			fmt.Printf("Failed to scan query metrics row: %v\n", err)
 			return nil, err
 		}
+		fmt.Println("individualQueryMetric::::", individualQueryMetric)
 		individualQueryMetricList = append(individualQueryMetricList, individualQueryMetric)
 	}
 	return individualQueryMetricList, nil
