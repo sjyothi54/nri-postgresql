@@ -65,7 +65,7 @@ func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *perform
 
 	var queryIDString string
 	if individualQueriesMetricsList[0].Queryid != nil {
-		queryIDString = fmt.Sprintf("%d", *individualQueriesMetricsList[0].Queryid)
+		queryIDString = fmt.Sprintf("%d", individualQueriesMetricsList[0].Queryid)
 	} else {
 		queryIDString = ""
 	}
