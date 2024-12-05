@@ -51,7 +51,7 @@ func PopulateQueryExecutionMetrics(queryPlanMetrics []datamodels.QueryPlanMetric
 
 		fmt.Printf("QueryExecutionPlanMetricsssssss: %+v\n", execPlanMetrics)
 
-		fmt.Println("mappppppppp", firstJson["Plan"])
+		// fmt.Println("mappppppppp", firstJson["Plan"])
 
 		common_utils.SetMetricsParser(instanceEntity, "PostgresqlExecutionPlanMetricsV2", args, execPlanMetrics)
 
