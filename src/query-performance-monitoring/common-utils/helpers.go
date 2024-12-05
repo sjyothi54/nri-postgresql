@@ -61,8 +61,10 @@ func SetMetricsParser(instanceEntity *integration.Entity, eventName string, args
 		sourceType := fieldType.Tag.Get("source_type")
 
 		if field.Kind() == reflect.Ptr && !field.IsNil() {
+			fmt.Println("heyyy")
 			SetMetric(metricSetIngestion, metricName, field.Elem().Interface(), sourceType)
 		} else if field.Kind() != reflect.Ptr {
+			fmt.Println("Byeee")
 			SetMetric(metricSetIngestion, metricName, field.Interface(), sourceType)
 		}
 	}
