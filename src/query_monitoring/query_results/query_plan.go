@@ -66,7 +66,7 @@ func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *connect
 				fieldType := modelType.Field(i)
 				metricName := fieldType.Tag.Get("metric_name")
 				sourceType := fieldType.Tag.Get("source_type")
-
+				log.Info("Setting metric: %s with value: %v and source type: %s", metricName, field.Interface(), sourceType)
 				if field.Kind() == reflect.Ptr && !field.IsNil() {
 					SetMetrics(metricSet, metricName, field.Elem().Interface(), sourceType)
 				} else if field.Kind() != reflect.Ptr {
@@ -74,7 +74,7 @@ func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *connect
 				}
 			}
 
-			//	log.Info("Metrics set for slow query: %s in database: %s", *model.QueryID, *model.DatabaseName)
+			log.Info("Metrics set for slow query: %s", *model.Query)
 		}
 	} else {
 		log.Info("Extension 'pg_stat_monitor' is not enabled.")
