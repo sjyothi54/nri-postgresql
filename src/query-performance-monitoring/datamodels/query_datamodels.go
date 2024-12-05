@@ -20,9 +20,9 @@ type WaitEventQuery struct {
 	WaitEventName       sql.NullString  `db:"wait_event_name"       metric_name:"waitevent.wait_event_name"            source_type:"attribute"`
 	WaitCategory        sql.NullString  `db:"wait_category"         metric_name:"waitevent.wait_category"              source_type:"attribute"`
 	TotalWaitTimeMs     sql.NullFloat64 `db:"total_wait_time_ms"    metric_name:"waitevent.total_wait_time_ms"         source_type:"gauge"`
-	WaitingTasksCount   sql.NullInt64   `db:"waiting_tasks_count"   metric_name:"waitevent.waiting_tasks_count"        source_type:"gauge"`
+	WaitingTasksCount   sql.NullFloat64 `db:"waiting_tasks_count"   metric_name:"waitevent.waiting_tasks_count"        source_type:"gauge"`
 	CollectionTimestamp sql.NullString  `db:"collection_timestamp"  metric_name:"waitevent.collection_timestamp"       source_type:"attribute"`
-	QueryID             sql.NullInt64   `db:"query_id"              metric_name:"waitevent.query_id"                   source_type:"gauge"`
+	QueryID             sql.NullFloat64 `db:"query_id"              metric_name:"waitevent.query_id"                   source_type:"gauge"`
 	QueryText           sql.NullString  `db:"query_text"            metric_name:"waitevent.query_text"                 source_type:"attribute"`
 	DatabaseName        sql.NullString  `db:"database_name"         metric_name:"waitevent.database_name"              source_type:"attribute"`
 }
