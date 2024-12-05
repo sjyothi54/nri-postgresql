@@ -55,7 +55,7 @@ func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *perform
 		return nil, err
 	}
 
-	//var queryTextRow1 = individualQueriesMetricsList[0].Queryid
+	var _ = individualQueriesMetricsList[0].Queryid
 	//fmt.Print("queryTextRow1: ", *queryTextRow1)
 
 	test3 := common_utils.CreateMetricSet(instanceEntity, "PostgresIndividualQueriesV22", args)
