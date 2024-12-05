@@ -18,7 +18,7 @@ func getIndividualMetrics(conn *performance_db_connection.PGSQLConnection, query
 
 	fmt.Println("individualQuerySearch::::", individualQuerySearchQuery)
 
-	individualQueriesRows, err := conn.Queryx("select queryid,query from pg_stat_monitor WHERE query like 'select * from actor%'")
+	individualQueriesRows, err := conn.Queryx("select queryid from pg_stat_monitor WHERE query like 'select * from actor%'")
 
 	if err != nil {
 		fmt.Printf("Error in fetching individual query metrics: %v", err)
