@@ -2,11 +2,12 @@ package common_utils
 
 import (
 	"fmt"
+	"reflect"
+
 	"github.com/newrelic/infra-integrations-sdk/v3/data/attribute"
 	"github.com/newrelic/infra-integrations-sdk/v3/data/metric"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/nri-postgresql/src/args"
-	"reflect"
 )
 
 func CreateMetricSet(e *integration.Entity, sampleName string, args args.ArgumentList) *metric.Set {
@@ -55,7 +56,7 @@ func SetMetricsParser(instanceEntity *integration.Entity, eventName string, args
 	modelType := reflect.TypeOf(model)
 	for i := 0; i < modelValue.NumField(); i++ {
 		field := modelValue.Field(i)
-		fmt.Print("fieldooooo", field)
+		//fmt.Print("fieldooooo", field)
 		fieldType := modelType.Field(i)
 		metricName := fieldType.Tag.Get("metric_name")
 		sourceType := fieldType.Tag.Get("source_type")
