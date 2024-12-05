@@ -75,7 +75,7 @@ func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *perform
 	err = test3.SetMetric("queryText", "teeeee", metric.ATTRIBUTE)
 
 	test4 := common_utils.CreateMetricSet(instanceEntity, "PostgresIndividualQueriesV99", args)
-	err = test4.SetMetric("queryId", queryIDString, metric.ATTRIBUTE)
+	err = test4.SetMetric("queryId", "holllaaa", metric.ATTRIBUTE)
 
 	//test5 := common_utils.CreateMetricSet(instanceEntity, "PostgresIndividualQueriesV99", args)
 	//err = test5.SetMetric("queryText", queryTextString, metric.ATTRIBUTE)
