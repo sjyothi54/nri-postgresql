@@ -2,21 +2,100 @@ package query_metrics
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
+	"github.com/jmoiron/sqlx"
 	"github.com/newrelic/infra-integrations-sdk/v3/data/metric"
-	"reflect"
-	"time"
-
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
-	performance_db_connection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-db-connection"
-	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
-	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
+	"reflect"
+	"time"
 )
 
-// ConvertSQLTypes converts SQL driver types to native Go types, handling NULL values gracefully.
+// PopulateWaitEventMetricsV2 collects wait event metrics and adds them to the New Relic integration entity.
+func PopulateWaitEventMetricsV2(instanceEntity *integration.Entity, db *sqlx.DB, cmdArgs args.ArgumentList) error {
+	// Define the wait events query
+	query := `
+    SELECT
+        wait_event AS wait_event_name,
+        wait_event_type AS wait_category,
+        total_wait_time AS total_wait_time_ms,
+        waiting_tasks AS waiting_tasks_count,
+        now() AS collection_timestamp,
+        queryid AS query_id,
+        query AS query_text,
+        datname AS database_name
+    FROM
+        pg_wait_sampling_profile;
+    `
+	// Execute the query
+	results, err := ExecuteQuery(db, query)
+	if err != nil {
+		log.Error("Error executing wait event query: %v", err)
+		return fmt.Errorf("failed to execute wait event query: %w", err)
+	}
+	if len(results) == 0 {
+		log.Info("No wait event metrics found.")
+		return nil
+	}
+	log.Info("Found %d wait event metrics.", len(results))
+	// Iterate over each row and add metrics to the New Relic metric sets
+	for _, row := range results {
+		// Create a new metric set for each wait event sample
+		metricSet := instanceEntity.NewMetricSet("PostgresqlWaitEventSample")
+		// Set the mandatory event_type attribute
+		if err := metricSet.SetMetric("event_type", "PostgresqlWaitEventSample", metric.ATTRIBUTE); err != nil {
+			log.Error("Error setting event_type attribute: %v", err)
+			return fmt.Errorf("failed to set event_type: %w", err)
+		}
+		// Iterate over the row map and set metrics
+		for key, value := range row {
+			// Skip the event_type as it's already set
+			if key == "event_type" {
+				continue
+			}
+			// Determine the metric type based on the value's type
+			metricType := determineMetricType(value)
+			// Set the metric
+			if err := metricSet.SetMetric(key, value, metricType); err != nil {
+				log.Warn("Failed to set metric '%s': %v", key, err)
+				// Continue setting other metrics even if one fails
+			}
+		}
+	}
+	return nil
+}
+
+// ExecuteQuery executes a SQL query and returns the results as a slice of maps.
+func ExecuteQuery(db *sqlx.DB, query string, args ...interface{}) ([]map[string]interface{}, error) {
+	rows, err := db.Queryx(query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("query execution failed: %w", err)
+	}
+	defer func() {
+		if cerr := rows.Close(); cerr != nil {
+			log.Warn("Error closing rows: %v", cerr)
+		}
+	}()
+	var results []map[string]interface{}
+	for rows.Next() {
+		rowData := make(map[string]interface{})
+		if err := rows.MapScan(rowData); err != nil {
+			return nil, fmt.Errorf("row scan failed: %w", err)
+		}
+		// Convert SQL types to native Go types
+		for key, value := range rowData {
+			rowData[key] = ConvertSQLTypes(value)
+		}
+		results = append(results, rowData)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error: %w", err)
+	}
+	return results, nil
+}
+
+// ConvertSQLTypes converts SQL types to native Go types, handling NULLs gracefully.
 func ConvertSQLTypes(value interface{}) interface{} {
 	switch v := value.(type) {
 	case nil:
@@ -66,122 +145,18 @@ func ConvertSQLTypes(value interface{}) interface{} {
 	}
 }
 
-// ExecuteQuery executes a SQL query and returns the results as a slice of map[string]interface{}.
-// It handles type mismatches gracefully and includes detailed error handling.
-func ExecuteQuery(conn *performance_db_connection.PGSQLConnection, query string, args ...interface{}) ([]map[string]interface{}, error) {
-	rows, err := conn.Queryx(query)
-	if err != nil {
-		return nil, fmt.Errorf("query execution error: %w", err)
-	}
-	defer func() {
-		if closeErr := rows.Close(); closeErr != nil {
-			log.Error("Error closing rows: %v", closeErr)
-		}
-	}()
-
-	var results []map[string]interface{}
-
-	for rows.Next() {
-		columns, err := rows.Columns()
-		if err != nil {
-			return nil, fmt.Errorf("failed to get columns: %w", err)
-		}
-
-		scanArgs := make([]interface{}, len(columns))
-		rawValues := make([]interface{}, len(columns))
-
-		for i := range scanArgs {
-			scanArgs[i] = &rawValues[i]
-		}
-
-		if err := rows.Scan(scanArgs...); err != nil {
-			return nil, fmt.Errorf("row scan error: %w", err)
-		}
-
-		rowData := make(map[string]interface{})
-		for i, col := range columns {
-			rawValue := rawValues[i]
-			rowData[col] = ConvertSQLTypes(rawValue)
-		}
-
-		results = append(results, rowData)
-	}
-
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error: %w", err)
-	}
-
-	return results, nil
-}
-
-// SetMetricsParser processes metrics and adds them to the integration entity.
-func SetMetricsParser(entity *integration.Entity, metricSetName string, args args.ArgumentList, data map[string]interface{}) error {
-	metricSet := entity.NewMetricSet(metricSetName)
-	for key, value := range data {
-		if err := metricSet.SetMetric(key, value, getMetricType(value)); err != nil {
-			return fmt.Errorf("failed to set metric %s: %w", key, err)
-		}
-	}
-	return nil
-}
-
-func getMetricType(value interface{}) metric.SourceType {
+// determineMetricType determines the New Relic metric type based on the Go type of the value.
+func determineMetricType(value interface{}) metric.SourceType {
 	switch value.(type) {
-	case int, int8, int16, int32, int64:
+	case int, int8, int16, int32, int64, float32, float64:
 		return metric.GAUGE
-	case uint, uint8, uint16, uint32, uint64:
-		return metric.GAUGE
-	case float32, float64:
-		return metric.GAUGE
-	case bool:
-		return metric.ATTRIBUTE
 	case string:
+		return metric.ATTRIBUTE
+	case bool:
 		return metric.ATTRIBUTE
 	case time.Time:
 		return metric.ATTRIBUTE
 	default:
 		return metric.ATTRIBUTE
 	}
-}
-
-// PopulateWaitEventMetrics collects wait event metrics and populates them into the integration entity.
-// It uses a generic query execution approach and includes comprehensive error handling and logging.
-func PopulateWaitEventMetricsV2(instanceEntity *integration.Entity, conn *performance_db_connection.PGSQLConnection, args args.ArgumentList) error {
-	isExtensionEnabled, err := validations.CheckPgWaitExtensionEnabled(conn)
-	if err != nil {
-		log.Error("Error checking 'pg_wait_sampling' extension: %v", err)
-		return err
-	}
-	if !isExtensionEnabled {
-		log.Info("Extension 'pg_wait_sampling' is not enabled.")
-		return errors.New("extension 'pg_wait_sampling' is not enabled")
-	}
-	log.Info("Extension 'pg_wait_sampling' is enabled.")
-
-	// Execute the wait event query using the generic ExecuteQuery function
-	query := queries.WaitEvents
-	waitEventMetrics, err := ExecuteQuery(conn, query)
-	if err != nil {
-		log.Error("Error executing wait event query: %v", err)
-		return err
-	}
-
-	if len(waitEventMetrics) == 0 {
-		log.Info("No wait event metrics found.")
-		return nil
-	}
-
-	log.Debug("WaitEventMetrics: %+v", waitEventMetrics)
-
-	for _, metric := range waitEventMetrics {
-		// Process each metric using the SetMetricsParser function
-		err := SetMetricsParser(instanceEntity, "PostgresqlWaitEventMetricsV1", args, metric)
-		if err != nil {
-			log.Error("Error setting metrics parser for metric %v: %v", metric, err)
-			// Continue processing other metrics
-			continue
-		}
-	}
-
-	return nil
 }
