@@ -3,10 +3,12 @@ package query_performance_monitoring
 // this is the main go file for the query_monitoring package
 import (
 	"fmt"
+
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/nri-postgresql/src/args"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-db-connection"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/query_metrics"
+	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
 )
 
 func QueryPerformanceMain(instanceEntity *integration.Entity, args args.ArgumentList) {
@@ -21,12 +23,12 @@ func QueryPerformanceMain(instanceEntity *integration.Entity, args args.Argument
 	//	fmt.Printf("Error in fetching slow running metrics: %v", err)
 	//	return
 	//}
-	individualMetrics, err := query_metrics.PopulateIndividualMetrics(instanceEntity, conn, args, nil)
+	var queryPlanMetrics []datamodels.QueryPlanMetrics
+	err = query_metrics.PopulateQueryExecutionMetrics(queryPlanMetrics, instanceEntity, conn, args)
 	if err != nil {
 		fmt.Print("Error in fetching execution plan metrics check2:", err)
 		return
 	}
-	query_metrics.PopulateQueryExecutionMetrics(individualMetrics, instanceEntity, conn, args)
 
 	//err = query_metrics.PopulateWaitEventMetrics(instanceEntity, conn, args)
 	//if err != nil {
