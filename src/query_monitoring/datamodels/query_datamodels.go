@@ -35,3 +35,7 @@ type BlockingQuery struct {
 	BlockingQueryStart *string `db:"blocking_query_start" metric_name:"blockingquery.blocking_query_start" source_type:"attribute"`
 	BlockingDatabase   *string `db:"blocking_database"    metric_name:"blockingquery.blocking_database"    source_type:"attribute"`
 }
+type IndividualQuery struct {
+	Query   *string `db:"query"                metric_name:"query"                              source_type:"attribute"`
+	QueryId *int64  `db:"query_id"             metric_name:"query_id"                           source_type:"gauge"`
+}

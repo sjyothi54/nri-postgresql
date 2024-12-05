@@ -3,7 +3,6 @@ package query_results
 import (
 	"reflect"
 
-	"github.com/newrelic/infra-integrations-sdk/v3/data/metric"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/connection"
@@ -12,9 +11,9 @@ import (
 	"github.com/newrelic/nri-postgresql/src/query_monitoring/validations"
 )
 
-func GetSlowRunningMetrics(conn *connection.PGSQLConnection) ([]datamodels.SlowRunningQuery, error) {
-	var slowQueries []datamodels.SlowRunningQuery
-	var query = queries.SlowQueries
+func GetIndividualMetrics(conn *connection.PGSQLConnection) ([]datamodels.IndividualQuery, error) {
+	var individualQueries []datamodels.IndividualQuery
+	var query = queries.IndividualQueries
 	rows, err := conn.Queryx(query)
 	if err != nil {
 		return nil, err
@@ -22,42 +21,42 @@ func GetSlowRunningMetrics(conn *connection.PGSQLConnection) ([]datamodels.SlowR
 	defer rows.Close()
 
 	for rows.Next() {
-		var slowQuery datamodels.SlowRunningQuery
-		if err := rows.StructScan(&slowQuery); err != nil {
+		var individualQuery datamodels.IndividualQuery
+		if err := rows.StructScan(&individualQuery); err != nil {
 			return nil, err
 		}
-		slowQueries = append(slowQueries, slowQuery)
+		individualQueries = append(individualQueries, individualQuery)
 	}
 
-	for _, query := range slowQueries {
+	for _, query := range individualQueries {
 		log.Info("Slow Query: %+v", query)
 	}
-	return slowQueries, nil
+	return individualQueries, nil
 }
 
 // PopulateSlowRunningMetrics fetches slow-running metrics and populates them into the metric set
-func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *connection.PGSQLConnection, query string) {
-	isExtensionEnabled, err := validations.CheckPgStatStatementsExtensionEnabled(conn)
+func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *connection.PGSQLConnection, query string) {
+	isExtensionEnabled, err := validations.CheckPgStatMonitorExtensionEnabled(conn)
 	if err != nil {
 		log.Error("Error executing query: %v", err)
 		return
 	}
 	if isExtensionEnabled {
-		log.Info("Extension 'pg_stat_statements' enabled.")
-		slowQueries, err := GetSlowRunningMetrics(conn)
+		log.Info("Extension 'pg_stat_monitor' enabled.")
+		individualQueries, err := GetIndividualMetrics(conn)
 		if err != nil {
-			log.Error("Error fetching slow-running queries: %v", err)
+			log.Error("Error fetching individual queries: %v", err)
 			return
 		}
 
-		if len(slowQueries) == 0 {
-			log.Info("No slow-running queries found.")
+		if len(individualQueries) == 0 {
+			log.Info("No individual queries found.")
 			return
 		}
-		log.Info("Populate-slow running: %+v", slowQueries)
+		log.Info("Populate individualrunning: %+v", individualQueries)
 
-		for _, model := range slowQueries {
-			metricSet := instanceEntity.NewMetricSet("PostgresSlowQueriesGo")
+		for _, model := range individualQueries {
+			metricSet := instanceEntity.NewMetricSet("PostgresIndividualQueriesGo")
 
 			modelValue := reflect.ValueOf(model)
 			modelType := reflect.TypeOf(model)
@@ -78,19 +77,8 @@ func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *connec
 			//	log.Info("Metrics set for slow query: %s in database: %s", *model.QueryID, *model.DatabaseName)
 		}
 	} else {
-		log.Info("Extension 'pg_stat_statements' is not enabled.")
+		log.Info("Extension 'pg_stat_monitor' is not enabled.")
 		return
 	}
 
-}
-
-func SetMetrics(metricSet *metric.Set, name string, value interface{}, sourceType string) {
-	switch sourceType {
-	case `gauge`:
-		metricSet.SetMetric(name, value, metric.GAUGE)
-	case `attribute`:
-		metricSet.SetMetric(name, value, metric.ATTRIBUTE)
-	default:
-		metricSet.SetMetric(name, value, metric.GAUGE)
-	}
 }
