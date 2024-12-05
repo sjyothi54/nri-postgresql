@@ -57,6 +57,11 @@ func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *perform
 		return nil, err
 	}
 
+	if len(individualQueriesMetricsList) == 0 {
+		log.Warn("No individual query metrics found")
+		return nil, nil
+	}
+
 	test1 := common_utils.CreateMetricSet(instanceEntity, "PostgresIndividualQueriesV18", args)
 	err = test1.SetMetric("test", "test", metric.ATTRIBUTE)
 	if err != nil {
