@@ -57,7 +57,11 @@ func PopulateWaitEventMetrics(instanceEntity *integration.Entity, conn *performa
 	log.Info("WaitEventMetrics %+v", waitEventMetrics)
 
 	ms := common_utils.CreateMetricSet(instanceEntity, "PostgresqlWaitEventMetricsV1", args)
-	ms.SetMetric("event_type", "PostgresqlWaitEventMetricsV1", metric.ATTRIBUTE)
+	err := ms.SetMetric("event_type", "PostgresqlWaitEventMetricsV1", metric.ATTRIBUTE)
+	if err != nil {
+		log.Error("Error setting event_type attribute: %v", err)
+		return err
+	}
 	for _, model := range waitEventMetrics {
 		common_utils.SetMetricsParser(instanceEntity, "PostgresqlWaitEventMetricsV1", args, model)
 	}
