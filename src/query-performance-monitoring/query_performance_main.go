@@ -6,9 +6,9 @@ import (
 
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/nri-postgresql/src/args"
+	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-db-connection"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/query_metrics"
-	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
 )
 
 func QueryPerformanceMain(instanceEntity *integration.Entity, args args.ArgumentList) {
@@ -23,12 +23,17 @@ func QueryPerformanceMain(instanceEntity *integration.Entity, args args.Argument
 	//	fmt.Printf("Error in fetching slow running metrics: %v", err)
 	//	return
 	//}
-	var queryPlanMetrics []datamodels.QueryPlanMetrics
-	err = query_metrics.PopulateQueryExecutionMetrics(queryPlanMetrics, instanceEntity, conn, args)
+	queryIdList, err := query_metrics.PopulateQueryExecutionMetrics(instanceEntity, conn, args)
 	if err != nil {
-		fmt.Print("Error in fetching execution plan metrics check2:", err)
+		fmt.Printf("Error in fetching slow running metrics: %v", err)
 		return
 	}
+	// var queryPlanMetrics []datamodels.QueryPlanMetrics
+	// err = query_metrics.PopulateQueryExecutionMetrics(queryPlanMetrics, instanceEntity, conn, args)
+	// if err != nil {
+	// 	fmt.Print("Error in fetching execution plan metrics check2:", err)
+	// 	return
+	// }
 
 	//err = query_metrics.PopulateWaitEventMetrics(instanceEntity, conn, args)
 	//if err != nil {

@@ -3,6 +3,7 @@ package query_metrics
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
@@ -50,7 +51,7 @@ func PopulateQueryExecutionMetrics(queryPlanMetrics []datamodels.QueryPlanMetric
 
 		fmt.Printf("QueryExecutionPlanMetricsssssss: %+v\n", execPlanMetrics)
 
-		//fmt.Println("mappppppppp", firstJson["Plan"])
+		fmt.Println("mappppppppp", firstJson["Plan"])
 
 		common_utils.SetMetricsParser(instanceEntity, "PostgresqlExecutionPlanMetricsV2", args, execPlanMetrics)
 
