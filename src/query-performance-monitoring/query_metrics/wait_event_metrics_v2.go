@@ -1,22 +1,25 @@
+// src/query-performance-monitoring/query_metrics/populate_wait_event_metrics_v2.go
 package query_metrics
 
 import (
 	"database/sql"
 	"fmt"
+	"reflect"
+	"time"
+
 	"github.com/jmoiron/sqlx"
 	"github.com/newrelic/infra-integrations-sdk/v3/data/metric"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
+
 	"github.com/newrelic/nri-postgresql/src/args"
-	"reflect"
-	"time"
 )
 
 // PopulateWaitEventMetricsV2 collects wait event metrics and adds them to the New Relic integration entity.
 func PopulateWaitEventMetricsV2(instanceEntity *integration.Entity, db *sqlx.DB, cmdArgs args.ArgumentList) error {
 	// Define the wait events query
 	query := `
-    SELECT
+    SELECT 
         wait_event AS wait_event_name,
         wait_event_type AS wait_category,
         total_wait_time AS total_wait_time_ms,
@@ -25,37 +28,45 @@ func PopulateWaitEventMetricsV2(instanceEntity *integration.Entity, db *sqlx.DB,
         queryid AS query_id,
         query AS query_text,
         datname AS database_name
-    FROM
+    FROM 
         pg_wait_sampling_profile;
     `
+
 	// Execute the query
 	results, err := ExecuteQuery(db, query)
 	if err != nil {
 		log.Error("Error executing wait event query: %v", err)
 		return fmt.Errorf("failed to execute wait event query: %w", err)
 	}
+
 	if len(results) == 0 {
 		log.Info("No wait event metrics found.")
 		return nil
 	}
+
 	log.Info("Found %d wait event metrics.", len(results))
+
 	// Iterate over each row and add metrics to the New Relic metric sets
 	for _, row := range results {
 		// Create a new metric set for each wait event sample
 		metricSet := instanceEntity.NewMetricSet("PostgresqlWaitEventSample")
+
 		// Set the mandatory event_type attribute
 		if err := metricSet.SetMetric("event_type", "PostgresqlWaitEventSample", metric.ATTRIBUTE); err != nil {
 			log.Error("Error setting event_type attribute: %v", err)
 			return fmt.Errorf("failed to set event_type: %w", err)
 		}
+
 		// Iterate over the row map and set metrics
 		for key, value := range row {
 			// Skip the event_type as it's already set
 			if key == "event_type" {
 				continue
 			}
+
 			// Determine the metric type based on the value's type
 			metricType := determineMetricType(value)
+
 			// Set the metric
 			if err := metricSet.SetMetric(key, value, metricType); err != nil {
 				log.Warn("Failed to set metric '%s': %v", key, err)
@@ -63,6 +74,7 @@ func PopulateWaitEventMetricsV2(instanceEntity *integration.Entity, db *sqlx.DB,
 			}
 		}
 	}
+
 	return nil
 }
 
@@ -77,21 +89,27 @@ func ExecuteQuery(db *sqlx.DB, query string, args ...interface{}) ([]map[string]
 			log.Warn("Error closing rows: %v", cerr)
 		}
 	}()
+
 	var results []map[string]interface{}
+
 	for rows.Next() {
 		rowData := make(map[string]interface{})
 		if err := rows.MapScan(rowData); err != nil {
 			return nil, fmt.Errorf("row scan failed: %w", err)
 		}
+
 		// Convert SQL types to native Go types
 		for key, value := range rowData {
 			rowData[key] = ConvertSQLTypes(value)
 		}
+
 		results = append(results, rowData)
 	}
+
 	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("rows iteration error: %w", err)
 	}
+
 	return results, nil
 }
 
@@ -141,7 +159,8 @@ func ConvertSQLTypes(value interface{}) interface{} {
 				return dataField.Interface()
 			}
 		}
-		return v
+		log.Warn("Unexpected type %T for value %v", v, v)
+		return nil
 	}
 }
 
@@ -150,11 +169,7 @@ func determineMetricType(value interface{}) metric.SourceType {
 	switch value.(type) {
 	case int, int8, int16, int32, int64, float32, float64:
 		return metric.GAUGE
-	case string:
-		return metric.ATTRIBUTE
-	case bool:
-		return metric.ATTRIBUTE
-	case time.Time:
+	case string, bool, time.Time:
 		return metric.ATTRIBUTE
 	default:
 		return metric.ATTRIBUTE
