@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/newrelic/infra-integrations-sdk/v3/data/metric"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
+	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
 	common_utils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
@@ -62,8 +63,8 @@ func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *perform
 		return nil, err
 	}
 
-	//var queryTextRow1 = individualQueriesMetricsList[0].QueryText
-	//log.Info("queryTextRow1", *queryTextRow1)
+	var queryTextRow1 = individualQueriesMetricsList[0].QueryText
+	log.Info("queryTextRow1", *queryTextRow1)
 
 	test3 := common_utils.CreateMetricSet(instanceEntity, "PostgresIndividualQueriesV22", args)
 	err = test3.SetMetric("queryText", "testing", metric.ATTRIBUTE)
