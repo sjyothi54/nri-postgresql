@@ -21,7 +21,7 @@ func QueryPerformanceMain(instanceEntity *integration.Entity, args args.Argument
 	//	fmt.Printf("Error in fetching slow running metrics: %v", err)
 	//	return
 	//}
-	query_metrics.PopulateWaitEventMetricsV2(instanceEntity, conn, args)
+	query_metrics.PopulateWaitEventMetrics(instanceEntity, conn, args)
 	//fmt.Println(queryIdList)
 	//_, err = query_metrics.PopulateIndividualMetrics(instanceEntity, conn, args, queryIdList)
 	//if err != nil {
