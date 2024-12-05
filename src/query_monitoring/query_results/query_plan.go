@@ -29,7 +29,7 @@ func GetIndividualMetrics(conn *connection.PGSQLConnection) ([]datamodels.Indivi
 	}
 
 	for _, query := range individualQueries {
-		log.Info("Slow Query: %+v", query)
+		log.Info("Individual Query: %+v", query)
 	}
 	return individualQueries, nil
 }
