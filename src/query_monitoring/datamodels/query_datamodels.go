@@ -1,7 +1,7 @@
 package datamodels
 
 type SlowRunningQuery struct {
-	QueryID             *string  `db:"query_id"              metric_name:"slowquery.query_id"                   source_type:"gauge"`
+	QueryID             *string  `db:"query_id"              metric_name:"slowquery.query_id"                   source_type:"attribute"`
 	QueryText           *string  `db:"query_text"            metric_name:"slowquery.query_text"                 source_type:"attribute"`
 	DatabaseName        *string  `db:"database_name"         metric_name:"slowquery.database_name"              source_type:"attribute"`
 	SchemaName          *string  `db:"schema_name"           metric_name:"slowquery.schema_name"                source_type:"attribute"`
@@ -36,6 +36,6 @@ type BlockingQuery struct {
 	BlockingDatabase   *string `db:"blocking_database"    metric_name:"blockingquery.blocking_database"    source_type:"attribute"`
 }
 type ExecutionPlan struct {
-	Query   *string `db:"query" metric_name:"query" source_type:"attribute"`
-	QueryID *string `db:"queryid" metric_name:"query_id" source_type:"attribute"`
+	Query   *string `db:"query"                metric_name:"query"                              source_type:"attribute"`
+	QueryID *string `db:"queryid"              metric_name:"query_id"                           source_type:"attribute"`
 }
