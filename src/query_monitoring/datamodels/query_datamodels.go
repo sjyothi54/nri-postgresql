@@ -37,5 +37,5 @@ type BlockingQuery struct {
 }
 type ExecutionPlan struct {
 	Query   *string `db:"query" metric_name:"query" source_type:"attribute"`
-	QueryID *string `db:"queryid" metric_name:"query" source_type:"attribute"`
+	QueryID *string `db:"queryid" metric_name:"query_id" source_type:"attribute"`
 }

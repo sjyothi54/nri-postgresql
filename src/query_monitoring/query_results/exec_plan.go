@@ -27,7 +27,7 @@ func ExecutionPlan(conn *connection.PGSQLConnection) ([]datamodels.ExecutionPlan
 			log.Error("Error scanning row: %v", err)
 			return nil, err
 		}
-		log.Info("query: %s queryid: %s", executionPlan.Query, executionPlan.QueryID)
+		log.Info("query: %s queryid: %s", *executionPlan.Query, *executionPlan.QueryID)
 		executionPlans = append(executionPlans, executionPlan)
 	}
 	return executionPlans, nil
