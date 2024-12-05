@@ -13,6 +13,7 @@ type SlowRunningQuery struct {
 	StatementType       *string  `db:"statement_type"        metric_name:"slowquery.statement_type"             source_type:"attribute"`
 	CollectionTimestamp *string  `db:"collection_timestamp"  metric_name:"slowquery.collection_timestamp"       source_type:"attribute"`
 }
+
 type WaitEventQuery struct {
 	WaitEventName       *string  `db:"wait_event_name"       metric_name:"waitevent.wait_event_name"            source_type:"attribute"`
 	WaitCategory        *string  `db:"wait_category"         metric_name:"waitevent.wait_category"              source_type:"attribute"`
@@ -23,6 +24,7 @@ type WaitEventQuery struct {
 	QueryText           *string  `db:"query_text"            metric_name:"waitevent.query_text"                 source_type:"attribute"`
 	DatabaseName        *string  `db:"database_name"         metric_name:"waitevent.database_name"              source_type:"attribute"`
 }
+
 type BlockingQuery struct {
 	BlockedPid         *int64  `db:"blocked_pid"          metric_name:"blockingquery.blocked_pid"          source_type:"gauge"`
 	BlockedQuery       *string `db:"blocked_query"        metric_name:"blockingquery.blocked_query"        source_type:"attribute"`
@@ -37,7 +39,7 @@ type BlockingQuery struct {
 }
 
 type QueryPlanMetrics struct {
-	Queryid string `json:"queryid" db:"queryid" metric_name:"queryplan.queryid" source_type:"attribute"`
+	QueryText *string `json:"query" db:"query" metric_name:"queryplan.query" source_type:"attribute"`
 }
 
 type QueryExecutionPlanMetrics struct {

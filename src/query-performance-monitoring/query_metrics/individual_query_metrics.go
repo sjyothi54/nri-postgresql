@@ -18,7 +18,7 @@ func getIndividualMetrics(conn *performance_db_connection.PGSQLConnection, query
 
 	fmt.Println("individualQuerySearch::::", individualQuerySearchQuery)
 
-	individualQueriesRows, err := conn.Queryx("select queryid from pg_stat_monitor LIMIT 1")
+	individualQueriesRows, err := conn.Queryx("select query from pg_stat_monitor WHERE query like 'select * from actor%'")
 
 	if err != nil {
 		fmt.Printf("Error in fetching individual query metrics: %v", err)
@@ -46,30 +46,22 @@ func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *perform
 	if err != nil {
 		return nil, err
 	}
-	var queryTestID = individualQueriesMetricsList[0]
+
 	//fmt.Println("individualQueriesMetricsList::::", individualQueriesMetricsList)
 
-	//test1 := common_utils.CreateMetricSet(instanceEntity, "PostgresIndividualQueriesV18", args)
-	//err = test1.SetMetric("test", "test", metric.ATTRIBUTE)
-	//if err != nil {
-	//	return nil, err
-	//}
-
-	test2 := common_utils.CreateMetricSet(instanceEntity, "PostgresIndividualQueriesV233", args)
-	err = test2.SetMetric("queryTestID", queryTestID, metric.ATTRIBUTE)
+	test1 := common_utils.CreateMetricSet(instanceEntity, "PostgresIndividualQueriesV18", args)
+	err = test1.SetMetric("test", "test", metric.ATTRIBUTE)
 	if err != nil {
 		return nil, err
 	}
 
-	log.Info("queryTestID", queryTestID)
-
 	var queryIDString string
-	if individualQueriesMetricsList[0].Queryid != nil {
-		queryIDString = fmt.Sprintf("%d", individualQueriesMetricsList[0].Queryid)
+	if individualQueriesMetricsList[0].QueryText != nil {
+		queryIDString = fmt.Sprintf("%d", *individualQueriesMetricsList[0].QueryText)
 	} else {
 		queryIDString = ""
 	}
-	log.Info("queryIDString", queryIDString)
+
 	//var queryTextString string
 	//if individualQueriesMetricsList[0].Query != nil {
 	//	queryTextString = fmt.Sprintf("%s", *individualQueriesMetricsList[0].Query)
@@ -83,7 +75,7 @@ func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *perform
 	err = test3.SetMetric("queryText", "teeeee", metric.ATTRIBUTE)
 
 	test4 := common_utils.CreateMetricSet(instanceEntity, "PostgresIndividualQueriesV99", args)
-	err = test4.SetMetric("queryId", "holllaaa", metric.ATTRIBUTE)
+	err = test4.SetMetric("queryId", queryIDString, metric.ATTRIBUTE)
 
 	//test5 := common_utils.CreateMetricSet(instanceEntity, "PostgresIndividualQueriesV99", args)
 	//err = test5.SetMetric("queryText", queryTextString, metric.ATTRIBUTE)
