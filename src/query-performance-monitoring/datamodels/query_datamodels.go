@@ -37,7 +37,8 @@ type BlockingQuery struct {
 }
 
 type QueryPlanMetrics struct {
-	Queryid *int64 `json:"queryid" db:"queryid" metric_name:"queryplan.queryid" source_type:"gauge"`
+	Queryid *int64  `json:"queryid" db:"queryid" metric_name:"queryplan.queryid" source_type:"gauge"`
+	Query   *string `json:"query" db:"query" metric_name:"queryplan.query" source_type:"attribute"`
 }
 
 type QueryExecutionPlanMetrics struct {

@@ -18,7 +18,7 @@ func getIndividualMetrics(conn *performance_db_connection.PGSQLConnection, query
 
 	fmt.Println("individualQuerySearch::::", individualQuerySearchQuery)
 
-	individualQueriesRows, err := conn.Queryx("select queryid from pg_stat_monitor")
+	individualQueriesRows, err := conn.Queryx("select queryid,query from pg_stat_monitor")
 
 	if err != nil {
 		fmt.Printf("Error in fetching individual query metrics: %v", err)
@@ -64,6 +64,13 @@ func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *perform
 		queryIDString = ""
 	}
 
+	var queryTextString string
+	if individualQueriesMetricsList[0].Queryid != nil {
+		queryTextString = fmt.Sprintf("%d", *individualQueriesMetricsList[0].Query)
+	} else {
+		queryTextString = ""
+	}
+
 	//fmt.Print("queryTextRow1: ", *queryTextRow1)
 
 	test3 := common_utils.CreateMetricSet(instanceEntity, "PostgresIndividualQueriesV22", args)
@@ -71,6 +78,9 @@ func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *perform
 
 	test4 := common_utils.CreateMetricSet(instanceEntity, "PostgresIndividualQueriesV99", args)
 	err = test4.SetMetric("queryId", queryIDString, metric.ATTRIBUTE)
+
+	test5 := common_utils.CreateMetricSet(instanceEntity, "PostgresIndividualQueriesV100", args)
+	err = test5.SetMetric("queryText", queryTextString, metric.ATTRIBUTE)
 	//if err != nil {
 	//	return nil, err
 	//}
