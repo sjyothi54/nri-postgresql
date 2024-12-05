@@ -2,6 +2,7 @@ package query_metrics
 
 import (
 	"errors"
+	"fmt"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
@@ -47,6 +48,7 @@ func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *perfor
 	}
 	log.Info("Extension 'pg_stat_statements' enabled.")
 	slowQueries, queryIdList, err := getSlowRunningMetrics(conn)
+	fmt.Print("slowQueries: ", slowQueries)
 	if err != nil {
 		log.Error("Error fetching slow-running queries: %v", err)
 		return nil, err
