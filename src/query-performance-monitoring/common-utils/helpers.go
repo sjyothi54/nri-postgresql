@@ -28,24 +28,24 @@ func metricSet(e *integration.Entity, eventType, hostname string, port string) *
 
 func SetMetric(metricSet *metric.Set, name string, value interface{}, sourceType string) {
 	switch sourceType {
-	//case `gauge`:
-	//	var numericValue float64
-	//	switch v := value.(type) {
-	//	case int:
-	//		numericValue = float64(v)
-	//	case int64:
-	//		numericValue = float64(v)
-	//	case float64:
-	//		numericValue = v
-	//	default:
-	//		fmt.Println("Error: gauge metric requires a numeric value")
-	//		return
-	//	}
-	//	err := metricSet.SetMetric(name, numericValue, metric.GAUGE)
-	//	if err != nil {
-	//		fmt.Println("Error in setting metric1", err)
-	//		return
-	//	}
+	case `gauge`:
+		var numericValue float64
+		switch v := value.(type) {
+		case int:
+			numericValue = float64(v)
+		case int64:
+			numericValue = float64(v)
+		case float64:
+			numericValue = v
+		default:
+			fmt.Println("Error: gauge metric requires a numeric value")
+			return
+		}
+		err := metricSet.SetMetric(name, numericValue, metric.GAUGE)
+		if err != nil {
+			fmt.Println("Error in setting metric1", err)
+			return
+		}
 	case `attribute`:
 		err := metricSet.SetMetric(name, fmt.Sprintf("%v", value), metric.ATTRIBUTE)
 		if err != nil {
