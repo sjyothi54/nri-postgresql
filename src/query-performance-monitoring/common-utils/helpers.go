@@ -37,13 +37,13 @@ func SetMetric(metricSet *metric.Set, name string, value interface{}, sourceType
 	case `attribute`:
 		err := metricSet.SetMetric(name, value, metric.ATTRIBUTE)
 		if err != nil {
-			fmt.Println("Error in setting metric2", err)
+			fmt.Println("Error in setting metric", err)
 			return
 		}
 	default:
 		err := metricSet.SetMetric(name, value, metric.ATTRIBUTE)
 		if err != nil {
-			fmt.Println("Error in setting metric3", err)
+			fmt.Println("Error in setting metric", err)
 			return
 		}
 	}
