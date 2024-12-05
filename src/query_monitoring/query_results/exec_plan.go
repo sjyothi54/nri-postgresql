@@ -58,15 +58,15 @@ func PopulateExecutionPlan(conn *connection.PGSQLConnection, instanceEntity *int
 			sourceType := fieldType.Tag.Get("source_type")
 
 			if field.Kind() == reflect.Ptr && !field.IsNil() {
-				setMetric1(metricSet, metricName, field.Elem().Interface(), sourceType)
+				SetMetric1(metricSet, metricName, field.Elem().Interface(), sourceType)
 			} else if field.Kind() != reflect.Ptr {
-				setMetric1(metricSet, metricName, field.Interface(), sourceType)
+				SetMetric1(metricSet, metricName, field.Interface(), sourceType)
 			}
 		}
 	}
 }
 
-func setMetric1(metricSet *metric.Set, name string, value interface{}, sourceType string) {
+func SetMetric1(metricSet *metric.Set, name string, value interface{}, sourceType string) {
 	switch sourceType {
 	case `gauge`:
 		metricSet.SetMetric(name, value, metric.GAUGE)
