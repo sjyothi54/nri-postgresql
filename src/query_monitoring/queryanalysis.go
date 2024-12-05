@@ -11,7 +11,7 @@ import (
 )
 
 func RunAnalysis(instanceEntity *integration.Entity, connection *connection.PGSQLConnection, arguments args.ArgumentList) {
-	//query_results.PopulateSlowRunningMetrics(instanceEntity, connection, queries.SlowQueries)
+	query_results.PopulateSlowRunningMetrics(instanceEntity, connection)
 	query_results.PopulateExecutionPlan(connection, instanceEntity)
 	fmt.Println("Query analysis completed.")
 }
