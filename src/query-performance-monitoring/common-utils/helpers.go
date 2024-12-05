@@ -41,6 +41,7 @@ func SetMetric(metricSet *metric.Set, name string, value interface{}, sourceType
 			fmt.Println("Error: gauge metric requires a numeric value")
 			return
 		}
+		fmt.Println("Numeric value: ", numericValue)
 		err := metricSet.SetMetric(name, numericValue, metric.GAUGE)
 		if err != nil {
 			fmt.Println("Error in setting metric1", err)
