@@ -1,12 +1,15 @@
 package common_utils
 
 import (
+	"errors"
 	"fmt"
 	"github.com/newrelic/infra-integrations-sdk/v3/data/attribute"
 	"github.com/newrelic/infra-integrations-sdk/v3/data/metric"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/nri-postgresql/src/args"
+	"math"
 	"reflect"
+	"strconv"
 )
 
 func CreateMetricSet(e *integration.Entity, sampleName string, args args.ArgumentList) *metric.Set {
@@ -32,9 +35,9 @@ func SetMetric(metricSet *metric.Set, name string, value interface{}, sourceType
 		var numericValue float64
 		switch v := value.(type) {
 		case int:
-			numericValue = float64(v)
+			numericValue, _ = castToFloat(v)
 		case int64:
-			numericValue = float64(v)
+			numericValue, _ = castToFloat(v)
 		case float64:
 			numericValue = v
 		default:
@@ -83,4 +86,31 @@ func SetMetricsParser(instanceEntity *integration.Entity, eventName string, args
 			SetMetric(metricSetIngestion, metricName, field.Interface(), sourceType)
 		}
 	}
+}
+
+var ErrNonNumeric = errors.New("non-numeric value")
+
+func castToFloat(value interface{}) (float64, error) {
+	if b, ok := value.(bool); ok {
+		if b {
+			return 1, nil
+		}
+		return 0, nil
+	}
+
+	parsedValue, err := strconv.ParseFloat(fmt.Sprintf("%.2f", value), 64)
+	if err != nil {
+		return 0, err
+	}
+
+	if isNaNOrInf(parsedValue) {
+		return 0, ErrNonNumeric
+	}
+
+	return parsedValue, nil
+}
+
+// isNaNOrInf checks if a float64 value is NaN or Infinity.
+func isNaNOrInf(f float64) bool {
+	return math.IsNaN(f) || math.IsInf(f, 0)
 }
