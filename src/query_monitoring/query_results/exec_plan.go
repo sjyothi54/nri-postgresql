@@ -9,6 +9,7 @@ import (
 	"github.com/newrelic/nri-postgresql/src/connection"
 	"github.com/newrelic/nri-postgresql/src/query_monitoring/datamodels"
 	"github.com/newrelic/nri-postgresql/src/query_monitoring/queries"
+	"github.com/newrelic/nri-postgresql/src/query_monitoring/validations"
 )
 
 func ExecutionPlan(conn *connection.PGSQLConnection) ([]datamodels.ExecutionPlan, error) {
@@ -36,36 +37,51 @@ func ExecutionPlan(conn *connection.PGSQLConnection) ([]datamodels.ExecutionPlan
 }
 
 func PopulateExecutionPlan(conn *connection.PGSQLConnection, instanceEntity *integration.Entity) {
-	individualQueries, err := ExecutionPlan(conn)
+	isExtensionEnabled, err := validations.CheckPgStatMonitorExtensionEnabled(conn)
 	if err != nil {
-		log.Error("Error fetching individual queries: %v", err)
+		log.Error("Error executing query: %v", err)
 		return
 	}
-	if len(individualQueries) == 0 {
-		log.Info("No individual queries found.")
-		return
-	}
-	log.Info("Populate individual running: %+v", individualQueries)
-
-	for _, model := range individualQueries {
-		metricSet := instanceEntity.NewMetricSet("PostgresIndividualQueries")
-
-		modelValue := reflect.ValueOf(model)
-		modelType := reflect.TypeOf(model)
-
-		for i := 0; i < modelValue.NumField(); i++ {
-			field := modelValue.Field(i)
-			fieldType := modelType.Field(i)
-			metricName := fieldType.Tag.Get("metric_name")
-			sourceType := fieldType.Tag.Get("source_type")
-
-			if field.Kind() == reflect.Ptr && !field.IsNil() {
-				setMetrics(metricSet, metricName, field.Elem().Interface(), sourceType)
-			} else if field.Kind() != reflect.Ptr {
-				setMetrics(metricSet, metricName, field.Interface(), sourceType)
-			}
+	if isExtensionEnabled {
+		log.Info("Extension 'pg_stat_monitor' enabled.")
+		executionPlans, err := ExecutionPlan(conn)
+		if err != nil {
+			log.Error("Error fetching individual queries: %v", err)
+			return
 		}
+
+		if len(executionPlans) == 0 {
+			log.Info("No individual queries found.")
+			return
+		}
+		log.Info("Populate individual: %+v", executionPlans)
+
+		for _, model := range executionPlans {
+			metricSet := instanceEntity.NewMetricSet("PostgresIndividualQueries")
+
+			modelValue := reflect.ValueOf(model)
+			modelType := reflect.TypeOf(model)
+
+			for i := 0; i < modelValue.NumField(); i++ {
+				field := modelValue.Field(i)
+				fieldType := modelType.Field(i)
+				metricName := fieldType.Tag.Get("metric_name")
+				sourceType := fieldType.Tag.Get("source_type")
+
+				if field.Kind() == reflect.Ptr && !field.IsNil() {
+					setMetrics(metricSet, metricName, field.Elem().Interface(), sourceType)
+				} else if field.Kind() != reflect.Ptr {
+					setMetrics(metricSet, metricName, field.Interface(), sourceType)
+				}
+			}
+
+			//	log.Info("Metrics set for slow query: %s in database: %s", *model.QueryID, *model.DatabaseName)
+		}
+	} else {
+		log.Info("Extension 'pg_stat_statements' is not enabled.")
+		return
 	}
+
 }
 
 func setMetrics(metricSet *metric.Set, name string, value interface{}, sourceType string) {
