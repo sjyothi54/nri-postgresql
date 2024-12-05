@@ -27,7 +27,9 @@ func ExecutionPlan(conn *connection.PGSQLConnection) ([]datamodels.ExecutionPlan
 			log.Error("Error scanning row: %v", err)
 			return nil, err
 		}
-		log.Info("query: %s queryid: %s", *executionPlan.Query, *executionPlan.QueryID)
+		if executionPlan.Query != nil && executionPlan.QueryID != nil {
+			log.Info("query: %s queryid: %s", *executionPlan.Query, *executionPlan.QueryID)
+		}
 		executionPlans = append(executionPlans, executionPlan)
 	}
 	return executionPlans, nil
@@ -58,15 +60,15 @@ func PopulateExecutionPlan(conn *connection.PGSQLConnection, instanceEntity *int
 			sourceType := fieldType.Tag.Get("source_type")
 
 			if field.Kind() == reflect.Ptr && !field.IsNil() {
-				SetMetric1(metricSet, metricName, field.Elem().Interface(), sourceType)
+				setMetrics(metricSet, metricName, field.Elem().Interface(), sourceType)
 			} else if field.Kind() != reflect.Ptr {
-				SetMetric1(metricSet, metricName, field.Interface(), sourceType)
+				setMetrics(metricSet, metricName, field.Interface(), sourceType)
 			}
 		}
 	}
 }
 
-func SetMetric1(metricSet *metric.Set, name string, value interface{}, sourceType string) {
+func setMetrics(metricSet *metric.Set, name string, value interface{}, sourceType string) {
 	switch sourceType {
 	case `gauge`:
 		metricSet.SetMetric(name, value, metric.GAUGE)
