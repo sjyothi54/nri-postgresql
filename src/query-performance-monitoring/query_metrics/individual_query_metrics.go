@@ -44,42 +44,44 @@ func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *perform
 		return nil, err
 	}
 
+	fmt.Println("individualQueriesMetricsList::::", individualQueriesMetricsList)
+
 	test1 := common_utils.CreateMetricSet(instanceEntity, "PostgresIndividualQueriesV18", args)
 	err = test1.SetMetric("test", "test", metric.ATTRIBUTE)
 	if err != nil {
 		return nil, err
 	}
 
-	var queryTextRow1 = individualQueriesMetricsList[0].QueryText
-	fmt.Print("queryTextRow1: ", queryTextRow1)
-
-	test3 := common_utils.CreateMetricSet(instanceEntity, "PostgresIndividualQueriesV22", args)
-	err = test3.SetMetric("queryText", "teeeee", metric.ATTRIBUTE)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, model := range individualQueriesMetricsList {
-		fmt.Println("model", model.QueryText)
-		common_utils.SetMetricsParser(instanceEntity, "PostgresqlIndividualMetricsV1", args, model)
-
-		//metricSetIngestion := instanceEntity.NewMetricSet("PostgresIndividualQueriesV18")
-		//modelValue := reflect.ValueOf(model)
-		//modelType := reflect.TypeOf(model)
-		//for i := 0; i < modelValue.NumField(); i++ {
-		//	field := modelValue.Field(i)
-		//	fieldType := modelType.Field(i)
-		//	metricName := fieldType.Tag.Get("metric_name")
-		//	sourceType := fieldType.Tag.Get("source_type")
-		//
-		//	if field.Kind() == reflect.Ptr && !field.IsNil() {
-		//		common_utils.SetMetric(metricSetIngestion, metricName, field.Elem().Interface(), sourceType)
-		//	} else if field.Kind() != reflect.Ptr {
-		//		common_utils.SetMetric(metricSetIngestion, metricName, field.Interface(), sourceType)
-		//	}
-		//}
-		break
-	}
+	//var queryTextRow1 = individualQueriesMetricsList[0].QueryText
+	//fmt.Print("queryTextRow1: ", queryTextRow1)
+	//
+	//test3 := common_utils.CreateMetricSet(instanceEntity, "PostgresIndividualQueriesV22", args)
+	//err = test3.SetMetric("queryText", "teeeee", metric.ATTRIBUTE)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//
+	//for _, model := range individualQueriesMetricsList {
+	//	fmt.Println("model", model.QueryText)
+	//	common_utils.SetMetricsParser(instanceEntity, "PostgresqlIndividualMetricsV1", args, model)
+	//
+	//	//metricSetIngestion := instanceEntity.NewMetricSet("PostgresIndividualQueriesV18")
+	//	//modelValue := reflect.ValueOf(model)
+	//	//modelType := reflect.TypeOf(model)
+	//	//for i := 0; i < modelValue.NumField(); i++ {
+	//	//	field := modelValue.Field(i)
+	//	//	fieldType := modelType.Field(i)
+	//	//	metricName := fieldType.Tag.Get("metric_name")
+	//	//	sourceType := fieldType.Tag.Get("source_type")
+	//	//
+	//	//	if field.Kind() == reflect.Ptr && !field.IsNil() {
+	//	//		common_utils.SetMetric(metricSetIngestion, metricName, field.Elem().Interface(), sourceType)
+	//	//	} else if field.Kind() != reflect.Ptr {
+	//	//		common_utils.SetMetric(metricSetIngestion, metricName, field.Interface(), sourceType)
+	//	//	}
+	//	//}
+	//	break
+	//}
 
 	return individualQueriesMetricsList, nil
 }
