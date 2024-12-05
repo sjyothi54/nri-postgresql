@@ -24,10 +24,9 @@ const (
         pg_stat_statements pss 
     JOIN
         pg_database pd ON pss.dbid = pd.oid
-    WHERE
-        queryid = '3382708387413318035'
     ORDER BY
-        avg_elapsed_time_ms DESC;`
+        avg_elapsed_time_ms DESC;
+    LIMIT 10 ;`
 
 	WaitEvents = `WITH wait_history AS (
         SELECT
@@ -92,6 +91,5 @@ const (
       JOIN pg_stat_statements as blocking_statements on blocking_activity.query_id = blocking_statements.queryid
       WHERE NOT blocked_locks.granted;
 `
-	ExecutionPlanQuery  = `SELECT query,queryid from pg_stat_monitor where query like 'select * from country where%';`
-	Executionstatements = `SELECT query,queryid from pg_stat_statements where query like 'select * from country where%';`
+	ExecutionPlanQuery = `SELECT query,queryid from pg_stat_monitor LIMIT 10;`
 )
