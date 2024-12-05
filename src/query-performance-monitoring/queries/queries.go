@@ -12,6 +12,7 @@ const (
         ROUND((pss.total_exec_time / pss.calls)::numeric, 3) AS avg_cpu_time_ms,
         pss.shared_blks_read / pss.calls AS avg_disk_reads,
         pss.shared_blks_written / pss.calls AS avg_disk_writes,
+        pm.query as individual_query
         CASE
             WHEN pss.query ILIKE 'SELECT%' THEN 'SELECT'
             WHEN pss.query ILIKE 'INSERT%' THEN 'INSERT'
@@ -24,6 +25,9 @@ const (
         pg_stat_statements pss
     JOIN
         pg_database pd ON pss.dbid = pd.oid
+    left join 
+            pg_stat_monitor pm on pm.queryid = pss.queryid
+        
     ORDER BY
         avg_elapsed_time_ms DESC -- Order by the average elapsed time in descending order
         ;`

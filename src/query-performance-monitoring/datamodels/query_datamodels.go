@@ -12,6 +12,7 @@ type SlowRunningQuery struct {
 	AvgDiskWrites       *float64 `db:"avg_disk_writes"       metric_name:"slowquery.avg_disk_writes"            source_type:"gauge"`
 	StatementType       *string  `db:"statement_type"        metric_name:"slowquery.statement_type"             source_type:"attribute"`
 	CollectionTimestamp *string  `db:"collection_timestamp"  metric_name:"slowquery.collection_timestamp"       source_type:"attribute"`
+	individualQuery     *string  `db:"individual_query"      metric_name:"slowquery.individual_query"           source_type:"attribute"`
 }
 type WaitEventQuery struct {
 	WaitEventName       *string  `db:"wait_event_name"       metric_name:"waitevent.wait_event_name"            source_type:"attribute"`
