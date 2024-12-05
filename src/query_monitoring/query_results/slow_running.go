@@ -86,11 +86,11 @@ func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *connec
 
 func SetMetrics(metricSet *metric.Set, name string, value interface{}, sourceType string) {
 	switch sourceType {
-	case `gauge`:
+	case "gauge":
 		metricSet.SetMetric(name, value, metric.GAUGE)
-	case `attribute`:
+	case "attribute":
 		metricSet.SetMetric(name, value, metric.ATTRIBUTE)
 	default:
-		metricSet.SetMetric(name, value, metric.GAUGE)
+		metricSet.SetMetric(name, value, metric.ATTRIBUTE)
 	}
 }
