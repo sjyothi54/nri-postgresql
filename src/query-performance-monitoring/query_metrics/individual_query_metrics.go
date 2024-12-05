@@ -56,13 +56,21 @@ func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *perform
 	}
 
 	var _ = individualQueriesMetricsList[0].Queryid
+
+	var queryIDString string
+	if individualQueriesMetricsList[0].Queryid != nil {
+		queryIDString = fmt.Sprintf("%d", *individualQueriesMetricsList[0].Queryid)
+	} else {
+		queryIDString = ""
+	}
+
 	//fmt.Print("queryTextRow1: ", *queryTextRow1)
 
 	test3 := common_utils.CreateMetricSet(instanceEntity, "PostgresIndividualQueriesV22", args)
 	err = test3.SetMetric("queryText", "teeeee", metric.ATTRIBUTE)
 
 	test4 := common_utils.CreateMetricSet(instanceEntity, "PostgresIndividualQueriesV99", args)
-	err = test4.SetMetric("queryId", individualQueriesMetricsList[0].Queryid, metric.GAUGE)
+	err = test4.SetMetric("queryId", queryIDString, metric.ATTRIBUTE)
 	//if err != nil {
 	//	return nil, err
 	//}
