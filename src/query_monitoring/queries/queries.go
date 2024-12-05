@@ -25,9 +25,8 @@ const (
     JOIN
         pg_database pd ON pss.dbid = pd.oid
     ORDER BY
-        avg_elapsed_time_ms DESC;
+        avg_elapsed_time_ms DESC
     LIMIT 10 ;`
-
 	WaitEvents = `WITH wait_history AS (
         SELECT
             wh.pid,
