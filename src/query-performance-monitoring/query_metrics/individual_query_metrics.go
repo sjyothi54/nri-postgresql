@@ -55,12 +55,12 @@ func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *perform
 		return nil, err
 	}
 
-	var queryIDString string
-	if individualQueriesMetricsList[0].Queryid != nil {
-		queryIDString = fmt.Sprintf("%d", *individualQueriesMetricsList[0].Queryid)
-	} else {
-		queryIDString = ""
-	}
+	//var queryIDString string
+	//if individualQueriesMetricsList[0].Queryid != nil {
+	//	queryIDString = fmt.Sprintf("%d", *individualQueriesMetricsList[0].Queryid)
+	//} else {
+	//	queryIDString = ""
+	//}
 
 	//var queryTextString string
 	//if individualQueriesMetricsList[0].Query != nil {
@@ -74,8 +74,8 @@ func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *perform
 	test3 := common_utils.CreateMetricSet(instanceEntity, "PostgresIndividualQueriesV22", args)
 	err = test3.SetMetric("queryText", "teeeee", metric.ATTRIBUTE)
 
-	test4 := common_utils.CreateMetricSet(instanceEntity, "PostgresIndividualQueriesV99", args)
-	err = test4.SetMetric("queryId", queryIDString, metric.ATTRIBUTE)
+	//test4 := common_utils.CreateMetricSet(instanceEntity, "PostgresIndividualQueriesV99", args)
+	//err = test4.SetMetric("queryId", queryIDString, metric.ATTRIBUTE)
 
 	//test5 := common_utils.CreateMetricSet(instanceEntity, "PostgresIndividualQueriesV99", args)
 	//err = test5.SetMetric("queryText", queryTextString, metric.ATTRIBUTE)
