@@ -1,6 +1,8 @@
 package query_metrics
 
 import (
+	"fmt"
+	"github.com/google/uuid"
 	"github.com/newrelic/infra-integrations-sdk/v3/data/metric"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
@@ -55,7 +57,9 @@ func PopulateWaitEventMetrics(instanceEntity *integration.Entity, conn *performa
 	//log.Info("WaitEventMetricsLog %+v", waitEventMetrics)
 
 	ms := common_utils.CreateMetricSet(instanceEntity, "testData", args)
-	err := ms.SetMetric("testing", "PostgresqlWaitEventMetricsV1a", metric.ATTRIBUTE)
+	eventNamee := "testingTTest" + uuid.New().String()
+	fmt.Print("eventNamee", eventNamee)
+	err := ms.SetMetric(eventNamee, "PostgresqlWaitEventMetricsV1a", metric.ATTRIBUTE)
 
 	ms12 := common_utils.CreateMetricSet(instanceEntity, "testData1", args)
 	err = ms12.SetMetric("testing", "PostgresqlWaitEventMetricsV1a", metric.ATTRIBUTE)
