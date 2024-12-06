@@ -1,6 +1,7 @@
 package query_metrics
 
 import (
+	"errors"
 	"github.com/newrelic/infra-integrations-sdk/v3/data/attribute"
 	"github.com/newrelic/infra-integrations-sdk/v3/data/metric"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
@@ -10,6 +11,7 @@ import (
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
 	performance_db_connection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-db-connection"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
+	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
 )
 
 func getWaitEventMetrics(conn *performance_db_connection.PGSQLConnection) ([]datamodels.WaitEventQuery, error) {
@@ -32,35 +34,35 @@ func getWaitEventMetrics(conn *performance_db_connection.PGSQLConnection) ([]dat
 }
 
 func PopulateWaitEventMetrics(instanceEntity *integration.Entity, conn *performance_db_connection.PGSQLConnection, args args.ArgumentList) error {
-	//isExtensionEnabled, err := validations.CheckPgWaitExtensionEnabled(conn)
-	//if err != nil {
-	//	log.Error("Error executing query: %v", err)
-	//	return err
-	//}
-	//if !isExtensionEnabled {
-	//	log.Info("Extension 'pg_wait_sampling' is not enabled.")
-	//	return errors.New("extension 'pg_wait_sampling' is not enabled")
-	//}
-	//log.Info("Extension 'pg_wait_sampling' enabled.")
-	//waitEventMetrics, err := getWaitEventMetrics(conn)
-	//if err != nil {
-	//	log.Error("Error fetching wait-event metrics: %v", err)
-	//	return err
-	//}
-	//
-	//if len(waitEventMetrics) == 0 {
-	//	log.Info("No wait-event metrics found.")
-	//	return nil
-	//}
-	//
-	//log.Info("WaitEventMetricsLog %+v", waitEventMetrics)
+	isExtensionEnabled, err := validations.CheckPgWaitExtensionEnabled(conn)
+	if err != nil {
+		log.Error("Error executing query: %v", err)
+		return err
+	}
+	if !isExtensionEnabled {
+		log.Info("Extension 'pg_wait_sampling' is not enabled.")
+		return errors.New("extension 'pg_wait_sampling' is not enabled")
+	}
+	log.Info("Extension 'pg_wait_sampling' enabled.")
+	waitEventMetrics, err := getWaitEventMetrics(conn)
+	if err != nil {
+		log.Error("Error fetching wait-event metrics: %v", err)
+		return err
+	}
+
+	if len(waitEventMetrics) == 0 {
+		log.Info("No wait-event metrics found.")
+		return nil
+	}
+
+	log.Info("WaitEventMetricsLog %+v", waitEventMetrics)
 	instanceEntity.NewMetricSet("testData6Ssssss",
 		attribute.Attribute{Key: "displayName", Value: "testiungg"},
 		attribute.Attribute{Key: "entityName", Value: "testiunggDbbb"},
 	)
 
 	ms := common_utils.CreateMetricSet(instanceEntity, "testData", args)
-	err := ms.SetMetric("testing", "PostgresqlWaitEventMetricsV1a", metric.ATTRIBUTE)
+	err = ms.SetMetric("testing", "PostgresqlWaitEventMetricsV1a", metric.ATTRIBUTE)
 
 	ms12 := common_utils.CreateMetricSet(instanceEntity, "testData1", args)
 	err = ms12.SetMetric("testing", "PostgresqlWaitEventMetricsV1a", metric.ATTRIBUTE)
@@ -68,9 +70,9 @@ func PopulateWaitEventMetrics(instanceEntity *integration.Entity, conn *performa
 		log.Error("Error setting event_type attribute: %v", err)
 		return err
 	}
-	//for _, model := range waitEventMetrics {
-	//	common_utils.SetMetricsParser(instanceEntity, "PostgresqlWaitEventMetricsV1", args, model)
-	//}
+	for _, model := range waitEventMetrics {
+		common_utils.SetMetricsParser(instanceEntity, "PostgresqlWaitEventMetricsV1", args, model)
+	}
 
 	return nil
 }
