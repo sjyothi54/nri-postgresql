@@ -11,6 +11,7 @@ import (
 	common_utils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-db-connection"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/query_metrics"
+	"sync"
 )
 
 func QueryPerformanceMain(instanceEntity *integration.Entity, args args.ArgumentList) {
@@ -38,11 +39,25 @@ func QueryPerformanceMain(instanceEntity *integration.Entity, args args.Argument
 		attribute.Attribute{Key: "entityName", Value: "testiunggDbbb"},
 	)
 
-	err = query_metrics.PopulateWaitEventMetrics(instanceEntity, conn, args)
-	if err != nil {
-		fmt.Printf("Error in fetching wait event metrics: %v\n", err)
-		return
-	}
+	var wg sync.WaitGroup
+
+	go func() {
+		wg.Add(1)
+		defer wg.Done()
+		err = query_metrics.PopulateWaitEventMetrics(instanceEntity, conn, args)
+		if err != nil {
+			fmt.Print("Error in fetching individual metrics: ", err)
+			return
+		}
+	}()
+
+	wg.Wait()
+
+	//err = query_metrics.PopulateWaitEventMetrics(instanceEntity, conn, args)
+	//if err != nil {
+	//	fmt.Printf("Error in fetching wait event metrics: %v\n", err)
+	//	return
+	//}
 	//fmt.Println(queryIdList)
 	//_, err = query_metrics.PopulateIndividualMetrics(instanceEntity, conn, args, queryIdList)
 	//if err != nil {
