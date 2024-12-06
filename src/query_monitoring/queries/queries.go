@@ -4,7 +4,7 @@ package queries
 const (
 	SlowQueries = `SELECT
         pss.queryid AS query_id,
-        pss.query AS query_text,
+        pss.query AS query_text
        
     FROM
         pg_stat_statements pss
