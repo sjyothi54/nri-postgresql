@@ -66,30 +66,25 @@ const (
     ORDER BY total_wait_time_ms DESC
     LIMIT 10;`
 	BlockingQueries = `SELECT
-          blocked_activity.pid AS blocked_pid,
-          blocked_statements.query AS blocked_query,
-          blocked_statements.queryid AS blocked_query_id,
-          blocked_activity.query_start AS blocked_query_start,
-          blocked_activity.datname AS database_name,
-          blocking_activity.pid AS blocking_pid,
-          blocking_statements.query AS blocking_query,
-          blocking_statements.queryid AS blocking_query_id,
-          blocking_activity.query_start AS blocking_query_start
-      FROM pg_stat_activity AS blocked_activity
-      JOIN pg_stat_statements as blocked_statements on blocked_activity.query_id = blocked_statements.queryid
-      JOIN pg_locks blocked_locks ON blocked_activity.pid = blocked_locks.pid
-      JOIN pg_locks blocking_locks ON blocked_locks.locktype = blocking_locks.locktype
-          AND blocked_locks.database IS NOT DISTINCT FROM blocking_locks.database
-          AND blocked_locks.relation IS NOT DISTINCT FROM blocking_locks.relation
-          AND blocked_locks.page IS NOT DISTINCT FROM blocking_locks.page
-          AND blocked_locks.tuple IS NOT DISTINCT FROM blocking_locks.tuple
-          AND blocked_locks.transactionid IS NOT DISTINCT FROM blocking_locks.transactionid
-          AND blocked_locks.classid IS NOT DISTINCT FROM blocking_locks.classid
-          AND blocked_locks.objid IS NOT DISTINCT FROM blocking_locks.objid
-          AND blocked_locks.objsubid IS NOT DISTINCT FROM blocking_locks.objsubid
-          AND blocked_locks.pid <> blocking_locks.pid
-      JOIN pg_stat_activity AS blocking_activity ON blocking_locks.pid = blocking_activity.pid
-      JOIN pg_stat_statements as blocking_statements on blocking_activity.query_id = blocking_statements.queryid
-      WHERE NOT blocked_locks.granted;
+    blocked_locks.pid AS blocked_pid,
+    blocked_activity.usename AS blocked_user,
+    blocking_locks.pid AS blocking_pid,
+    blocking_activity.usename AS blocking_user,
+    blocked_activity.query AS blocked_query,
+    blocking_activity.query AS blocking_query
+FROM pg_catalog.pg_locks blocked_locks
+JOIN pg_catalog.pg_stat_activity blocked_activity ON blocked_activity.pid = blocked_locks.pid
+JOIN pg_catalog.pg_locks blocking_locks ON blocking_locks.locktype = blocked_locks.locktype
+    AND blocking_locks.DATABASE IS NOT DISTINCT FROM blocked_locks.DATABASE
+    AND blocking_locks.relation IS NOT DISTINCT FROM blocked_locks.relation
+    AND blocking_locks.page IS NOT DISTINCT FROM blocked_locks.page
+    AND blocking_locks.tuple IS NOT DISTINCT FROM blocked_locks.tuple
+    AND blocking_locks.virtualxid IS NOT DISTINCT FROM blocked_locks.virtualxid
+    AND blocking_locks.transactionid IS NOT DISTINCT FROM blocked_locks.transactionid
+    AND blocking_locks.classid IS NOT DISTINCT FROM blocked_locks.classid
+    AND blocking_locks.objid IS NOT DISTINCT FROM blocked_locks.objid
+    AND blocking_locks.objsubid IS NOT DISTINCT FROM blocked_locks.objsubid
+JOIN pg_catalog.pg_stat_activity blocking_activity ON blocking_activity.pid = blocking_locks.pid
+WHERE NOT blocked_locks.GRANTED;
 `
 )
