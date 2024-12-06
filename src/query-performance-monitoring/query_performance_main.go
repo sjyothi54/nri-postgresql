@@ -3,6 +3,7 @@ package query_performance_monitoring
 // this is the main go file for the query_monitoring package
 import (
 	"fmt"
+	"github.com/newrelic/infra-integrations-sdk/v3/data/attribute"
 	"github.com/newrelic/infra-integrations-sdk/v3/data/metric"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
@@ -31,6 +32,11 @@ func QueryPerformanceMain(instanceEntity *integration.Entity, args args.Argument
 		log.Error("Error setting event_type attribute: %v", err)
 		return
 	}
+
+	instanceEntity.NewMetricSet("PostgresqlWaitEventMetricsV1Test",
+		attribute.Attribute{Key: "displayName", Value: "testiungg"},
+		attribute.Attribute{Key: "entityName", Value: "testiunggDbbb"},
+	)
 
 	err = query_metrics.PopulateWaitEventMetrics(instanceEntity, conn, args)
 	if err != nil {
