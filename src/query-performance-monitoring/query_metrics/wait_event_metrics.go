@@ -55,7 +55,7 @@ func PopulateWaitEventMetrics(instanceEntity *integration.Entity, conn *performa
 	//log.Info("WaitEventMetrics %+v", waitEventMetrics)
 
 	ms := common_utils.CreateMetricSet(instanceEntity, "testData", args)
-	err = ms.SetMetric("testing", "PostgresqlWaitEventMetricsV1a", metric.ATTRIBUTE)
+	err := ms.SetMetric("testing", "PostgresqlWaitEventMetricsV1a", metric.ATTRIBUTE)
 	if err != nil {
 		log.Error("Error setting event_type attribute: %v", err)
 		return err
