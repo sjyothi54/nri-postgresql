@@ -1,7 +1,6 @@
 package query_metrics
 
 import (
-	"errors"
 	"github.com/newrelic/infra-integrations-sdk/v3/data/metric"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
@@ -10,7 +9,6 @@ import (
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
 	performance_db_connection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-db-connection"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
-	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
 )
 
 func getWaitEventMetrics(conn *performance_db_connection.PGSQLConnection) ([]datamodels.WaitEventQuery, error) {
@@ -33,26 +31,26 @@ func getWaitEventMetrics(conn *performance_db_connection.PGSQLConnection) ([]dat
 }
 
 func PopulateWaitEventMetrics(instanceEntity *integration.Entity, conn *performance_db_connection.PGSQLConnection, args args.ArgumentList) error {
-	isExtensionEnabled, err := validations.CheckPgWaitExtensionEnabled(conn)
-	if err != nil {
-		log.Error("Error executing query: %v", err)
-		return err
-	}
-	if !isExtensionEnabled {
-		log.Info("Extension 'pg_wait_sampling' is not enabled.")
-		return errors.New("extension 'pg_wait_sampling' is not enabled")
-	}
-	log.Info("Extension 'pg_wait_sampling' enabled.")
-	waitEventMetrics, err := getWaitEventMetrics(conn)
-	if err != nil {
-		log.Error("Error fetching wait-event metrics: %v", err)
-		return err
-	}
-
-	if len(waitEventMetrics) == 0 {
-		log.Info("No wait-event metrics found.")
-		return nil
-	}
+	//isExtensionEnabled, err := validations.CheckPgWaitExtensionEnabled(conn)
+	//if err != nil {
+	//	log.Error("Error executing query: %v", err)
+	//	return err
+	//}
+	//if !isExtensionEnabled {
+	//	log.Info("Extension 'pg_wait_sampling' is not enabled.")
+	//	return errors.New("extension 'pg_wait_sampling' is not enabled")
+	//}
+	//log.Info("Extension 'pg_wait_sampling' enabled.")
+	//waitEventMetrics, err := getWaitEventMetrics(conn)
+	//if err != nil {
+	//	log.Error("Error fetching wait-event metrics: %v", err)
+	//	return err
+	//}
+	//
+	//if len(waitEventMetrics) == 0 {
+	//	log.Info("No wait-event metrics found.")
+	//	return nil
+	//}
 
 	//log.Info("WaitEventMetrics %+v", waitEventMetrics)
 
