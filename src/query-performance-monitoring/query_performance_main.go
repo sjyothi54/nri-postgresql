@@ -9,11 +9,12 @@ import (
 	"github.com/newrelic/nri-postgresql/src/args"
 	common_utils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-db-connection"
+	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/query_metrics"
 )
 
 func QueryPerformanceMain(instanceEntity *integration.Entity, args args.ArgumentList) {
 	connectionInfo := performance_db_connection.DefaultConnectionInfo(&args)
-	_, err := connectionInfo.NewConnection(args.Database)
+	conn, err := connectionInfo.NewConnection(args.Database)
 	if err != nil {
 		fmt.Print("Error in connection")
 		return
@@ -31,11 +32,11 @@ func QueryPerformanceMain(instanceEntity *integration.Entity, args args.Argument
 		return
 	}
 
-	//err = query_metrics.PopulateWaitEventMetrics(instanceEntity, conn, args)
-	//if err != nil {
-	//	fmt.Printf("Error in fetching wait event metrics: %v\n", err)
-	//	return
-	//}
+	err = query_metrics.PopulateWaitEventMetrics(instanceEntity, conn, args)
+	if err != nil {
+		fmt.Printf("Error in fetching wait event metrics: %v\n", err)
+		return
+	}
 	//fmt.Println(queryIdList)
 	//_, err = query_metrics.PopulateIndividualMetrics(instanceEntity, conn, args, queryIdList)
 	//if err != nil {
