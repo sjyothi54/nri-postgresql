@@ -13,6 +13,7 @@ type SlowRunningQuery struct {
 	StatementType       *string  `db:"statement_type"        metric_name:"slowquery.statement_type"             source_type:"attribute"`
 	CollectionTimestamp *string  `db:"collection_timestamp"  metric_name:"slowquery.collection_timestamp"       source_type:"attribute"`
 }
+
 type WaitEventQuery struct {
 	WaitEventName       *string  `db:"wait_event_name"       metric_name:"waitevent.wait_event_name"            source_type:"attribute"`
 	WaitCategory        *string  `db:"wait_category"         metric_name:"waitevent.wait_category"              source_type:"attribute"`
@@ -23,16 +24,12 @@ type WaitEventQuery struct {
 	QueryText           *string  `db:"query_text"            metric_name:"waitevent.query_text"                 source_type:"attribute"`
 	DatabaseName        *string  `db:"database_name"         metric_name:"waitevent.database_name"              source_type:"attribute"`
 }
+
 type BlockingQuery struct {
 	BlockedPid         *int64  `db:"blocked_pid"          metric_name:"blockingquery.blocked_pid"          source_type:"gauge"`
 	BlockedUser        *string `db:"blocked_user"         metric_name:"blockingquery.blocked_user"         source_type:"attribute"`
 	BlockedQuery       *string `db:"blocked_query"        metric_name:"blockingquery.blocked_query"        source_type:"attribute"`
-	BlockedQueryId     *string `db:"blocked_query_id"     metric_name:"blockingquery.blocked_query_id"     source_type:"attribute"`
-	BlockedQueryStart  *string `db:"blocked_query_start"  metric_name:"blockingquery.blocked_query_start"  source_type:"attribute"`
-	BlockedDatabase    *string `db:"database_name"        metric_name:"blockingquery.database_name"        source_type:"attribute"`
 	BlockingPid        *int64  `db:"blocking_pid"         metric_name:"blockingquery.blocking_pid"         source_type:"gauge"`
+	BlockingUser       *string `db:"blocking_user"        metric_name:"blockingquery.blocking_user"        source_type:"attribute"`
 	BlockingQuery      *string `db:"blocking_query"       metric_name:"blockingquery.blocking_query"       source_type:"attribute"`
-	BlockingQueryId    *string `db:"blocking_query_id"    metric_name:"blockingquery.blocking_query_id"    source_type:"attribute"`
-	BlockingQueryStart *string `db:"blocking_query_start" metric_name:"blockingquery.blocking_query_start" source_type:"attribute"`
-	BlockingDatabase   *string `db:"blocking_database"    metric_name:"blockingquery.blocking_database"    source_type:"attribute"`
 }
