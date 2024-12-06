@@ -56,8 +56,15 @@ func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *connec
 		}
 		log.Info("Populate-slow running: %+v", slowQueries)
 
+		var individualQueriesList []datamodels.SlowRunningQuery
+		individualQueriesList, err = GetIndividualMetrics(conn)
+		for _, query := range individualQueriesList {
+			log.Info("Individual Query: %+v", query)
+			slowQueries = append(slowQueries, query)
+		}
+
 		for _, model := range slowQueries {
-			metricSet := instanceEntity.NewMetricSet("PostgresSlowQueries")
+			metricSet := instanceEntity.NewMetricSet("PostgresSlowAndIndividualQueries")
 
 			modelValue := reflect.ValueOf(model)
 			modelType := reflect.TypeOf(model)

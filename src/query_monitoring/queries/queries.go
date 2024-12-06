@@ -27,7 +27,7 @@ const (
     ORDER BY
         avg_elapsed_time_ms DESC -- Order by the average elapsed time in descending order
     LIMIT
-        5;`
+        1;`
 
 	WaitEvents = `WITH wait_history AS (
         SELECT
@@ -92,4 +92,6 @@ const (
       JOIN pg_stat_statements as blocking_statements on blocking_activity.query_id = blocking_statements.queryid
       WHERE NOT blocked_locks.granted;
 `
+
+	IndividualQueries = `SELECT queryid, query FROM pg_stats_monitor LIMIT 1;`
 )
