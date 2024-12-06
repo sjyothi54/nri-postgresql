@@ -5,21 +5,7 @@ const (
 	SlowQueries = `SELECT
         pss.queryid AS query_id,
         pss.query AS query_text,
-        pd.datname AS database_name,
-        current_schema() AS schema_name,
-        pss.calls AS execution_count,
-        ROUND((pss.total_exec_time / pss.calls)::numeric, 3) AS avg_elapsed_time_ms,
-        ROUND((pss.total_exec_time / pss.calls)::numeric, 3) AS avg_cpu_time_ms,
-        pss.shared_blks_read / pss.calls AS avg_disk_reads,
-        pss.shared_blks_written / pss.calls AS avg_disk_writes,
-        CASE
-            WHEN pss.query ILIKE 'SELECT%' THEN 'SELECT'
-            WHEN pss.query ILIKE 'INSERT%' THEN 'INSERT'
-            WHEN pss.query ILIKE 'UPDATE%' THEN 'UPDATE'
-            WHEN pss.query ILIKE 'DELETE%' THEN 'DELETE'
-            ELSE 'OTHER'
-        END AS statement_type,
-        to_char(NOW() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS collection_timestamp
+       
     FROM
         pg_stat_statements pss
     JOIN
