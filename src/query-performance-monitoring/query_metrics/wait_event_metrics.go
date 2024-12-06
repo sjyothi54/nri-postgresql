@@ -1,6 +1,7 @@
 package query_metrics
 
 import (
+	"github.com/newrelic/infra-integrations-sdk/v3/data/attribute"
 	"github.com/newrelic/infra-integrations-sdk/v3/data/metric"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
@@ -53,6 +54,10 @@ func PopulateWaitEventMetrics(instanceEntity *integration.Entity, conn *performa
 	//}
 	//
 	//log.Info("WaitEventMetricsLog %+v", waitEventMetrics)
+	instanceEntity.NewMetricSet("testData6Ssssss",
+		attribute.Attribute{Key: "displayName", Value: "testiungg"},
+		attribute.Attribute{Key: "entityName", Value: "testiunggDbbb"},
+	)
 
 	ms := common_utils.CreateMetricSet(instanceEntity, "testData", args)
 	err := ms.SetMetric("testing", "PostgresqlWaitEventMetricsV1a", metric.ATTRIBUTE)
