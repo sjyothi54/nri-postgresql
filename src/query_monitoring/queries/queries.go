@@ -77,5 +77,5 @@ const (
       WHERE NOT blocked_locks.granted;
 `
 
-	IndividualQueries = `SELECT queryid, query FROM pg_stats_monitor LIMIT 1;`
+	IndividualQueries = `SELECT queryid, query FROM public.pg_stat_monitor LIMIT 3;`
 )

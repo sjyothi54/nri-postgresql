@@ -1,8 +1,8 @@
 package datamodels
 
 type SlowRunningQuery struct {
-	QueryID   *int64  `db:"query_id"              metric_name:"slowquery.query_id"                   source_type:"gauge"`
-	QueryText *string `db:"query_text"            metric_name:"slowquery.query_text"                 source_type:"attribute"`
+	QueryID   int64  `db:"query_id"              metric_name:"slowquery.query_id"                   source_type:"gauge"`
+	QueryText string `db:"query_text"            metric_name:"slowquery.query_text"                 source_type:"attribute"`
 }
 type WaitEventQuery struct {
 	WaitEventName       *string  `db:"wait_event_name"       metric_name:"waitevent.wait_event_name"            source_type:"attribute"`
