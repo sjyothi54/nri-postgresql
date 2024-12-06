@@ -44,7 +44,21 @@ func PopulateWaitEventMetrics(instanceEntity *integration.Entity, conn *performa
 		return errors.New("extension 'pg_wait_sampling' is not enabled")
 	}
 	log.Info("Extension 'pg_wait_sampling' enabled.")
-	waitEventMetrics, err := getWaitEventMetrics(conn)
+	//waitEventMetrics, err := getWaitEventMetrics(conn)
+	var waitEventMetrics []datamodels.WaitEventQuery
+	var query = queries.WaitEvents
+	rows, err := conn.Queryx(query)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var waitEventMetric datamodels.WaitEventQuery
+		if err := rows.StructScan(&waitEventMetric); err != nil {
+			return err
+		}
+		waitEventMetrics = append(waitEventMetrics, waitEventMetric)
+	}
 	if err != nil {
 		log.Error("Error fetching wait-event metrics: %v", err)
 		return err
