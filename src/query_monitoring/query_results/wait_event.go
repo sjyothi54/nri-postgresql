@@ -58,6 +58,7 @@ func PopulateWaitEventMetrics(instanceEntity *integration.Entity, conn *connecti
 
 		for _, model := range waitEvents {
 			metricSet := instanceEntity.NewMetricSet("PostgresWaitEventsGoV1")
+			log.Info("Creating metric set for wait event: %+v", model)
 
 			modelValue := reflect.ValueOf(model)
 			modelType := reflect.TypeOf(model)
@@ -73,6 +74,7 @@ func PopulateWaitEventMetrics(instanceEntity *integration.Entity, conn *connecti
 				} else if field.Kind() != reflect.Ptr {
 					setMetric(metricSet, metricName, field.Interface(), sourceType)
 				}
+				log.Info("Metric set created: %+v", metricSet)
 			}
 		}
 	} else {
