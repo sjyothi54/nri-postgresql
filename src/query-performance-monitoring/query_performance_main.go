@@ -12,6 +12,7 @@ import (
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-db-connection"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/query_metrics"
 	"sync"
+	"time"
 )
 
 func QueryPerformanceMain(instanceEntity *integration.Entity, args args.ArgumentList) {
@@ -52,6 +53,7 @@ func QueryPerformanceMain(instanceEntity *integration.Entity, args args.Argument
 	}()
 
 	wg.Wait()
+	time.Sleep(5 * time.Second)
 
 	//err = query_metrics.PopulateWaitEventMetrics(instanceEntity, conn, args)
 	//if err != nil {
