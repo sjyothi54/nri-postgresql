@@ -25,6 +25,7 @@ type WaitEventQuery struct {
 }
 type BlockingQuery struct {
 	BlockedPid         *int64  `db:"blocked_pid"          metric_name:"blockingquery.blocked_pid"          source_type:"gauge"`
+	BlockedUser        *string `db:"blocked_user"         metric_name:"blockingquery.blocked_user"         source_type:"attribute"`
 	BlockedQuery       *string `db:"blocked_query"        metric_name:"blockingquery.blocked_query"        source_type:"attribute"`
 	BlockedQueryId     *string `db:"blocked_query_id"     metric_name:"blockingquery.blocked_query_id"     source_type:"attribute"`
 	BlockedQueryStart  *string `db:"blocked_query_start"  metric_name:"blockingquery.blocked_query_start"  source_type:"attribute"`
