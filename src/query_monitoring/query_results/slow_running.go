@@ -35,6 +35,29 @@ func GetSlowRunningMetrics(conn *connection.PGSQLConnection) ([]datamodels.SlowR
 	return slowQueries, nil
 }
 
+func GetIndividualMetrics(conn *connection.PGSQLConnection) ([]datamodels.SlowRunningQuery, error) {
+	var individualQueries []datamodels.SlowRunningQuery
+	var query = queries.IndividualQueries
+	rows, err := conn.Queryx(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var individualQuery datamodels.SlowRunningQuery
+		if err := rows.StructScan(&individualQuery); err != nil {
+			return nil, err
+		}
+		individualQueries = append(individualQueries, individualQuery)
+	}
+
+	for _, query := range individualQueries {
+		log.Info("Individual Query: %+v", query)
+	}
+	return individualQueries, nil
+}
+
 // PopulateSlowRunningMetrics fetches slow-running metrics and populates them into the metric set
 func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *connection.PGSQLConnection, query string) {
 	isExtensionEnabled, err := validations.CheckPgStatStatementsExtensionEnabled(conn)
