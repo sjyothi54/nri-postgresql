@@ -32,11 +32,11 @@ func QueryPerformanceMain(instanceEntity *integration.Entity, args args.Argument
 		return
 	}
 
-	err = query_metrics.PopulateWaitEventMetrics(instanceEntity, conn, args)
-	if err != nil {
-		fmt.Printf("Error in fetching wait event metrics: %v\n", err)
-		return
-	}
+	//err = query_metrics.PopulateWaitEventMetrics(instanceEntity, conn, args)
+	//if err != nil {
+	//	fmt.Printf("Error in fetching wait event metrics: %v\n", err)
+	//	return
+	//}
 	//fmt.Println(queryIdList)
 	//_, err = query_metrics.PopulateIndividualMetrics(instanceEntity, conn, args, queryIdList)
 	//if err != nil {
