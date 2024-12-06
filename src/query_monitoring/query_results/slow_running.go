@@ -87,7 +87,7 @@ func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *connec
 		}
 
 		for _, model := range individualQueriesList {
-			metricSet := instanceEntity.NewMetricSet("PostgresSlowAndIndividualQueries")
+			metricSet := instanceEntity.NewMetricSet("PostgresIndividualQueries")
 
 			modelValue := reflect.ValueOf(model)
 			modelType := reflect.TypeOf(model)
