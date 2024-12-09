@@ -3,9 +3,7 @@ package query_performance_monitoring
 // this is the main go file for the query_monitoring package
 import (
 	"fmt"
-	"github.com/newrelic/infra-integrations-sdk/v3/data/metric"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
-	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
 	common_utils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-db-connection"
@@ -25,11 +23,12 @@ func QueryPerformanceMain(instanceEntity *integration.Entity, args args.Argument
 	//}
 	fmt.Println("heyyyyyyyyyy")
 	ms := common_utils.CreateMetricSet(instanceEntity, "PostgresqlGoWaitEventMetrics", args)
-	err = ms.SetMetric("event_type", "PostgresqlWaitEventMetricsV1Test", metric.ATTRIBUTE)
-	if err != nil {
-		log.Error("Error setting event_type attribute: %v", err)
-		return
-	}
+	//err = ms.SetMetric("testing", "test", metric.ATTRIBUTE)
+	//if err != nil {
+	//	log.Error("Error setting event_type attribute: %v", err)
+	//	return
+	//}
+	common_utils.SetMetric(ms, "testing", "test", "attribute")
 
 	//err = query_metrics.PopulateWaitEventMetrics(instanceEntity, conn, args)
 	//if err != nil {
