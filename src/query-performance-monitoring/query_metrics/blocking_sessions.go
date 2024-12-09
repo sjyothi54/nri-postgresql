@@ -56,7 +56,7 @@ func PopulateBlockingSessionMetrics(instanceEntity *integration.Entity, conn *pe
 	log.Info("blockingSessionMetrics %+v", blockingSessionMetrics)
 
 	for _, model := range blockingSessionMetrics {
-		common_utils.SetMetricsParser(instanceEntity, "PostgresqlBlockingSessionV1", args, model)
+		common_utils.SetMetricsParser(instanceEntity, "PostgresqlBlockingSessionSample", args, model)
 	}
 
 	return nil
