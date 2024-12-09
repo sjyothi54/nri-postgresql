@@ -24,13 +24,13 @@ type WaitEventQuery struct {
 	DatabaseName        *string  `db:"database_name"         metric_name:"waitevent.database_name"              source_type:"attribute"`
 }
 type BlockingQuery struct {
-	BlockedPid         *int64  `db:"blocked_pid"          metric_name:"blockingquery.blocked_pid"          source_type:"gauge"`
-	BlockedQuery       *string `db:"blocked_query"        metric_name:"blockingquery.blocked_query"        source_type:"attribute"`
-	BlockedQueryId     *string `db:"blocked_query_id"     metric_name:"blockingquery.blocked_query_id"     source_type:"attribute"`
-	BlockedQueryStart  *string `db:"blocked_query_start"  metric_name:"blockingquery.blocked_query_start"  source_type:"attribute"`
-	BlockedDatabase    *string `db:"database_name"        metric_name:"blockingquery.database_name"        source_type:"attribute"`
-	BlockingPid        *int64  `db:"blocking_pid"         metric_name:"blockingquery.blocking_pid"         source_type:"gauge"`
-	BlockingQuery      *string `db:"blocking_query"       metric_name:"blockingquery.blocking_query"       source_type:"attribute"`
-	BlockingQueryId    *string `db:"blocking_query_id"    metric_name:"blockingquery.blocking_query_id"    source_type:"attribute"`
-	BlockingQueryStart *string `db:"blocking_query_start" metric_name:"blockingquery.blocking_query_start" source_type:"attribute"`
+	BlockedPid         *int64  `db:"blocked_pid"          metric_name:"blocked_pid"          source_type:"gauge"`
+	BlockedQuery       *string `db:"blocked_query"        metric_name:"blocked_query"        source_type:"attribute"`
+	BlockedQueryId     *string `db:"blocked_query_id"     metric_name:"blocked_query_id"     source_type:"attribute"`
+	BlockedQueryStart  *string `db:"blocked_query_start"  metric_name:"blocked_query_start"  source_type:"attribute"`
+	BlockedDatabase    *string `db:"database_name"        metric_name:"database_name"        source_type:"attribute"`
+	BlockingPid        *int64  `db:"blocking_pid"         metric_name:"blocking_pid"         source_type:"gauge"`
+	BlockingQuery      *string `db:"blocking_query"       metric_name:"blocking_query"       source_type:"attribute"`
+	BlockingQueryId    *string `db:"blocking_query_id"    metric_name:"blocking_query_id"    source_type:"attribute"`
+	BlockingQueryStart *string `db:"blocking_query_start" metric_name:"blocking_query_start" source_type:"attribute"`
 }
