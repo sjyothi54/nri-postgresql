@@ -16,45 +16,29 @@ func QueryPerformanceMain(instanceEntity *integration.Entity, args args.Argument
 		fmt.Print("Error in connection")
 		return
 	}
-	_, err = query_metrics.PopulateSlowRunningMetrics(instanceEntity, conn, args)
+	queryIdList, err := query_metrics.PopulateSlowRunningMetrics(instanceEntity, conn, args)
 	if err != nil {
 		fmt.Printf("Error in fetching slow running metrics: %v", err)
 		return
 	}
-	//fmt.Println("heyyyyyyyyyy")
-	//ms := common_utils.CreateMetricSet(instanceEntity, "PostgresqlGoWaitEventMetrics", args)
-	//err = ms.SetMetric("testing", "test", metric.ATTRIBUTE)
-	//if err != nil {
-	//	log.Error("Error setting event_type attribute: %v", err)
-	//	return
-	//}
-	//common_utils.SetMetric(ms, "testing", "test", "attribute")
 
-	//err = query_metrics.PopulateWaitEventMetrics(instanceEntity, conn, args)
-	//if err != nil {
-	//	fmt.Print("Error in fetching individual metrics: ", err)
-	//	return
-	//}
+	individualMetrics, err := query_metrics.PopulateIndividualMetrics(instanceEntity, conn, args, queryIdList)
+	if err != nil {
+		fmt.Print("Error in fetching execution plan metrics check2:", err)
+		return
+	}
+	err = query_metrics.PopulateQueryExecutionMetrics(individualMetrics, instanceEntity, conn, args)
+	if err != nil {
+		fmt.Printf("Error in fetching query execution metrics: %v", err)
+		return
+	}
 
-	//err = query_metrics.PopulateWaitEventMetrics(instanceEntity, conn, args)
-	//if err != nil {
-	//	fmt.Printf("Error in fetching wait event metrics: %v\n", err)
-	//	return
-	//}
-	//fmt.Println(queryIdList)
-	//_, err = query_metrics.PopulateIndividualMetrics(instanceEntity, conn, args, queryIdList)
-	//if err != nil {
-	//	fmt.Print("Error in fetching execution plan metrics check2:", err)
-	//	return
-	//}
-	//query_metrics.PopulateQueryExecutionMetrics(individualMetrics, instanceEntity, conn, args)
+	err = query_metrics.PopulateWaitEventMetrics(instanceEntity, conn, args)
+	if err != nil {
+		fmt.Printf("Error in fetching wait event metrics: %v", err)
+		return
+	}
 
-	//err = query_metrics.PopulateWaitEventMetrics(instanceEntity, conn, args)
-	//if err != nil {
-	//	fmt.Printf("Error in fetching wait event metrics: %v", err)
-	//	return
-	//}
-	//
 	err = query_metrics.PopulateBlockingSessionMetrics(instanceEntity, conn, args)
 	if err != nil {
 		fmt.Printf("Error in fetching blocking session metrics: %v", err)
