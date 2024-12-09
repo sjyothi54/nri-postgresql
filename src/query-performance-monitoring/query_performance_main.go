@@ -25,7 +25,7 @@ func QueryPerformanceMain(instanceEntity *integration.Entity, args args.Argument
 		return
 	}
 
-	ms := common_utils.CreateMetricSet(instanceEntity, "PostgresqlWaitEventMetricsV1Test", args)
+	ms := common_utils.CreateMetricSet(instanceEntity, "PostgresqlGoWaitEventMetrics", args)
 	err = ms.SetMetric("event_type", "PostgresqlWaitEventMetricsV1Test", metric.ATTRIBUTE)
 	if err != nil {
 		log.Error("Error setting event_type attribute: %v", err)
