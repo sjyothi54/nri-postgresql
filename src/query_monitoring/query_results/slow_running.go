@@ -1,6 +1,7 @@
 package query_results
 
 import (
+	"fmt"
 	"reflect"
 
 	"github.com/newrelic/infra-integrations-sdk/v3/data/metric"
@@ -129,6 +130,7 @@ func PopulateBlockingQueriesMetrics(entity *integration.Entity, conn *connection
 			sourceType := fieldType.Tag.Get("source_type")
 
 			if field.Kind() == reflect.Ptr && !field.IsNil() {
+				fmt.Print("Field is a pointer:", field.Elem().Interface())
 				setMetric(metricSet, metricName, field.Elem().Interface(), sourceType)
 			} else if field.Kind() != reflect.Ptr {
 				setMetric(metricSet, metricName, field.Interface(), sourceType)
