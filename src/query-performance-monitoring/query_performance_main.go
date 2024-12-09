@@ -23,7 +23,7 @@ func QueryPerformanceMain(instanceEntity *integration.Entity, args args.Argument
 	//	fmt.Printf("Error in fetching slow running metrics: %v", err)
 	//	return
 	//}
-
+	fmt.Println("heyyyyyyyyyy")
 	ms := common_utils.CreateMetricSet(instanceEntity, "PostgresqlGoWaitEventMetrics", args)
 	err = ms.SetMetric("event_type", "PostgresqlWaitEventMetricsV1Test", metric.ATTRIBUTE)
 	if err != nil {
