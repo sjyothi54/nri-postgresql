@@ -3,7 +3,6 @@ package query_performance_monitoring
 // this is the main go file for the query_monitoring package
 import (
 	"fmt"
-	"github.com/newrelic/infra-integrations-sdk/v3/data/attribute"
 	"github.com/newrelic/infra-integrations-sdk/v3/data/metric"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
@@ -11,8 +10,6 @@ import (
 	common_utils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-db-connection"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/query_metrics"
-	"sync"
-	"time"
 )
 
 func QueryPerformanceMain(instanceEntity *integration.Entity, args args.ArgumentList) {
@@ -35,25 +32,11 @@ func QueryPerformanceMain(instanceEntity *integration.Entity, args args.Argument
 		return
 	}
 
-	instanceEntity.NewMetricSet("PostgresqlWaitEventMetricsV1Test",
-		attribute.Attribute{Key: "displayName", Value: "testiungg"},
-		attribute.Attribute{Key: "entityName", Value: "testiunggDbbb"},
-	)
-
-	var wg sync.WaitGroup
-
-	go func() {
-		wg.Add(1)
-		defer wg.Done()
-		err = query_metrics.PopulateWaitEventMetrics(instanceEntity, conn, args)
-		if err != nil {
-			fmt.Print("Error in fetching individual metrics: ", err)
-			return
-		}
-	}()
-
-	wg.Wait()
-	time.Sleep(5 * time.Second)
+	//err = query_metrics.PopulateWaitEventMetrics(instanceEntity, conn, args)
+	//if err != nil {
+	//	fmt.Print("Error in fetching individual metrics: ", err)
+	//	return
+	//
 
 	//err = query_metrics.PopulateWaitEventMetrics(instanceEntity, conn, args)
 	//if err != nil {
@@ -74,9 +57,9 @@ func QueryPerformanceMain(instanceEntity *integration.Entity, args args.Argument
 	//	return
 	//}
 	//
-	//err = query_metrics.PopulateBlockingSessionMetrics(instanceEntity, conn, args)
-	//if err != nil {
-	//	fmt.Printf("Error in fetching blocking session metrics: %v", err)
-	//	return
-	//}
+	err = query_metrics.PopulateBlockingSessionMetrics(instanceEntity, conn, args)
+	if err != nil {
+		fmt.Printf("Error in fetching blocking session metrics: %v", err)
+		return
+	}
 }
