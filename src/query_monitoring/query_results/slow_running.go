@@ -94,3 +94,44 @@ func setMetric(metricSet *metric.Set, name string, value interface{}, sourceType
 		metricSet.SetMetric(name, value, metric.GAUGE)
 	}
 }
+
+func PopulateBlockingQueriesMetrics(entity *integration.Entity, conn *connection.PGSQLConnection, blockingQueries string) {
+	var blockingQueryMetrics []datamodels.BlockingQuery
+	var query = queries.BlockingQueries
+	rows, _ := conn.Queryx(query)
+
+	defer rows.Close()
+
+	for rows.Next() {
+		var blockingQuery datamodels.BlockingQuery
+		if err := rows.StructScan(&blockingQuery); err != nil {
+			continue
+		}
+		blockingQueryMetrics = append(blockingQueryMetrics, blockingQuery)
+	}
+
+	for _, query := range blockingQueryMetrics {
+		log.Info("Blocking Query: %+v", query)
+	}
+	for _, model := range blockingQueryMetrics {
+		metricSet := entity.NewMetricSet("PostgresBlockingQueries")
+
+		modelValue := reflect.ValueOf(model)
+		modelType := reflect.TypeOf(model)
+
+		for i := 0; i < modelValue.NumField(); i++ {
+			field := modelValue.Field(i)
+			fieldType := modelType.Field(i)
+			metricName := fieldType.Tag.Get("metric_name")
+			sourceType := fieldType.Tag.Get("source_type")
+
+			if field.Kind() == reflect.Ptr && !field.IsNil() {
+				setMetric(metricSet, metricName, field.Elem().Interface(), sourceType)
+			} else if field.Kind() != reflect.Ptr {
+				setMetric(metricSet, metricName, field.Interface(), sourceType)
+			}
+		}
+
+		//	log.Info("Metrics set for slow query: %s in database: %s", *model.QueryID, *model.DatabaseName)
+	}
+}
