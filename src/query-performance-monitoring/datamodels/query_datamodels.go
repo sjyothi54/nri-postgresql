@@ -15,14 +15,14 @@ type SlowRunningQuery struct {
 }
 
 type WaitEventQuery struct {
-	WaitEventName       *string `db:"wait_event_name"       metric_name:"waitevent.wait_event_name"            source_type:"attribute"`
-	WaitCategory        *string `db:"wait_category"         metric_name:"waitevent.wait_category"              source_type:"attribute"`
-	TotalWaitTimeMs     *string `db:"total_wait_time_ms"    metric_name:"waitevent.total_wait_time_ms"         source_type:"gauge"`
-	WaitingTasksCount   *string `db:"waiting_tasks_count"   metric_name:"waitevent.waiting_tasks_count"        source_type:"gauge"`
-	CollectionTimestamp *string `db:"collection_timestamp"  metric_name:"waitevent.collection_timestamp"       source_type:"attribute"`
-	QueryID             *int64  `db:"query_id"              metric_name:"waitevent.query_id"                   source_type:"gauge"`
-	QueryText           *string `db:"query_text"            metric_name:"waitevent.query_text"                 source_type:"attribute"`
-	DatabaseName        *string `db:"database_name"         metric_name:"waitevent.database_name"              source_type:"attribute"`
+	WaitEventName       *string  `db:"wait_event_name"       metric_name:"waitevent.wait_event_name"            source_type:"attribute"`
+	WaitCategory        *string  `db:"wait_category"         metric_name:"waitevent.wait_category"              source_type:"attribute"`
+	TotalWaitTimeMs     *float64 `db:"total_wait_time_ms"    metric_name:"waitevent.total_wait_time_ms"         source_type:"gauge"`
+	WaitingTasksCount   *int64   `db:"waiting_tasks_count"   metric_name:"waitevent.waiting_tasks_count"        source_type:"gauge"`
+	CollectionTimestamp *string  `db:"collection_timestamp"  metric_name:"waitevent.collection_timestamp"       source_type:"attribute"`
+	QueryID             *int64   `db:"query_id"              metric_name:"waitevent.query_id"                   source_type:"gauge"`
+	QueryText           *string  `db:"query_text"            metric_name:"waitevent.query_text"                 source_type:"attribute"`
+	DatabaseName        *string  `db:"database_name"         metric_name:"waitevent.database_name"              source_type:"attribute"`
 }
 
 type BlockingQuery struct {
