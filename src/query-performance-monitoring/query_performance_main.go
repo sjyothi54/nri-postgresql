@@ -34,7 +34,7 @@ func QueryPerformanceMain(instanceEntity *integration.Entity, args args.Argument
 	if err != nil {
 		fmt.Print("Error in fetching individual metrics: ", err)
 		return
-
+	}
 
 	//err = query_metrics.PopulateWaitEventMetrics(instanceEntity, conn, args)
 	//if err != nil {
