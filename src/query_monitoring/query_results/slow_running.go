@@ -118,7 +118,7 @@ func PopulateBlockingQueriesMetrics(entity *integration.Entity, conn *connection
 	//for _, queryIes := range blockingQueryMetrics {
 	//	log.Info("Blocking Query: %+v", queryIes)
 	//}
-	mmm := entity.NewMetricSet("PostgresBlockingMetricsSample")
+	mmm := entity.NewMetricSet("testBlockQueries")
 	mmm.SetMetric("query_id", "aaaaa", metric.ATTRIBUTE)
 
 	//for _, model := range blockingQueryMetrics {
