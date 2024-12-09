@@ -88,6 +88,7 @@ func main() {
 	}
 	//need to change the connection to change
 	con, err := connectionInfo.NewConnection(connectionInfo.DatabaseName())
+
 	query_monitoring.RunAnalysis(instance, con, args)
 
 	if err = pgIntegration.Publish(); err != nil {

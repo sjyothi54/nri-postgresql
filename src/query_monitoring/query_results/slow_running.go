@@ -36,7 +36,7 @@ func GetSlowRunningMetrics(conn *connection.PGSQLConnection) ([]datamodels.SlowR
 }
 
 // PopulateSlowRunningMetrics fetches slow-running metrics and populates them into the metric set
-func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *connection.PGSQLConnection, query string) {
+func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *connection.PGSQLConnection, sampleName string, sampleType string) {
 	isExtensionEnabled, err := validations.CheckPgStatStatementsExtensionEnabled(conn)
 	if err != nil {
 		log.Error("Error executing query: %v", err)
@@ -57,7 +57,7 @@ func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *connec
 		log.Info("Populate-slow running: %+v", slowQueries)
 
 		for _, model := range slowQueries {
-			metricSet := instanceEntity.NewMetricSet("PostgresSlowQueries")
+			metricSet := instanceEntity.NewMetricSet(sampleType)
 
 			modelValue := reflect.ValueOf(model)
 			modelType := reflect.TypeOf(model)
