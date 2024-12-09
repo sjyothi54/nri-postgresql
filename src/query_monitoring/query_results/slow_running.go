@@ -95,11 +95,14 @@ func setMetric(metricSet *metric.Set, name string, value interface{}, sourceType
 	}
 }
 
-func PopulateBlockingQueriesMetrics(entity *integration.Entity, conn *connection.PGSQLConnection, blockingQueries string) {
+func PopulateBlockingQueriesMetrics(entity *integration.Entity, conn *connection.PGSQLConnection) {
 	var blockingQueryMetrics []datamodels.BlockingQuery
 	var query = queries.BlockingQueries
-	rows, _ := conn.Queryx(query)
-
+	rows, err := conn.Queryx(query)
+	if err != nil {
+		log.Error("Failed to execute query: %v", err)
+		return
+	}
 	defer rows.Close()
 
 	for rows.Next() {
