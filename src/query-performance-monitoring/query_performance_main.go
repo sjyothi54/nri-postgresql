@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/nri-postgresql/src/args"
-	common_utils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-db-connection"
+	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/query_metrics"
 )
 
 func QueryPerformanceMain(instanceEntity *integration.Entity, args args.ArgumentList) {
 	connectionInfo := performance_db_connection.DefaultConnectionInfo(&args)
-	_, err := connectionInfo.NewConnection(args.Database)
+	conn, err := connectionInfo.NewConnection(args.Database)
 	if err != nil {
 		fmt.Print("Error in connection")
 		return
@@ -21,20 +21,20 @@ func QueryPerformanceMain(instanceEntity *integration.Entity, args args.Argument
 	//	fmt.Printf("Error in fetching slow running metrics: %v", err)
 	//	return
 	//}
-	fmt.Println("heyyyyyyyyyy")
-	ms := common_utils.CreateMetricSet(instanceEntity, "PostgresqlGoWaitEventMetrics", args)
+	//fmt.Println("heyyyyyyyyyy")
+	//ms := common_utils.CreateMetricSet(instanceEntity, "PostgresqlGoWaitEventMetrics", args)
 	//err = ms.SetMetric("testing", "test", metric.ATTRIBUTE)
 	//if err != nil {
 	//	log.Error("Error setting event_type attribute: %v", err)
 	//	return
 	//}
-	common_utils.SetMetric(ms, "testing", "test", "attribute")
+	//common_utils.SetMetric(ms, "testing", "test", "attribute")
 
-	//err = query_metrics.PopulateWaitEventMetrics(instanceEntity, conn, args)
-	//if err != nil {
-	//	fmt.Print("Error in fetching individual metrics: ", err)
-	//	return
-	//
+	err = query_metrics.PopulateWaitEventMetrics(instanceEntity, conn, args)
+	if err != nil {
+		fmt.Print("Error in fetching individual metrics: ", err)
+		return
+
 
 	//err = query_metrics.PopulateWaitEventMetrics(instanceEntity, conn, args)
 	//if err != nil {

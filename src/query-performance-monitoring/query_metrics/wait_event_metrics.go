@@ -2,8 +2,7 @@ package query_metrics
 
 import (
 	"errors"
-	"github.com/newrelic/infra-integrations-sdk/v3/data/attribute"
-	"github.com/newrelic/infra-integrations-sdk/v3/data/metric"
+	"fmt"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
@@ -69,24 +68,11 @@ func PopulateWaitEventMetrics(instanceEntity *integration.Entity, conn *performa
 		return nil
 	}
 
-	log.Info("WaitEventMetricsLog %+v", waitEventMetrics)
-	instanceEntity.NewMetricSet("testData6Ssssss",
-		attribute.Attribute{Key: "displayName", Value: "testiungg"},
-		attribute.Attribute{Key: "entityName", Value: "testiunggDbbb"},
-	)
+	fmt.Print("Wait Event Metrics: ", waitEventMetrics)
 
-	ms := common_utils.CreateMetricSet(instanceEntity, "testData", args)
-	err = ms.SetMetric("testing", "PostgresqlWaitEventMetricsV1a", metric.ATTRIBUTE)
-
-	ms12 := common_utils.CreateMetricSet(instanceEntity, "testData1", args)
-	err = ms12.SetMetric("testing", "PostgresqlWaitEventMetricsV1a", metric.ATTRIBUTE)
-	if err != nil {
-		log.Error("Error setting event_type attribute: %v", err)
-		return err
+	for _, model := range waitEventMetrics {
+		common_utils.SetMetricsParser(instanceEntity, "PostgresqlWaitEventMetricsSample", args, model)
 	}
-	//for _, model := range waitEventMetrics {
-	//	common_utils.SetMetricsParser(instanceEntity, "PostgresqlWaitEventMetricsV1", args, model)
-	//}
 
 	return nil
 }
