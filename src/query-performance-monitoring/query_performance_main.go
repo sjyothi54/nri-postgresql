@@ -30,11 +30,11 @@ func QueryPerformanceMain(instanceEntity *integration.Entity, args args.Argument
 	//}
 	//common_utils.SetMetric(ms, "testing", "test", "attribute")
 
-	//err = query_metrics.PopulateWaitEventMetrics(instanceEntity, conn, args)
-	//if err != nil {
-	//	fmt.Print("Error in fetching individual metrics: ", err)
-	//	return
-	//}
+	err = query_metrics.PopulateWaitEventMetrics(instanceEntity, conn, args)
+	if err != nil {
+		fmt.Print("Error in fetching individual metrics: ", err)
+		return
+	}
 
 	//err = query_metrics.PopulateWaitEventMetrics(instanceEntity, conn, args)
 	//if err != nil {
