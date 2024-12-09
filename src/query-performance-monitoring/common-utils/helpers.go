@@ -32,6 +32,7 @@ func metricSet(e *integration.Entity, eventType, hostname string, port string) *
 func SetMetric(metricSet *metric.Set, name string, value interface{}, sourceType string) {
 	switch sourceType {
 	case `gauge`:
+		strValue := fmt.Sprintf("%v", value)
 		//var numericValue float64
 		//switch v := value.(type) {
 		//case int:
@@ -45,11 +46,14 @@ func SetMetric(metricSet *metric.Set, name string, value interface{}, sourceType
 		//	return
 		//}
 		//fmt.Println("Numeric value: ", numericValue)
-		err := metricSet.SetMetric(name, value, metric.GAUGE)
-		if err != nil {
-			fmt.Println("Error in setting metric1", err)
-			return
+		if floatValue, err := strconv.ParseFloat(strValue, 64); err == nil {
+			metricSet.SetMetric(name, floatValue, metric.GAUGE)
 		}
+		//err := metricSet.SetMetric(name, value, metric.GAUGE)
+		//if err != nil {
+		//	fmt.Println("Error in setting metric1", err)
+		//	return
+		//}
 	case `attribute`:
 		err := metricSet.SetMetric(name, value, metric.ATTRIBUTE)
 		if err != nil {
