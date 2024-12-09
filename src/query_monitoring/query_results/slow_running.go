@@ -109,6 +109,7 @@ func PopulateBlockingQueriesMetrics(entity *integration.Entity, conn *connection
 	for rows.Next() {
 		var blockingQuery datamodels.BlockingQuery
 		if err := rows.StructScan(&blockingQuery); err != nil {
+			fmt.Print("erroorrrrr")
 			continue
 		}
 		blockingQueryMetrics = append(blockingQueryMetrics, blockingQuery)
