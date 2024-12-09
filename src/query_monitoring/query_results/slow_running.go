@@ -118,26 +118,29 @@ func PopulateBlockingQueriesMetrics(entity *integration.Entity, conn *connection
 	//for _, queryIes := range blockingQueryMetrics {
 	//	log.Info("Blocking Query: %+v", queryIes)
 	//}
-	for _, model := range blockingQueryMetrics {
-		metricSet := entity.NewMetricSet("PostgresBlockingMetricsSample")
+	mmm := entity.NewMetricSet("PostgresBlockingMetricsSample")
+	mmm.SetMetric("query_id", "aaaaa", metric.ATTRIBUTE)
 
-		modelValue := reflect.ValueOf(model)
-		modelType := reflect.TypeOf(model)
-
-		for i := 0; i < modelValue.NumField(); i++ {
-			field := modelValue.Field(i)
-			fieldType := modelType.Field(i)
-			metricName := fieldType.Tag.Get("metric_name")
-			sourceType := fieldType.Tag.Get("source_type")
-
-			if field.Kind() == reflect.Ptr && !field.IsNil() {
-				fmt.Print("Field is a pointer:", field.Elem().Interface())
-				setMetric(metricSet, metricName, field.Elem().Interface(), sourceType)
-			} else if field.Kind() != reflect.Ptr {
-				setMetric(metricSet, metricName, field.Interface(), sourceType)
-			}
-		}
-		break
-		//	log.Info("Metrics set for slow query: %s in database: %s", *model.QueryID, *model.DatabaseName)
-	}
+	//for _, model := range blockingQueryMetrics {
+	//	metricSet := entity.NewMetricSet("PostgresBlockingMetricsSample")
+	//
+	//	modelValue := reflect.ValueOf(model)
+	//	modelType := reflect.TypeOf(model)
+	//
+	//	for i := 0; i < modelValue.NumField(); i++ {
+	//		field := modelValue.Field(i)
+	//		fieldType := modelType.Field(i)
+	//		metricName := fieldType.Tag.Get("metric_name")
+	//		sourceType := fieldType.Tag.Get("source_type")
+	//
+	//		if field.Kind() == reflect.Ptr && !field.IsNil() {
+	//			fmt.Print("Field is a pointer:", field.Elem().Interface())
+	//			setMetric(metricSet, metricName, field.Elem().Interface(), sourceType)
+	//		} else if field.Kind() != reflect.Ptr {
+	//			setMetric(metricSet, metricName, field.Interface(), sourceType)
+	//		}
+	//	}
+	//	break
+	//	//	log.Info("Metrics set for slow query: %s in database: %s", *model.QueryID, *model.DatabaseName)
+	//}
 }
