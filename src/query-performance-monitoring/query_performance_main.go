@@ -55,9 +55,9 @@ func QueryPerformanceMain(instanceEntity *integration.Entity, args args.Argument
 	//	return
 	//}
 	//
-	//err = query_metrics.PopulateBlockingSessionMetrics(instanceEntity, conn, args)
-	//if err != nil {
-	//	fmt.Printf("Error in fetching blocking session metrics: %v", err)
-	//	return
-	//}
+	err = query_metrics.PopulateBlockingSessionMetrics(instanceEntity, conn, args)
+	if err != nil {
+		fmt.Printf("Error in fetching blocking session metrics: %v", err)
+		return
+	}
 }
