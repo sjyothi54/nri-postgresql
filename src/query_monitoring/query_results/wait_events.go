@@ -73,7 +73,7 @@ func PopulateWaitEventMetrics(instanceEntity *integration.Entity, conn *connecti
 						*model.WaitQueryID, *model.DatabaseName, field.Elem().Interface(), metricName, sourceType)
 				} else if field.Kind() != reflect.Ptr {
 					setMetric(metricSet, metricName, field.Interface(), sourceType)
-					log.Info("Metrics set for wait query: %d in database: %s fieldElem %s metricName %s sourceType %s",
+					log.Info("Metrics set for wait query else: %d in database: %s fieldElem %s metricName %s sourceType %s",
 						*model.WaitQueryID, *model.DatabaseName, field.Interface(), metricName, sourceType)
 				}
 			}

@@ -70,12 +70,14 @@ func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *connec
 
 				if field.Kind() == reflect.Ptr && !field.IsNil() {
 					setMetric(metricSet, metricName, field.Elem().Interface(), sourceType)
+					log.Info("fieldElemSlow %s metricName %s sourceType %s", field.Elem().Interface(), metricName, sourceType)
 				} else if field.Kind() != reflect.Ptr {
 					setMetric(metricSet, metricName, field.Interface(), sourceType)
+					log.Info("fieldElemSlowElse %s metricName %s sourceType %s", field.Interface(), metricName, sourceType)
 				}
 			}
 
-			log.Info("Metrics set for slow query: %s in database: %s", *model.QueryID, *model.DatabaseName)
+			//log.Info("Metrics set for slow query: %s in database: %s", *model.QueryID, *model.DatabaseName)
 		}
 	} else {
 		log.Info("Extension 'pg_stat_statements' is not enabled.")
