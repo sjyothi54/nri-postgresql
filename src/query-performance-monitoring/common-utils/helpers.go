@@ -78,7 +78,7 @@ func SetMetricsParser(instanceEntity *integration.Entity, eventName string, args
 			} else if field.Kind() != reflect.Ptr {
 				SetMetric(metricSetIngestion, metricName, field.Interface(), sourceType)
 			}
-			fmt.Println("byee", cnt)
+			//fmt.Println("byee", cnt)
 			if cnt == 60 || cnt == lenOfMetric {
 				fmt.Println("heyyyy", lenOfMetric, cnt, metricSetIngestion.Metrics)
 				err := pgIntegration.Publish()
@@ -87,7 +87,7 @@ func SetMetricsParser(instanceEntity *integration.Entity, eventName string, args
 					return
 				}
 				cnt = 0
-				fmt.Println("entitiesssss", pgIntegration.Entities)
+				//fmt.Println("entitiesssss", pgIntegration.Entities)
 				pgIntegration.Entities = append(pgIntegration.Entities, instanceEntity)
 			}
 		}

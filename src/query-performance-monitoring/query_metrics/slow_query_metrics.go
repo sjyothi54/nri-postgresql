@@ -58,8 +58,8 @@ func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *perfor
 		log.Info("No slow-running queries found.")
 		return nil, errors.New("no slow-running queries found")
 	}
-
+	fmt.Println("before slowQueriesMetrics: ", pgIntegration.Entities)
 	common_utils.SetMetricsParser(instanceEntity, "PostgresSlowQueriesSample", args, pgIntegration, slowQueries)
-	fmt.Println("slowQueriesMetrics: ", instanceEntity.Metrics)
+	fmt.Println("after slowQueriesMetrics: ", pgIntegration.Entities)
 	return queryIdList, nil
 }

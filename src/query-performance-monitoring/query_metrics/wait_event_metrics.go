@@ -54,9 +54,9 @@ func PopulateWaitEventMetrics(instanceEntity *integration.Entity, conn *performa
 		return nil
 	}
 
-	fmt.Print("Wait Event Metrics: ", waitEventMetrics)
+	fmt.Print(" before Wait Event Metrics: ", pgIntegration.Entities)
 
 	common_utils.SetMetricsParser(instanceEntity, "PostgresqlWaitEventMetricsSample", args, pgIntegration, waitEventMetrics)
-
+	fmt.Print(" after Wait Event Metrics: ", pgIntegration.Entities)
 	return nil
 }
