@@ -1,10 +1,12 @@
 package inventory
 
 import (
+	//"github.com/newrelic/infra-integrations-sdk/v3/data/inventory"
+	//"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"testing"
 
-	"github.com/newrelic/infra-integrations-sdk/v3/data/inventory"
-	"github.com/newrelic/infra-integrations-sdk/v3/integration"
+	//"github.com/newrelic/infra-integrations-sdk/v4/data/inventory"
+	//"github.com/newrelic/infra-integrations-sdk/v4/integration"
 	"github.com/newrelic/nri-postgresql/src/connection"
 	"github.com/stretchr/testify/assert"
 

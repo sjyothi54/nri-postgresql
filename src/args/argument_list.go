@@ -3,9 +3,8 @@ package args
 
 import (
 	"errors"
-
-	sdkArgs "github.com/newrelic/infra-integrations-sdk/v3/args"
-	"github.com/newrelic/infra-integrations-sdk/v3/log"
+	//sdkArgs "github.com/newrelic/infra-integrations-sdk/v4/args"
+	//"github.com/newrelic/infra-integrations-sdk/v4/log"
 )
 
 // ArgumentList struct that holds all PostgreSQL arguments

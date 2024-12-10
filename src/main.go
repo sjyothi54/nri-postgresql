@@ -2,17 +2,18 @@ package main
 
 import (
 	"fmt"
-	"github.com/newrelic/infra-integrations-sdk/v3/integration"
-	"github.com/newrelic/infra-integrations-sdk/v3/log"
+	"os"
+	"runtime"
+	"strings"
+
+	//"github.com/newrelic/infra-integrations-sdk/v4/integration"
+	//"github.com/newrelic/infra-integrations-sdk/v4/log"
 	"github.com/newrelic/nri-postgresql/src/args"
 	"github.com/newrelic/nri-postgresql/src/collection"
 	"github.com/newrelic/nri-postgresql/src/connection"
 	"github.com/newrelic/nri-postgresql/src/inventory"
 	"github.com/newrelic/nri-postgresql/src/metrics"
-	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring"
-	"os"
-	"runtime"
-	"strings"
+	query_performance_monitoring "github.com/newrelic/nri-postgresql/src/query-performance-monitoring"
 )
 
 const (

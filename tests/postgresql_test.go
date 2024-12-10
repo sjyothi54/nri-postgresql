@@ -12,7 +12,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/newrelic/infra-integrations-sdk/v3/log"
+	//"github.com/newrelic/infra-integrations-sdk/v4/log"
 	"github.com/stretchr/testify/assert"
 	"github.com/xeipuuv/gojsonschema"
 )

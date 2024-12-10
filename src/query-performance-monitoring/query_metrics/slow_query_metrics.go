@@ -3,12 +3,13 @@ package query_metrics
 import (
 	"errors"
 	"fmt"
-	"github.com/newrelic/infra-integrations-sdk/v3/integration"
-	"github.com/newrelic/infra-integrations-sdk/v3/log"
+
+	//"github.com/newrelic/infra-integrations-sdk/v4/integration"
+	//"github.com/newrelic/infra-integrations-sdk/v4/log"
 	"github.com/newrelic/nri-postgresql/src/args"
 	common_utils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
-	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-db-connection"
+	performance_db_connection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-db-connection"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
 )

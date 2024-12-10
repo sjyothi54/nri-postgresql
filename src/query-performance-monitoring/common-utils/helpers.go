@@ -2,11 +2,17 @@ package common_utils
 
 import (
 	"fmt"
-	"github.com/newrelic/infra-integrations-sdk/v3/data/attribute"
-	"github.com/newrelic/infra-integrations-sdk/v3/data/metric"
-	"github.com/newrelic/infra-integrations-sdk/v3/integration"
-	"github.com/newrelic/nri-postgresql/src/args"
+
+	"github.com/newrelic/infra-integrations-sdk/integration"
+	//"github.com/newrelic/infra-integrations-sdk/v4/data/attribute"
+	//"github.com/newrelic/infra-integrations-sdk/v4/data/metric"
+
+	//"github.com/newrelic/infra-integrations-sdk/v4/data/attribute"
+	//"github.com/newrelic/infra-integrations-sdk/v4/data/metric"
+	//"github.com/newrelic/infra-integrations-sdk/v4/integration"
 	"reflect"
+
+	"github.com/newrelic/nri-postgresql/src/args"
 )
 
 func CreateMetricSet(e *integration.Entity, sampleName string, args args.ArgumentList) *metric.Set {

@@ -1,7 +1,7 @@
 package validations
 
 import (
-	"github.com/newrelic/infra-integrations-sdk/v3/log"
+	//"github.com/newrelic/infra-integrations-sdk/v4/log"
 	performance_db_connection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-db-connection"
 )
 
