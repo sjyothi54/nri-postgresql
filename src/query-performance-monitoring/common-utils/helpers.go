@@ -48,6 +48,7 @@ func SetMetric(metricSet *metric.Set, name string, value interface{}, sourceType
 }
 
 func SetMetricsParser(instanceEntity *integration.Entity, eventName string, args args.ArgumentList, pgIntegration *integration.Integration, metricList []interface{}) {
+	fmt.Println("Started to ingest dataa")
 	pgIntegrationNew, err := integration.New("com.newrelic.postgresql", "0.0.0", integration.Args(&args))
 	instance, err := pgIntegrationNew.Entity(fmt.Sprintf("%s:%s", args.Hostname, args.Port), "pg-instance")
 
