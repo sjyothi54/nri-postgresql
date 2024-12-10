@@ -73,7 +73,11 @@ func PopulateWaitEventMetrics(instanceEntity *integration.Entity, conn *connecti
 					setMetric(metricSet, metricName, field.Interface(), sourceType)
 				}
 			}
-
+			if model.WaitQueryText != nil {
+				log.Info("Query Text: %d", *model.WaitQueryID)
+			} else {
+				log.Info("Query Text is nil")
+			}
 			//log.Info("Metrics set for wait query: %d in database: %s", *model.WaitQueryID, *model.DatabaseName)
 		}
 	} else {
