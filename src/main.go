@@ -90,7 +90,7 @@ func main() {
 
 		log.Error(err.Error())
 	}
-
+	pgIntegration.Entities = append(pgIntegration.Entities, instance)
 	//if args.EnableQueryPerformance {
 	query_performance_monitoring.QueryPerformanceMain(instance, args, pgIntegration)
 	//}

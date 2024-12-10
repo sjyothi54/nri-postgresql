@@ -50,24 +50,15 @@ func SetMetric(metricSet *metric.Set, name string, value interface{}, sourceType
 
 func SetMetricsParser(instanceEntity *integration.Entity, eventName string, args args.ArgumentList, pgIntegration *integration.Integration, metricList []interface{}) {
 	fmt.Println("Started to ingest dataa")
-	//pgIntegrationNew, err := integration.New("com.newrelic.postgresql", "0.0.0", integration.Args(&args))
-	//fmt.Println("pgIntegrationNew")
-	//instance, err := pgIntegrationNew.Entity(fmt.Sprintf("%s:%s", args.Hostname, args.Port), "pg-instance")
-	//
-	//if err != nil {
-	//	fmt.Println("Error in creating integration", err)
-	//	return
-	//}
 
-	lenOfMetric := len(metricList)
 	cnt := 0
 	for _, model := range metricList {
 		metricSetIngestion := CreateMetricSet(instanceEntity, eventName, args)
 
 		modelValue := reflect.ValueOf(model)
 		modelType := reflect.TypeOf(model)
-
 		for i := 0; i < modelValue.NumField(); i++ {
+
 			cnt += 1
 			field := modelValue.Field(i)
 			fieldType := modelType.Field(i)
@@ -79,11 +70,10 @@ func SetMetricsParser(instanceEntity *integration.Entity, eventName string, args
 			} else if field.Kind() != reflect.Ptr {
 				SetMetric(metricSetIngestion, metricName, field.Interface(), sourceType)
 			} else {
+				fmt.Println("elseeeeee", field)
 				fmt.Println("[SetMetricsParserELSE] Going inside else part.................")
 			}
-			//fmt.Println("byee", cnt)
-			if cnt == 60 || cnt == lenOfMetric {
-				//fmt.Println("heyyyy", lenOfMetric, cnt, metricSetIngestion.Metrics)
+			if cnt == 60 {
 				fmt.Println("[SetMetricsParser] Before Publish Entities", pgIntegration.Entities)
 				err := pgIntegration.Publish()
 				if err != nil {
@@ -91,10 +81,15 @@ func SetMetricsParser(instanceEntity *integration.Entity, eventName string, args
 					return
 				}
 				cnt = 0
-				//fmt.Println("entitiesssss", pgIntegration.Entities)
 				fmt.Println("[SetMetricsParser] After Publish Entities", pgIntegration.Entities)
 				pgIntegration.Entities = append(pgIntegration.Entities, instanceEntity)
 			}
 		}
+	}
+
+	err := pgIntegration.Publish()
+	if err != nil {
+		fmt.Println("Error in publishing metrics", err)
+		return
 	}
 }
