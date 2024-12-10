@@ -2,11 +2,12 @@ package common_utils
 
 import (
 	"fmt"
+	"reflect"
+
 	"github.com/newrelic/infra-integrations-sdk/v3/data/attribute"
 	"github.com/newrelic/infra-integrations-sdk/v3/data/metric"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/nri-postgresql/src/args"
-	"reflect"
 )
 
 func CreateMetricSet(e *integration.Entity, sampleName string, args args.ArgumentList) *metric.Set {
@@ -77,6 +78,8 @@ func SetMetricsParser(instanceEntity *integration.Entity, eventName string, args
 				SetMetric(metricSetIngestion, metricName, field.Elem().Interface(), sourceType)
 			} else if field.Kind() != reflect.Ptr {
 				SetMetric(metricSetIngestion, metricName, field.Interface(), sourceType)
+			} else {
+				fmt.Println("[SetMetricsParserELSE] Going inside else part.................")
 			}
 			//fmt.Println("byee", cnt)
 			if cnt == 60 || cnt == lenOfMetric {

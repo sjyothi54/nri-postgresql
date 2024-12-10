@@ -2,6 +2,7 @@ package query_metrics
 
 import (
 	"errors"
+
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
@@ -53,6 +54,6 @@ func PopulateWaitEventMetrics(instanceEntity *integration.Entity, conn *performa
 		return nil
 	}
 
-	common_utils.SetMetricsParser(instanceEntity, "PostgresqlWaitEventMetricsSample", args, pgIntegration, waitEventMetrics)
+	common_utils.SetMetricsParser(instanceEntity, "PostgresqlWaitEventMetricsOne", args, pgIntegration, waitEventMetrics)
 	return nil
 }
