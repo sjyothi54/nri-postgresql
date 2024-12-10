@@ -3,11 +3,11 @@ package query_performance_monitoring
 // this is the main go file for the query_monitoring package
 import (
 	"fmt"
+	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/query_metrics"
 
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/nri-postgresql/src/args"
 	performance_db_connection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-db-connection"
-	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/query_metrics"
 )
 
 func QueryPerformanceMain(instanceEntity *integration.Entity, args args.ArgumentList, pgIntegration *integration.Integration) {
@@ -17,36 +17,32 @@ func QueryPerformanceMain(instanceEntity *integration.Entity, args args.Argument
 		fmt.Print("Error in connection")
 		return
 	}
-	//_, err = query_metrics.PopulateSlowRunningMetrics(instanceEntity, conn, args, pgIntegration)
-	//
+	queryIdList, err := query_metrics.PopulateSlowRunningMetrics(instanceEntity, conn, args, pgIntegration)
+
+	if err != nil {
+		fmt.Printf("Error in fetching slow running metrics: %v", err)
+		return
+	}
+	individualMetrics, err := query_metrics.PopulateIndividualMetrics(instanceEntity, conn, args, queryIdList, pgIntegration)
+	if err != nil {
+		fmt.Print("Error in fetching execution plan metrics check2:", err)
+		return
+	}
+	err = query_metrics.PopulateQueryExecutionMetrics(individualMetrics, instanceEntity, conn, args, pgIntegration)
+	if err != nil {
+		fmt.Printf("Error in fetching query execution metrics: %v", err)
+		return
+	}
+
+	//err = query_metrics.PopulateWaitEventMetrics(instance, conn, args, pgIntegration)
 	//if err != nil {
-	//	fmt.Printf("Error in fetching slow running metrics: %v", err)
-	//	return
-	//}
-	//_ , err = query_metrics.PopulateIndividualMetrics(instanceEntity, conn, args, queryIdList, pgIntegration)
-	//if err != nil {
-	//	fmt.Print("Error in fetching execution plan metrics check2:", err)
-	//	return
-	//}
-	//err = query_metrics.PopulateQueryExecutionMetrics(individualMetrics, instanceEntity, conn, args, pgIntegration)
-	//if err != nil {
-	//	fmt.Printf("Error in fetching query execution metrics: %v", err)
+	//	fmt.Printf("Error in fetching wait event metrics: %v", err)
 	//	return
 	//}
 
-	instance, err := pgIntegration.Entity(fmt.Sprintf("%s:%s", args.Hostname, args.Port), "pg-instance")
+	err = query_metrics.PopulateBlockingSessionMetrics(instanceEntity, conn, args, pgIntegration)
 	if err != nil {
-		fmt.Println("[CreateNewEntity] Encounterd error while creating the new entity.....")
-	}
-	err = query_metrics.PopulateWaitEventMetrics(instance, conn, args, pgIntegration)
-	if err != nil {
-		fmt.Printf("Error in fetching wait event metrics: %v", err)
+		fmt.Printf("Error in fetching blocking session metrics: %v", err)
 		return
 	}
-	//
-	//err = query_metrics.PopulateBlockingSessionMetrics(instanceEntity, conn, args, pgIntegration)
-	//if err != nil {
-	//	fmt.Printf("Error in fetching blocking session metrics: %v", err)
-	//	return
-	//}
 }

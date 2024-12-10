@@ -45,6 +45,7 @@ func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *perform
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println("individualQueriesMetricsList::::", individualQueriesMetricsList)
 
 	common_utils.SetMetricsParser(instanceEntity, "PostgresqlIndividualMetricsV1", args, pgIntegration, individualQueriesMetricsList)
 
