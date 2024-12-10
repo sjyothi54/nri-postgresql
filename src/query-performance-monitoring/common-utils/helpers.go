@@ -64,6 +64,7 @@ func SetMetricsParser(instanceEntity *integration.Entity, eventName string, args
 			} else if field.Kind() != reflect.Ptr {
 				SetMetric(metricSetIngestion, metricName, field.Interface(), sourceType)
 			}
+			fmt.Println("byee", cnt)
 			if cnt == 60 || cnt == lenOfMetric {
 				fmt.Println("heyyyy", lenOfMetric, cnt)
 
