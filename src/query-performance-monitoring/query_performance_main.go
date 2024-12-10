@@ -13,36 +13,36 @@ import (
 func QueryPerformanceMain(instanceEntity *integration.Entity, args args.ArgumentList, pgIntegration *integration.Integration) {
 	connectionInfo := performance_db_connection.DefaultConnectionInfo(&args)
 	conn, err := connectionInfo.NewConnection(args.Database)
-	if err != nil {
-		fmt.Print("Error in connection")
-		return
-	}
-	queryIdList, err := query_metrics.PopulateSlowRunningMetrics(instanceEntity, conn, args, pgIntegration)
-
-	if err != nil {
-		fmt.Printf("Error in fetching slow running metrics: %v", err)
-		return
-	}
-	individualMetrics, err := query_metrics.PopulateIndividualMetrics(instanceEntity, conn, args, queryIdList, pgIntegration)
-	if err != nil {
-		fmt.Print("Error in fetching execution plan metrics check2:", err)
-		return
-	}
-	err = query_metrics.PopulateQueryExecutionMetrics(individualMetrics, instanceEntity, conn, args, pgIntegration)
-	if err != nil {
-		fmt.Printf("Error in fetching query execution metrics: %v", err)
-		return
-	}
-
-	//err = query_metrics.PopulateWaitEventMetrics(instance, conn, args, pgIntegration)
 	//if err != nil {
-	//	fmt.Printf("Error in fetching wait event metrics: %v", err)
+	//	fmt.Print("Error in connection")
+	//	return
+	//}
+	//queryIdList, err := query_metrics.PopulateSlowRunningMetrics(instanceEntity, conn, args, pgIntegration)
+	//
+	//if err != nil {
+	//	fmt.Printf("Error in fetching slow running metrics: %v", err)
+	//	return
+	//}
+	//individualMetrics, err := query_metrics.PopulateIndividualMetrics(instanceEntity, conn, args, queryIdList, pgIntegration)
+	//if err != nil {
+	//	fmt.Print("Error in fetching execution plan metrics check2:", err)
+	//	return
+	//}
+	//err = query_metrics.PopulateQueryExecutionMetrics(individualMetrics, instanceEntity, conn, args, pgIntegration)
+	//if err != nil {
+	//	fmt.Printf("Error in fetching query execution metrics: %v", err)
 	//	return
 	//}
 
-	err = query_metrics.PopulateBlockingSessionMetrics(instanceEntity, conn, args, pgIntegration)
+	err = query_metrics.PopulateWaitEventMetrics(instanceEntity, conn, args, pgIntegration)
 	if err != nil {
-		fmt.Printf("Error in fetching blocking session metrics: %v", err)
+		fmt.Printf("Error in fetching wait event metrics: %v", err)
 		return
 	}
+
+	//err = query_metrics.PopulateBlockingSessionMetrics(instanceEntity, conn, args, pgIntegration)
+	//if err != nil {
+	//	fmt.Printf("Error in fetching blocking session metrics: %v", err)
+	//	return
+	//}
 }
