@@ -35,7 +35,7 @@ func GetWaitEventMetrics(conn *connection.PGSQLConnection) ([]datamodels.WaitEve
 }
 
 // PopulateSlowRunningMetrics fetches slow-running metrics and populates them into the metric set
-func PopulateWaitEventMetrics(instanceEntity *integration.Entity, conn *connection.PGSQLConnection) {
+func PopulateWaitEventMetrics(instanceEntity *integration.Entity, conn *connection.PGSQLConnection, query string) {
 	isExtensionEnabled, err := validations.CheckPgWaitSamplingExtensionEnabled(conn)
 	if err != nil {
 		log.Error("Error executing query: %v", err)
