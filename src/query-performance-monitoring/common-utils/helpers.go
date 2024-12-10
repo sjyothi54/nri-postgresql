@@ -87,10 +87,7 @@ func SetMetricsParser(instanceEntity *integration.Entity, eventName string, args
 					return
 				}
 				cnt = 0
-				pgIntegrationNew, err = integration.New("com.newrelic.postgresql", "0.0.0", integration.Args(&args))
-				instance, err = pgIntegrationNew.Entity(fmt.Sprintf("%s:%s", args.Hostname, args.Port), "pg-instance")
-				metricSetIngestion = CreateMetricSet(instance, eventName, args)
-
+				pgIntegrationNew.Entities = append(pgIntegrationNew.Entities, instanceEntity)
 			}
 		}
 	}
