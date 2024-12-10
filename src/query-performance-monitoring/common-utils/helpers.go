@@ -87,6 +87,7 @@ func SetMetricsParser(instanceEntity *integration.Entity, eventName string, args
 					return
 				}
 				cnt = 0
+				fmt.Println("entitiesssss", pgIntegration.Entities)
 				pgIntegration.Entities = append(pgIntegration.Entities, instanceEntity)
 			}
 		}
