@@ -92,4 +92,6 @@ func SetMetricsParser(instanceEntity *integration.Entity, eventName string, args
 		fmt.Println("Error in publishing metrics", err)
 		return
 	}
+	pgIntegration.Entities = append(pgIntegration.Entities, instanceEntity)
+
 }
