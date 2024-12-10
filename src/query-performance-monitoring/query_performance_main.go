@@ -34,11 +34,11 @@ func QueryPerformanceMain(instanceEntity *integration.Entity, args args.Argument
 	//	return
 	//}
 
-	//err = query_metrics.PopulateWaitEventMetrics(instanceEntity, conn, args, pgIntegration)
-	//if err != nil {
-	//	fmt.Printf("Error in fetching wait event metrics: %v", err)
-	//	return
-	//}
+	err = query_metrics.PopulateWaitEventMetrics(instanceEntity, conn, args, pgIntegration)
+	if err != nil {
+		fmt.Printf("Error in fetching wait event metrics: %v", err)
+		return
+	}
 
 	//err = query_metrics.PopulateBlockingSessionMetrics(instanceEntity, conn, args, pgIntegration)
 	//if err != nil {
