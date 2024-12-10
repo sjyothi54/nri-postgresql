@@ -13,8 +13,8 @@ import (
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
 )
 
-func getSlowRunningMetrics(conn *performance_db_connection.PGSQLConnection) ([]datamodels.SlowRunningQuery, []*int64, error) {
-	var slowQueries []datamodels.SlowRunningQuery
+func getSlowRunningMetrics(conn *performance_db_connection.PGSQLConnection) ([]interface{}, []*int64, error) {
+	var slowQueries []interface{}
 	var queryIdList []*int64
 	var query = queries.SlowQueries
 	rows, err := conn.Queryx(query)
@@ -59,9 +59,6 @@ func PopulateSlowRunningMetrics(instanceEntity *integration.Entity, conn *perfor
 		return nil, errors.New("no slow-running queries found")
 	}
 
-	for _, model := range slowQueries {
-		common_utils.SetMetricsParser(instanceEntity, "PostgresSlowQueriesSample", args, model, pgIntegration)
-	}
-
+	common_utils.SetMetricsParser(instanceEntity, "PostgresSlowQueriesSample", args, pgIntegration, slowQueries)
 	return queryIdList, nil
 }

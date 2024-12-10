@@ -67,57 +67,39 @@ func SetMetric(metricSet *metric.Set, name string, value interface{}, sourceType
 	}
 }
 
-func SetMetricsParser(instanceEntity *integration.Entity, eventName string, args args.ArgumentList, model interface{}, pgIntegration *integration.Integration) {
-	metricSetIngestion := CreateMetricSet(instanceEntity, eventName, args)
-	modelValue := reflect.ValueOf(model)
-	modelType := reflect.TypeOf(model)
-	cnt := 0
-	for i := 0; i < modelValue.NumField(); i++ {
-		cnt += 1
-		field := modelValue.Field(i)
-		fieldType := modelType.Field(i)
-		metricName := fieldType.Tag.Get("metric_name")
-		sourceType := fieldType.Tag.Get("source_type")
+func SetMetricsParser(instanceEntity *integration.Entity, eventName string, args args.ArgumentList, pgIntegration *integration.Integration, metricList []interface{}) {
+	for _, model := range metricList {
+		metricSetIngestion := CreateMetricSet(instanceEntity, eventName, args)
+		modelValue := reflect.ValueOf(model)
+		modelType := reflect.TypeOf(model)
+		cnt := 0
+		for i := 0; i < modelValue.NumField(); i++ {
+			cnt += 1
+			field := modelValue.Field(i)
+			fieldType := modelType.Field(i)
+			metricName := fieldType.Tag.Get("metric_name")
+			sourceType := fieldType.Tag.Get("source_type")
 
-		if field.Kind() == reflect.Ptr && !field.IsNil() {
-			fmt.Println("Field is a pointer: ", field.Elem().Interface())
-			SetMetric(metricSetIngestion, metricName, field.Elem().Interface(), sourceType)
-		} else if field.Kind() != reflect.Ptr {
-			SetMetric(metricSetIngestion, metricName, field.Interface(), sourceType)
-		}
-		if cnt == 60 {
-			err := pgIntegration.Publish()
-			if err != nil {
-				fmt.Println("Error in publishing metrics", err)
-				return
+			if field.Kind() == reflect.Ptr && !field.IsNil() {
+				fmt.Println("Field is a pointer: ", field.Elem().Interface())
+				SetMetric(metricSetIngestion, metricName, field.Elem().Interface(), sourceType)
+			} else if field.Kind() != reflect.Ptr {
+				SetMetric(metricSetIngestion, metricName, field.Interface(), sourceType)
 			}
-			cnt = 0
-			pgIntegration.Clear()
+			if cnt == 60 {
+				err := pgIntegration.Publish()
+				if err != nil {
+					fmt.Println("Error in publishing metrics", err)
+					return
+				}
+				cnt = 0
+				pgIntegration.Clear()
+			}
 		}
 	}
 }
 
 var ErrNonNumeric = errors.New("non-numeric value")
-
-func castToFloat(value interface{}) (float64, error) {
-	if b, ok := value.(bool); ok {
-		if b {
-			return 1, nil
-		}
-		return 0, nil
-	}
-
-	parsedValue, err := strconv.ParseFloat(fmt.Sprintf("%.2f", value), 64)
-	if err != nil {
-		return 0, err
-	}
-
-	if isNaNOrInf(parsedValue) {
-		return 0, ErrNonNumeric
-	}
-
-	return parsedValue, nil
-}
 
 // isNaNOrInf checks if a float64 value is NaN or Infinity.
 func isNaNOrInf(f float64) bool {

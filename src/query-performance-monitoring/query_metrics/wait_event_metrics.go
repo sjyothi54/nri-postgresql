@@ -13,8 +13,8 @@ import (
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
 )
 
-func getWaitEventMetrics(conn *performance_db_connection.PGSQLConnection) ([]datamodels.WaitEventQuery, error) {
-	var waitEventMetrics []datamodels.WaitEventQuery
+func getWaitEventMetrics(conn *performance_db_connection.PGSQLConnection) ([]interface{}, error) {
+	var waitEventMetrics []interface{}
 	var query = queries.WaitEvents
 	rows, err := conn.Queryx(query)
 	if err != nil {
@@ -56,9 +56,7 @@ func PopulateWaitEventMetrics(instanceEntity *integration.Entity, conn *performa
 
 	fmt.Print("Wait Event Metrics: ", waitEventMetrics)
 
-	for _, model := range waitEventMetrics {
-		common_utils.SetMetricsParser(instanceEntity, "PostgresqlWaitEventMetricsSample", args, model, pgIntegration)
-	}
+	common_utils.SetMetricsParser(instanceEntity, "PostgresqlWaitEventMetricsSample", args, pgIntegration, waitEventMetrics)
 
 	return nil
 }

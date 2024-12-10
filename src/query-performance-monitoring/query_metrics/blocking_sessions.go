@@ -12,8 +12,8 @@ import (
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
 )
 
-func getBlockingSessionMetrics(conn *performance_db_connection.PGSQLConnection) ([]datamodels.BlockingQuery, error) {
-	var blockingSessionMetrics []datamodels.BlockingQuery
+func getBlockingSessionMetrics(conn *performance_db_connection.PGSQLConnection) ([]interface{}, error) {
+	var blockingSessionMetrics []interface{}
 	var query = queries.BlockingQueries
 	rows, err := conn.Queryx(query)
 	if err != nil {
@@ -55,9 +55,7 @@ func PopulateBlockingSessionMetrics(instanceEntity *integration.Entity, conn *pe
 
 	log.Info("blockingSessionMetrics %+v", blockingSessionMetrics)
 
-	for _, model := range blockingSessionMetrics {
-		common_utils.SetMetricsParser(instanceEntity, "PostgresqlBlockingSessionSample", args, model, pgIntegration)
-	}
+	common_utils.SetMetricsParser(instanceEntity, "PostgresqlBlockingSessionSample", args, pgIntegration, blockingSessionMetrics)
 
 	return nil
 }

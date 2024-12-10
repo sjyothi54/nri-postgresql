@@ -11,8 +11,8 @@ import (
 	"strings"
 )
 
-func getIndividualMetrics(conn *performance_db_connection.PGSQLConnection, queryIdList []*int64) ([]datamodels.QueryPlanMetrics, error) {
-	var individualQueryMetricList []datamodels.QueryPlanMetrics
+func getIndividualMetrics(conn *performance_db_connection.PGSQLConnection, queryIdList []*int64) ([]interface{}, error) {
+	var individualQueryMetricList []interface{}
 	var individualQuerySearchQuery = getIndividualQueryStatementSearchQuery(queryIdList)
 
 	fmt.Println("individualQuerySearch::::", individualQuerySearchQuery)
@@ -35,7 +35,7 @@ func getIndividualMetrics(conn *performance_db_connection.PGSQLConnection, query
 	return individualQueryMetricList, nil
 }
 
-func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *performance_db_connection.PGSQLConnection, args args.ArgumentList, queryIDList []*int64, pgIntegration *integration.Integration) ([]datamodels.QueryPlanMetrics, error) {
+func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *performance_db_connection.PGSQLConnection, args args.ArgumentList, queryIDList []*int64, pgIntegration *integration.Integration) ([]interface{}, error) {
 	if len(queryIDList) == 0 {
 		log.Warn("queryIDList is empty")
 		return nil, nil
@@ -46,12 +46,7 @@ func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *perform
 		return nil, err
 	}
 
-	for _, model := range individualQueriesMetricsList {
-		fmt.Println("model", model.QueryText)
-		common_utils.SetMetricsParser(instanceEntity, "PostgresqlIndividualMetricsV1", args, model, pgIntegration)
-
-		break
-	}
+	common_utils.SetMetricsParser(instanceEntity, "PostgresqlIndividualMetricsV1", args, pgIntegration, individualQueriesMetricsList)
 
 	return individualQueriesMetricsList, nil
 }
