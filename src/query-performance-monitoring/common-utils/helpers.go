@@ -81,7 +81,7 @@ func SetMetricsParser(instanceEntity *integration.Entity, eventName string, args
 			//fmt.Println("byee", cnt)
 			if cnt == 60 || cnt == lenOfMetric {
 				//fmt.Println("heyyyy", lenOfMetric, cnt, metricSetIngestion.Metrics)
-				fmt.Println("[SetMetricsParser] Before Publish Entities", len(pgIntegration.Entities))
+				fmt.Println("[SetMetricsParser] Before Publish Entities", pgIntegration.Entities)
 				err := pgIntegration.Publish()
 				if err != nil {
 					fmt.Println("Error in publishing metrics", err)
@@ -89,7 +89,7 @@ func SetMetricsParser(instanceEntity *integration.Entity, eventName string, args
 				}
 				cnt = 0
 				//fmt.Println("entitiesssss", pgIntegration.Entities)
-				fmt.Println("[SetMetricsParser] After Publish Entities", len(pgIntegration.Entities))
+				fmt.Println("[SetMetricsParser] After Publish Entities", pgIntegration.Entities)
 				pgIntegration.Entities = append(pgIntegration.Entities, instanceEntity)
 			}
 		}
