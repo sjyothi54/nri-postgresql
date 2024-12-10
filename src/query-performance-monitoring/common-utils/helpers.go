@@ -45,12 +45,13 @@ func SetMetric(metricSet *metric.Set, name string, value interface{}, sourceType
 
 func SetMetricsParser(instanceEntity *integration.Entity, eventName string, args args.ArgumentList, pgIntegration *integration.Integration, metricList []interface{}) {
 	lenOfMetric := len(metricList)
+	cnt := 0
 	for _, model := range metricList {
 		metricSetIngestion := CreateMetricSet(instanceEntity, eventName, args)
 
 		modelValue := reflect.ValueOf(model)
 		modelType := reflect.TypeOf(model)
-		cnt := 0
+
 		for i := 0; i < modelValue.NumField(); i++ {
 			cnt += 1
 			field := modelValue.Field(i)
