@@ -49,9 +49,10 @@ func SetMetric(metricSet *metric.Set, name string, value interface{}, sourceType
 }
 
 func SetMetricsParser(instanceEntity *integration.Entity, eventName string, args args.ArgumentList, pgIntegration *integration.Integration, metricList []interface{}) {
-	fmt.Println("Started to ingest dataa")
+	fmt.Println("[EVENT_NAME] Started to ingest data for ", eventName)
 
 	cnt := 0
+
 	for _, model := range metricList {
 		metricSetIngestion := CreateMetricSet(instanceEntity, eventName, args)
 
@@ -71,8 +72,9 @@ func SetMetricsParser(instanceEntity *integration.Entity, eventName string, args
 				SetMetric(metricSetIngestion, metricName, field.Interface(), sourceType)
 			} else {
 				fmt.Println("elseeeeee", field)
-				fmt.Println("[SetMetricsParserELSE] Going inside else part.................")
+				fmt.Printf("[SetMetricsParserELSE] [%s] Going inside else part.................", eventName)
 			}
+
 			if cnt == 60 {
 				fmt.Println("[SetMetricsParser] Before Publish Entities", pgIntegration.Entities)
 				err := pgIntegration.Publish()
@@ -89,7 +91,7 @@ func SetMetricsParser(instanceEntity *integration.Entity, eventName string, args
 
 	err := pgIntegration.Publish()
 	if err != nil {
-		fmt.Println("Error in publishing metrics", err)
+		fmt.Println("[SetMetricsParserError] Error in publishing metrics ", err, eventName)
 		return
 	}
 	pgIntegration.Entities = append(pgIntegration.Entities, instanceEntity)
