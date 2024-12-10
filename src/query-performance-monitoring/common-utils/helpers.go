@@ -64,7 +64,7 @@ func SetMetricsParser(instanceEntity *integration.Entity, eventName string, args
 				SetMetric(metricSetIngestion, metricName, field.Interface(), sourceType)
 			}
 			if cnt == 60 || cnt == lenOfMetric {
-				fmt.Println("heyyyy")
+				fmt.Println("heyyyy", lenOfMetric)
 
 				err := pgIntegration.Publish()
 				if err != nil {
