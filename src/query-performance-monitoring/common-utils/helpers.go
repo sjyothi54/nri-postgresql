@@ -44,7 +44,7 @@ func SetMetric(metricSet *metric.Set, name string, value interface{}, sourceType
 }
 
 func SetMetricsParser(instanceEntity *integration.Entity, eventName string, args args.ArgumentList, pgIntegration *integration.Integration, metricList []interface{}) {
-
+	lenOfMetric := len(metricList)
 	for _, model := range metricList {
 		metricSetIngestion := CreateMetricSet(instanceEntity, eventName, args)
 
@@ -63,7 +63,7 @@ func SetMetricsParser(instanceEntity *integration.Entity, eventName string, args
 			} else if field.Kind() != reflect.Ptr {
 				SetMetric(metricSetIngestion, metricName, field.Interface(), sourceType)
 			}
-			if cnt == 60 {
+			if cnt == 60 || cnt == lenOfMetric {
 				fmt.Println("heyyyy")
 
 				err := pgIntegration.Publish()
