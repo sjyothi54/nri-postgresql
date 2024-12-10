@@ -1,15 +1,12 @@
 package common_utils
 
 import (
-	"errors"
 	"fmt"
 	"github.com/newrelic/infra-integrations-sdk/v3/data/attribute"
 	"github.com/newrelic/infra-integrations-sdk/v3/data/metric"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/nri-postgresql/src/args"
-	"math"
 	"reflect"
-	"strconv"
 )
 
 func CreateMetricSet(e *integration.Entity, sampleName string, args args.ArgumentList) *metric.Set {
@@ -32,28 +29,7 @@ func metricSet(e *integration.Entity, eventType, hostname string, port string) *
 func SetMetric(metricSet *metric.Set, name string, value interface{}, sourceType string) {
 	switch sourceType {
 	case `gauge`:
-		strValue := fmt.Sprintf("%v", value)
-		//var numericValue float64
-		//switch v := value.(type) {
-		//case int:
-		//	numericValue, _ = castToFloat(v)
-		//case int64:
-		//	numericValue, _ = castToFloat(v)
-		//case float64:
-		//	numericValue = v
-		//default:
-		//	fmt.Println("Error: gauge metric requires a numeric value")
-		//	return
-		//}
-		//fmt.Println("Numeric value: ", numericValue)
-		if floatValue, err := strconv.ParseFloat(strValue, 64); err == nil {
-			metricSet.SetMetric(name, floatValue, metric.GAUGE)
-		}
-		//err := metricSet.SetMetric(name, value, metric.GAUGE)
-		//if err != nil {
-		//	fmt.Println("Error in setting metric1", err)
-		//	return
-		//}
+		metricSet.SetMetric(name, value, metric.GAUGE)
 	case `attribute`:
 		err := metricSet.SetMetric(name, value, metric.ATTRIBUTE)
 		if err != nil {
@@ -68,8 +44,10 @@ func SetMetric(metricSet *metric.Set, name string, value interface{}, sourceType
 }
 
 func SetMetricsParser(instanceEntity *integration.Entity, eventName string, args args.ArgumentList, pgIntegration *integration.Integration, metricList []interface{}) {
+
 	for _, model := range metricList {
 		metricSetIngestion := CreateMetricSet(instanceEntity, eventName, args)
+
 		modelValue := reflect.ValueOf(model)
 		modelType := reflect.TypeOf(model)
 		cnt := 0
@@ -81,27 +59,21 @@ func SetMetricsParser(instanceEntity *integration.Entity, eventName string, args
 			sourceType := fieldType.Tag.Get("source_type")
 
 			if field.Kind() == reflect.Ptr && !field.IsNil() {
-				fmt.Println("Field is a pointer: ", field.Elem().Interface())
 				SetMetric(metricSetIngestion, metricName, field.Elem().Interface(), sourceType)
 			} else if field.Kind() != reflect.Ptr {
 				SetMetric(metricSetIngestion, metricName, field.Interface(), sourceType)
 			}
 			if cnt == 60 {
+				fmt.Println("heyyyy")
+
 				err := pgIntegration.Publish()
 				if err != nil {
 					fmt.Println("Error in publishing metrics", err)
 					return
 				}
 				cnt = 0
-				pgIntegration.Clear()
+
 			}
 		}
 	}
-}
-
-var ErrNonNumeric = errors.New("non-numeric value")
-
-// isNaNOrInf checks if a float64 value is NaN or Infinity.
-func isNaNOrInf(f float64) bool {
-	return math.IsNaN(f) || math.IsInf(f, 0)
 }
