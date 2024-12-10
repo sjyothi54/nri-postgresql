@@ -56,7 +56,7 @@ func PopulateBlockingMetrics(instanceEntity *integration.Entity, conn *connectio
 		log.Info("Populate Blocking running: %+v", blockingQueries)
 
 		for _, model := range blockingQueries {
-			metricSet := instanceEntity.NewMetricSet("PostgresBlockingQueries")
+			metricSet := instanceEntity.NewMetricSet("PostgresBlockingQueriesTest")
 
 			modelValue := reflect.ValueOf(model)
 			modelType := reflect.TypeOf(model)
