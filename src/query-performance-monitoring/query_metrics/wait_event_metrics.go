@@ -32,7 +32,7 @@ func getWaitEventMetrics(conn *performance_db_connection.PGSQLConnection) ([]dat
 	return waitEventMetrics, nil
 }
 
-func PopulateWaitEventMetrics(instanceEntity *integration.Entity, conn *performance_db_connection.PGSQLConnection, args args.ArgumentList) error {
+func PopulateWaitEventMetrics(instanceEntity *integration.Entity, conn *performance_db_connection.PGSQLConnection, args args.ArgumentList, pgIntegration *integration.Integration) error {
 	isExtensionEnabled, err := validations.CheckPgWaitExtensionEnabled(conn)
 	if err != nil {
 		log.Error("Error executing query: %v", err)
@@ -43,23 +43,9 @@ func PopulateWaitEventMetrics(instanceEntity *integration.Entity, conn *performa
 		return errors.New("extension 'pg_wait_sampling' is not enabled")
 	}
 	log.Info("Extension 'pg_wait_sampling' enabled.")
-	//waitEventMetrics, err := getWaitEventMetrics(conn)
-	var waitEventMetrics []datamodels.WaitEventQuery
-	var query = queries.WaitEvents
-	rows, err := conn.Queryx(query)
-	if err != nil {
-		return err
-	}
-	defer rows.Close()
-	for rows.Next() {
-		var waitEventMetric datamodels.WaitEventQuery
-		if err := rows.StructScan(&waitEventMetric); err != nil {
-			return err
-		}
-		waitEventMetrics = append(waitEventMetrics, waitEventMetric)
-	}
-	if err != nil {
-		log.Error("Error fetching wait-event metrics: %v", err)
+	var waitEventMetrics, errWaitEventMetric = getWaitEventMetrics(conn)
+	if errWaitEventMetric != nil {
+		log.Info("Error fetching wait-event metrics: %v", err)
 		return err
 	}
 
@@ -71,7 +57,7 @@ func PopulateWaitEventMetrics(instanceEntity *integration.Entity, conn *performa
 	fmt.Print("Wait Event Metrics: ", waitEventMetrics)
 
 	for _, model := range waitEventMetrics {
-		common_utils.SetMetricsParser(instanceEntity, "PostgresqlWaitEventMetricsSample", args, model)
+		common_utils.SetMetricsParser(instanceEntity, "PostgresqlWaitEventMetricsSample", args, model, pgIntegration)
 	}
 
 	return nil

@@ -67,11 +67,13 @@ func SetMetric(metricSet *metric.Set, name string, value interface{}, sourceType
 	}
 }
 
-func SetMetricsParser(instanceEntity *integration.Entity, eventName string, args args.ArgumentList, model interface{}) {
+func SetMetricsParser(instanceEntity *integration.Entity, eventName string, args args.ArgumentList, model interface{}, pgIntegration *integration.Integration) {
 	metricSetIngestion := CreateMetricSet(instanceEntity, eventName, args)
 	modelValue := reflect.ValueOf(model)
 	modelType := reflect.TypeOf(model)
+	cnt := 0
 	for i := 0; i < modelValue.NumField(); i++ {
+		cnt += 1
 		field := modelValue.Field(i)
 		fieldType := modelType.Field(i)
 		metricName := fieldType.Tag.Get("metric_name")
@@ -81,6 +83,15 @@ func SetMetricsParser(instanceEntity *integration.Entity, eventName string, args
 			SetMetric(metricSetIngestion, metricName, field.Elem().Interface(), sourceType)
 		} else if field.Kind() != reflect.Ptr {
 			SetMetric(metricSetIngestion, metricName, field.Interface(), sourceType)
+		}
+		if cnt == 60 {
+			err := pgIntegration.Publish()
+			if err != nil {
+				fmt.Println("Error in publishing metrics", err)
+				return
+			}
+			cnt = 0
+			pgIntegration.Clear()
 		}
 	}
 }

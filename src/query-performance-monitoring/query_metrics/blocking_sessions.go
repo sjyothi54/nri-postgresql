@@ -31,7 +31,7 @@ func getBlockingSessionMetrics(conn *performance_db_connection.PGSQLConnection) 
 	return blockingSessionMetrics, nil
 }
 
-func PopulateBlockingSessionMetrics(instanceEntity *integration.Entity, conn *performance_db_connection.PGSQLConnection, args args.ArgumentList) error {
+func PopulateBlockingSessionMetrics(instanceEntity *integration.Entity, conn *performance_db_connection.PGSQLConnection, args args.ArgumentList, pgIntegration *integration.Integration) error {
 	isExtensionEnabled, err := validations.CheckPgStatStatementsExtensionEnabled(conn)
 	if err != nil {
 		log.Error("Error executing query: %v", err)
@@ -56,7 +56,7 @@ func PopulateBlockingSessionMetrics(instanceEntity *integration.Entity, conn *pe
 	log.Info("blockingSessionMetrics %+v", blockingSessionMetrics)
 
 	for _, model := range blockingSessionMetrics {
-		common_utils.SetMetricsParser(instanceEntity, "PostgresqlBlockingSessionSample", args, model)
+		common_utils.SetMetricsParser(instanceEntity, "PostgresqlBlockingSessionSample", args, model, pgIntegration)
 	}
 
 	return nil

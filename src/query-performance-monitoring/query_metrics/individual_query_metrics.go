@@ -2,7 +2,6 @@ package query_metrics
 
 import (
 	"fmt"
-	"github.com/newrelic/infra-integrations-sdk/v3/data/metric"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
@@ -36,7 +35,7 @@ func getIndividualMetrics(conn *performance_db_connection.PGSQLConnection, query
 	return individualQueryMetricList, nil
 }
 
-func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *performance_db_connection.PGSQLConnection, args args.ArgumentList, queryIDList []*int64) ([]datamodels.QueryPlanMetrics, error) {
+func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *performance_db_connection.PGSQLConnection, args args.ArgumentList, queryIDList []*int64, pgIntegration *integration.Integration) ([]datamodels.QueryPlanMetrics, error) {
 	if len(queryIDList) == 0 {
 		log.Warn("queryIDList is empty")
 		return nil, nil
@@ -47,63 +46,12 @@ func PopulateIndividualMetrics(instanceEntity *integration.Entity, conn *perform
 		return nil, err
 	}
 
-	//fmt.Println("individualQueriesMetricsList::::", individualQueriesMetricsList)
+	for _, model := range individualQueriesMetricsList {
+		fmt.Println("model", model.QueryText)
+		common_utils.SetMetricsParser(instanceEntity, "PostgresqlIndividualMetricsV1", args, model, pgIntegration)
 
-	test1 := common_utils.CreateMetricSet(instanceEntity, "PostgresIndividualQueriesV18", args)
-	err = test1.SetMetric("test", "test", metric.ATTRIBUTE)
-	if err != nil {
-		return nil, err
+		break
 	}
-
-	var queryIDString string
-	if individualQueriesMetricsList[0].QueryText != nil {
-		queryIDString = fmt.Sprintf("%s", *individualQueriesMetricsList[0].QueryText)
-	} else {
-		queryIDString = ""
-	}
-
-	//var queryTextString string
-	//if individualQueriesMetricsList[0].Query != nil {
-	//	queryTextString = fmt.Sprintf("%s", *individualQueriesMetricsList[0].Query)
-	//} else {
-	//	queryTextString = ""
-	//}
-
-	//fmt.Print("queryTextRow1: ", *queryTextRow1)
-	//fmt.Print("queryTextString: ", queryTextString)
-	test3 := common_utils.CreateMetricSet(instanceEntity, "PostgresIndividualQueriesV22", args)
-	err = test3.SetMetric("queryText", "teeeee", metric.ATTRIBUTE)
-
-	test4 := common_utils.CreateMetricSet(instanceEntity, "PostgresIndividualQueriesV99", args)
-	err = test4.SetMetric("queryId", queryIDString, metric.ATTRIBUTE)
-
-	//test5 := common_utils.CreateMetricSet(instanceEntity, "PostgresIndividualQueriesV99", args)
-	//err = test5.SetMetric("queryText", queryTextString, metric.ATTRIBUTE)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//
-	//for _, model := range individualQueriesMetricsList {
-	//	fmt.Println("model", model.QueryText)
-	//	common_utils.SetMetricsParser(instanceEntity, "PostgresqlIndividualMetricsV1", args, model)
-	//
-	//	//metricSetIngestion := instanceEntity.NewMetricSet("PostgresIndividualQueriesV18")
-	//	//modelValue := reflect.ValueOf(model)
-	//	//modelType := reflect.TypeOf(model)
-	//	//for i := 0; i < modelValue.NumField(); i++ {
-	//	//	field := modelValue.Field(i)
-	//	//	fieldType := modelType.Field(i)
-	//	//	metricName := fieldType.Tag.Get("metric_name")
-	//	//	sourceType := fieldType.Tag.Get("source_type")
-	//	//
-	//	//	if field.Kind() == reflect.Ptr && !field.IsNil() {
-	//	//		common_utils.SetMetric(metricSetIngestion, metricName, field.Elem().Interface(), sourceType)
-	//	//	} else if field.Kind() != reflect.Ptr {
-	//	//		common_utils.SetMetric(metricSetIngestion, metricName, field.Interface(), sourceType)
-	//	//	}
-	//	//}
-	//	break
-	//}
 
 	return individualQueriesMetricsList, nil
 }

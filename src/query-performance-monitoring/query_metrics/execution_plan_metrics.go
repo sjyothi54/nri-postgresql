@@ -11,7 +11,7 @@ import (
 	performance_db_connection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-db-connection"
 )
 
-func PopulateQueryExecutionMetrics(queryPlanMetrics []datamodels.QueryPlanMetrics, instanceEntity *integration.Entity, conn *performance_db_connection.PGSQLConnection, args args.ArgumentList) error {
+func PopulateQueryExecutionMetrics(queryPlanMetrics []datamodels.QueryPlanMetrics, instanceEntity *integration.Entity, conn *performance_db_connection.PGSQLConnection, args args.ArgumentList, pgIntegration *integration.Integration) error {
 	for _, queryPlanMetric := range queryPlanMetrics {
 		fmt.Printf("QueryPlanMetricsssssss: %+v\n\n", queryPlanMetric)
 		//query := "EXPLAIN (FORMAT JSON) " + *queryPlanMetric.QueryText
@@ -52,7 +52,7 @@ func PopulateQueryExecutionMetrics(queryPlanMetrics []datamodels.QueryPlanMetric
 
 		//fmt.Println("mappppppppp", firstJson["Plan"])
 
-		common_utils.SetMetricsParser(instanceEntity, "PostgresqlExecutionPlanMetricsV2", args, execPlanMetrics)
+		common_utils.SetMetricsParser(instanceEntity, "PostgresqlExecutionPlanMetricsV2", args, execPlanMetrics, pgIntegration)
 
 	}
 	return nil
