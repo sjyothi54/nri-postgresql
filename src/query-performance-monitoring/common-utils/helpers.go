@@ -48,10 +48,18 @@ func SetMetric(metricSet *metric.Set, name string, value interface{}, sourceType
 }
 
 func SetMetricsParser(instanceEntity *integration.Entity, eventName string, args args.ArgumentList, pgIntegration *integration.Integration, metricList []interface{}) {
+	pgIntegrationNew, err := integration.New("com.newrelic.postgresql", "0.0.0", integration.Args(&args))
+	instance, err := pgIntegrationNew.Entity(fmt.Sprintf("%s:%s", args.Hostname, args.Port), "pg-instance")
+
+	if err != nil {
+		fmt.Println("Error in creating integration", err)
+		return
+	}
+
 	lenOfMetric := len(metricList)
 	cnt := 0
 	for _, model := range metricList {
-		metricSetIngestion := CreateMetricSet(instanceEntity, eventName, args)
+		metricSetIngestion := CreateMetricSet(instance, eventName, args)
 
 		modelValue := reflect.ValueOf(model)
 		modelType := reflect.TypeOf(model)
@@ -71,13 +79,15 @@ func SetMetricsParser(instanceEntity *integration.Entity, eventName string, args
 			fmt.Println("byee", cnt)
 			if cnt == 60 || cnt == lenOfMetric {
 				fmt.Println("heyyyy", lenOfMetric, cnt, metricSetIngestion.Metrics)
-				err := pgIntegration.Publish()
+				err := pgIntegrationNew.Publish()
 				if err != nil {
 					fmt.Println("Error in publishing metrics", err)
 					return
 				}
 				cnt = 0
-				metricSetIngestion = CreateMetricSet(instanceEntity, eventName, args)
+				pgIntegrationNew, err = integration.New("com.newrelic.postgresql", "0.0.0", integration.Args(&args))
+				instance, err = pgIntegrationNew.Entity(fmt.Sprintf("%s:%s", args.Hostname, args.Port), "pg-instance")
+				metricSetIngestion = CreateMetricSet(instance, eventName, args)
 
 			}
 		}
