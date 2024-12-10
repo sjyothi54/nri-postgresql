@@ -3,9 +3,10 @@ package query_performance_monitoring
 // this is the main go file for the query_monitoring package
 import (
 	"fmt"
+
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/nri-postgresql/src/args"
-	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-db-connection"
+	performance_db_connection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-db-connection"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/query_metrics"
 )
 
@@ -32,7 +33,12 @@ func QueryPerformanceMain(instanceEntity *integration.Entity, args args.Argument
 	//	fmt.Printf("Error in fetching query execution metrics: %v", err)
 	//	return
 	//}
-	err = query_metrics.PopulateWaitEventMetrics(instanceEntity, conn, args, pgIntegration)
+
+	instance, err := pgIntegration.Entity(fmt.Sprintf("%s:%s", args.Hostname, args.Port), "pg-instance")
+	if err != nil {
+		fmt.Println("[CreateNewEntity] Encounterd error while creating the new entity.....")
+	}
+	err = query_metrics.PopulateWaitEventMetrics(instance, conn, args, pgIntegration)
 	if err != nil {
 		fmt.Printf("Error in fetching wait event metrics: %v", err)
 		return
