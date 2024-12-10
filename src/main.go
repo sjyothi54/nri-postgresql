@@ -2,17 +2,15 @@ package main
 
 import (
 	"fmt"
-	"github.com/newrelic/infra-integrations-sdk/v3/integration"
-	"github.com/newrelic/infra-integrations-sdk/v3/log"
-	"github.com/newrelic/nri-postgresql/src/args"
-	"github.com/newrelic/nri-postgresql/src/collection"
-	"github.com/newrelic/nri-postgresql/src/connection"
-	"github.com/newrelic/nri-postgresql/src/inventory"
-	"github.com/newrelic/nri-postgresql/src/metrics"
-	"github.com/newrelic/nri-postgresql/src/query_monitoring"
 	"os"
 	"runtime"
 	"strings"
+
+	"github.com/newrelic/infra-integrations-sdk/v3/integration"
+	"github.com/newrelic/infra-integrations-sdk/v3/log"
+	"github.com/newrelic/nri-postgresql/src/args"
+	"github.com/newrelic/nri-postgresql/src/connection"
+	"github.com/newrelic/nri-postgresql/src/query_monitoring"
 )
 
 const (
@@ -58,7 +56,7 @@ func main() {
 	}
 
 	connectionInfo := connection.DefaultConnectionInfo(&args)
-	collectionList, err := collection.BuildCollectionList(args, connectionInfo)
+	// collectionList, err := collection.BuildCollectionList(args, connectionInfo)
 	if err != nil {
 		log.Error("Error creating list of entities to collect: %s", err)
 		os.Exit(1)
@@ -70,24 +68,28 @@ func main() {
 		os.Exit(1)
 	}
 
-	if args.HasMetrics() {
-		metrics.PopulateMetrics(connectionInfo, collectionList, instance, pgIntegration, args.Pgbouncer, args.CollectDbLockMetrics, args.CollectBloatMetrics, args.CustomMetricsQuery)
-		if args.CustomMetricsConfig != "" {
-			metrics.PopulateCustomMetricsFromFile(connectionInfo, args.CustomMetricsConfig, pgIntegration)
-		}
-	}
+	// if args.HasMetrics() {
+	// 	metrics.PopulateMetrics(connectionInfo, collectionList, instance, pgIntegration, args.Pgbouncer, args.CollectDbLockMetrics, args.CollectBloatMetrics, args.CustomMetricsQuery)
+	// 	if args.CustomMetricsConfig != "" {
+	// 		metrics.PopulateCustomMetricsFromFile(connectionInfo, args.CustomMetricsConfig, pgIntegration)
+	// 	}
+	// }
 
-	if args.HasInventory() {
-		con, err := connectionInfo.NewConnection(connectionInfo.DatabaseName())
-		if err != nil {
-			log.Error("Inventory collection failed: error creating connection to PostgreSQL: %s", err.Error())
-		} else {
-			defer con.Close()
-			inventory.PopulateInventory(instance, con)
-		}
-	}
+	// if args.HasInventory() {
+	//con, err := connectionInfo.NewConnection(connectionInfo.DatabaseName())
+	// 	if err != nil {
+	// 		log.Error("Inventory collection failed: error creating connection to PostgreSQL: %s", err.Error())
+	// 	} else {
+	// 		defer con.Close()
+	// 		inventory.PopulateInventory(instance, con)
+	// 	}
+	// }
 	//need to change the connection to change
 	con, err := connectionInfo.NewConnection(connectionInfo.DatabaseName())
+	if err != nil {
+		log.Error("Error creating connection to PostgreSQL: %s", err.Error())
+		os.Exit(1)
+	}
 	query_monitoring.RunAnalysis(instance, con, args)
 
 	if err = pgIntegration.Publish(); err != nil {
