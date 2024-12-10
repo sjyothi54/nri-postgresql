@@ -71,13 +71,13 @@ func SetMetricsParser(instanceEntity *integration.Entity, eventName string, args
 			fmt.Println("byee", cnt)
 			if cnt == 60 || cnt == lenOfMetric {
 				fmt.Println("heyyyy", lenOfMetric, cnt, metricSetIngestion.Metrics)
-
 				err := pgIntegration.Publish()
 				if err != nil {
 					fmt.Println("Error in publishing metrics", err)
 					return
 				}
 				cnt = 0
+				metricSetIngestion = CreateMetricSet(instanceEntity, eventName, args)
 
 			}
 		}
