@@ -2,6 +2,7 @@ package query_metrics
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
@@ -53,6 +54,8 @@ func PopulateWaitEventMetrics(instanceEntity *integration.Entity, conn *performa
 		log.Info("No wait-event metrics found.")
 		return nil
 	}
+
+	fmt.Print("waitEventMetrics: ", waitEventMetrics)
 
 	common_utils.SetMetricsParser(instanceEntity, "PostgresqlWaitEventMetricsOne", args, pgIntegration, waitEventMetrics)
 	return nil
