@@ -49,6 +49,8 @@ type connectionInfo struct {
 
 // DefaultConnectionInfo takes an argument list and constructs a default connection out of it
 func DefaultConnectionInfo(al *args.ArgumentList) Info {
+	log.Debug("Creating connection info from args: Database=%s, Username=%s, Password=%s, Host=%s, Port=%s, Timeout=%s, EnableSSL=%t, SSLCertLocation=%s, SSLRootCertLocation=%s, SSLKeyLocation=%s, TrustServerCertificate=%t",
+		al.Database, al.Username, al.Password, al.Hostname, al.Port, al.Timeout, al.EnableSSL, al.SSLCertLocation, al.SSLRootCertLocation, al.SSLKeyLocation, al.TrustServerCertificate)
 	return &connectionInfo{
 		Database:               al.Database,
 		Username:               al.Username,
