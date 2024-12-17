@@ -3,6 +3,8 @@ package performance_metrics
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
+
 	"github.com/mitchellh/mapstructure"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
@@ -10,7 +12,6 @@ import (
 	common_utils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
 	performanceDbConnection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/connections"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
-	"strings"
 )
 
 var supportedStatements = map[string]bool{"SELECT": true, "INSERT": true, "UPDATE": true, "DELETE": true, "WITH": true}
@@ -67,6 +68,7 @@ func processExecutionPlanOfQueries(individualQueriesList []datamodels.Individual
 		query := "EXPLAIN (FORMAT JSON) " + *individualQuery.QueryText
 		rows, err := dbConn.Queryx(query)
 		if err != nil {
+			log.Error("Error executing query: %v", err)
 			continue
 		}
 		defer rows.Close()
