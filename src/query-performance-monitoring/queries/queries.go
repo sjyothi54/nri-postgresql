@@ -25,11 +25,13 @@ const (
     JOIN
         pg_database pd ON pss.dbid = pd.oid
     WHERE 
-        pss.query NOT LIKE 'EXPLAIN (FORMAT JSON) %'    
+        pss.query NOT LIKE 'EXPLAIN (FORMAT JSON) %'   
+    AND pss.query LIKE 'update%'
+
     ORDER BY
         avg_elapsed_time_ms DESC -- Order by the average elapsed time in descending order
     LIMIT
-        10;`
+        20;`
 
 	WaitEvents = `WITH wait_history AS (
         SELECT
@@ -68,7 +70,6 @@ const (
     ORDER BY total_wait_time_ms DESC
     LIMIT 10;`
 
-    
 	BlockingQueries = `SELECT
           blocked_activity.pid AS blocked_pid,
           blocked_statements.query AS blocked_query,
