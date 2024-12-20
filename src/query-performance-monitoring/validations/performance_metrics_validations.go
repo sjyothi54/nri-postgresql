@@ -81,7 +81,7 @@ func CheckDbsWithIndividualQueryMetricsEligibility() ([]*performanceDbConnection
 }
 
 func GetExtensionEnabledDbList() {
-
+	log.Info("dbCOnnections", performanceDbConnection.DbConnections)
 	extensionDbMap = make(map[string][]string)
 	for dbName, dbConn := range performanceDbConnection.DbConnections {
 
