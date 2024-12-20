@@ -228,7 +228,6 @@ func GetDbSpecificConnections(args args.ArgumentList, conn *PGSQLConnection) {
 			log.Error("Error opening database connection: %v", err)
 			continue
 		}
-		defer dbConn.Close()
 		DbConnections[dbName] = dbConn
 	}
 
