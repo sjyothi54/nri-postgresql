@@ -86,6 +86,7 @@ func GetExtensionEnabledDbList() {
 	for dbName, dbConn := range performanceDbConnection.DbConnections {
 
 		isPgStatStatementExtensionEnabled, err := checkIsExtensionEnabled(dbConn, pg_stat_statements_extension)
+		log.Info("Checking extension enabled for %s %s", dbName, isPgStatStatementExtensionEnabled)
 		if err != nil {
 			log.Error("Error executing query: %v", err)
 			return
@@ -97,6 +98,7 @@ func GetExtensionEnabledDbList() {
 		extensionDbMap[pg_stat_statements_extension] = append(extensionDbMap[pg_stat_statements_extension], dbName)
 
 		isPgStatMonitorExtensionEnabled, err := checkIsExtensionEnabled(dbConn, pg_stat_monitor_extension)
+		log.Info("Checking extension enabled for %s %s", dbName, isPgStatMonitorExtensionEnabled)
 		if err != nil {
 			log.Error("Error executing query: %v", err)
 			return
@@ -108,6 +110,7 @@ func GetExtensionEnabledDbList() {
 		extensionDbMap[pg_stat_monitor_extension] = append(extensionDbMap[pg_stat_monitor_extension], dbName)
 
 		isPgWaitSamplingExtensionEnabled, err := checkIsExtensionEnabled(dbConn, pg_wait_sampling_extension)
+		log.Info("Checking extension enabled for %s %s", dbName, isPgWaitSamplingExtensionEnabled)
 		if err != nil {
 			log.Error("Error executing query: %v", err)
 			return
