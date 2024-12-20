@@ -119,4 +119,5 @@ func GetExtensionEnabledDbList() {
 		extensionDbMap[pg_wait_sampling_extension] = append(extensionDbMap[pg_wait_sampling_extension], dbName)
 
 	}
+	log.Info("Extension enabled databases: %v", extensionDbMap)
 }
