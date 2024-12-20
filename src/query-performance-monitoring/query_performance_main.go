@@ -24,7 +24,7 @@ func QueryPerformanceMain(args args.ArgumentList, pgIntegration *integration.Int
 	slowRunningQueries := performance_metrics.PopulateSlowRunningMetrics(pgIntegration, args)
 	performance_metrics.PopulateWaitEventMetrics(pgIntegration, args)
 	performance_metrics.PopulateBlockingMetrics(pgIntegration, args)
-	individualQueries := performance_metrics.PopulateIndividualQueryMetrics(newConnection, slowRunningQueries, pgIntegration, args)
+	individualQueries := performance_metrics.PopulateIndividualQueryMetrics(slowRunningQueries, pgIntegration, args)
 	performance_metrics.PopulateExecutionPlanMetrics(individualQueries, pgIntegration, args)
 	fmt.Println("Query analysis completed.")
 }

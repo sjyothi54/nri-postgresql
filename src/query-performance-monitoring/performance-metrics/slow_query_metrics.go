@@ -42,7 +42,7 @@ func PopulateSlowRunningMetrics(pgIntegration *integration.Integration, args arg
 		return nil
 	}
 	if len(dbConnList) == 0 {
-		log.Info("Extension 'pg_stat_statements' is not enabled. No databases found.")
+		log.Info("Extension PopulateSlowRunningMetrics is not eligible. No databases found.")
 		return nil
 	}
 

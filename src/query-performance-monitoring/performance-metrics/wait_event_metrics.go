@@ -40,7 +40,7 @@ func PopulateWaitEventMetrics(pgIntegration *integration.Integration, args args.
 	}
 
 	if len(dbConnList) == 0 {
-		log.Info("Extension 'pg_wait_sampling' is not enabled.")
+		log.Info("Extension PopulateWaitEventMetrics is not eligible. No databases found.")
 		return
 	}
 

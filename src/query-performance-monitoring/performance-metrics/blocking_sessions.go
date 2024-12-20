@@ -40,7 +40,7 @@ func PopulateBlockingMetrics(pgIntegration *integration.Integration, args args.A
 		return
 	}
 	if len(dbConnList) == 0 {
-		log.Info("Extension 'pg_stat_statements' is not enabled for no databases.")
+		log.Info("Extension PopulateBlockingMetrics is not eligible for no databases.")
 		return
 	}
 	log.Info("Extension 'pg_stat_statements' enabled.")

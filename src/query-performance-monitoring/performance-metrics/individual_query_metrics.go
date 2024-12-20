@@ -13,14 +13,14 @@ import (
 	"strings"
 )
 
-func PopulateIndividualQueryMetrics(conn *performanceDbConnection.PGSQLConnection, slowRunningQueries []datamodels.SlowRunningQueryMetrics, pgIntegration *integration.Integration, args args.ArgumentList) []datamodels.IndividualQueryMetrics {
+func PopulateIndividualQueryMetrics(slowRunningQueries []datamodels.SlowRunningQueryMetrics, pgIntegration *integration.Integration, args args.ArgumentList) []datamodels.IndividualQueryMetrics {
 	dbConnList, err := validations.CheckDbsWithIndividualQueryMetricsEligibility()
 	if err != nil {
 		log.Error("Error executing query: %v", err)
 		return nil
 	}
 	if len(dbConnList) == 0 {
-		log.Info("Extension 'pg_stat_monitor' is not enabled.")
+		log.Info("Extension PopulateIndividualQueryMetrics is not enabled. No databases found.")
 		return nil
 	}
 
