@@ -18,8 +18,8 @@ func QueryPerformanceMain(args args.ArgumentList, pgIntegration *integration.Int
 		fmt.Println("Error creating connection: ", err)
 		return
 	}
-	validations.GetExtensionEnabledDbList()
 	performanceDbConnection.GetDbSpecificConnections(args, newConnection)
+	validations.GetExtensionEnabledDbList()
 
 	slowRunningQueries := performance_metrics.PopulateSlowRunningMetrics(pgIntegration, args)
 	performance_metrics.PopulateWaitEventMetrics(pgIntegration, args)
