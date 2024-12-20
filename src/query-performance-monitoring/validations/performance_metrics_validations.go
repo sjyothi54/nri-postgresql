@@ -34,7 +34,7 @@ func checkIsExtensionEnabled(conn *performanceDbConnection.PGSQLConnection, exte
 }
 
 func CheckDbWithWaitMetricsEligibility() ([]*performanceDbConnection.PGSQLConnection, error) {
-	log.Info("sasassa", extensionDbMap)
+
 	dbWithPgWaitExtension := extensionDbMap[pg_wait_sampling_extension]
 	dbWIthPgStatExtension := extensionDbMap[pg_stat_statements_extension]
 	log.Info("dbWIthPgStatExtension", dbWIthPgStatExtension)
@@ -58,7 +58,6 @@ func CheckDbWithWaitMetricsEligibility() ([]*performanceDbConnection.PGSQLConnec
 }
 
 func CheckDbsWithSlowQueryMetricsEligibility() ([]*performanceDbConnection.PGSQLConnection, error) {
-	log.Info("sasassa", extensionDbMap)
 	dbWithPgStatExtension := extensionDbMap[pg_stat_statements_extension]
 	var dbConnections []*performanceDbConnection.PGSQLConnection
 	for _, dbName := range dbWithPgStatExtension {
@@ -72,7 +71,6 @@ func CheckDbsWithBlockingSessionMetricsEligibility() ([]*performanceDbConnection
 }
 
 func CheckDbsWithIndividualQueryMetricsEligibility() ([]*performanceDbConnection.PGSQLConnection, error) {
-	log.Info("sasassa", extensionDbMap)
 	dbWithPgStatMonitorExtension := extensionDbMap[pg_stat_monitor_extension]
 	var dbConnections []*performanceDbConnection.PGSQLConnection
 	for _, dbName := range dbWithPgStatMonitorExtension {
@@ -83,7 +81,6 @@ func CheckDbsWithIndividualQueryMetricsEligibility() ([]*performanceDbConnection
 }
 
 func GetExtensionEnabledDbList() {
-	log.Info("dbCOnnections", performanceDbConnection.DbConnections)
 	extensionDbMap = make(map[string][]string)
 	for dbName, dbConn := range performanceDbConnection.DbConnections {
 		//stat

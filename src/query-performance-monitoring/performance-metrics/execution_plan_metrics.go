@@ -10,10 +10,7 @@ import (
 	common_utils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
 	performanceDbConnection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/connections"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
-	"strings"
 )
-
-var supportedStatements = map[string]bool{"SELECT": true, "INSERT": true, "UPDATE": true, "DELETE": true, "WITH": true}
 
 func PopulateExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, pgIntegration *integration.Integration, args args.ArgumentList) {
 
@@ -34,39 +31,18 @@ func GetExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, args a
 
 	var executionPlanMetricsList []interface{}
 
-	var groupIndividualQueriesByDatabase = GroupQueriesByDatabase(results)
-
-	for dbName, individualQueriesList := range groupIndividualQueriesByDatabase {
-		dbConn, err := performanceDbConnection.OpenDB(args, dbName)
-		if err != nil {
-			log.Error("Error opening database connection: %v", err)
-			continue
-		}
-		defer dbConn.Close()
-		processExecutionPlanOfQueries(individualQueriesList, dbConn, &executionPlanMetricsList)
-	}
+	processExecutionPlanOfQueries(results, &executionPlanMetricsList)
 
 	return executionPlanMetricsList
 
 }
 
-func processExecutionPlanOfQueries(individualQueriesList []datamodels.IndividualQueryMetrics, dbConn *performanceDbConnection.PGSQLConnection, executionPlanMetricsList *[]interface{}) {
+func processExecutionPlanOfQueries(individualQueriesList []datamodels.IndividualQueryMetrics, executionPlanMetricsList *[]interface{}) {
 
 	for _, individualQuery := range individualQueriesList {
-
-		log.Info("individualQueryForExecutionPlan", "")
-
-		queryText := strings.TrimSpace(*individualQuery.QueryText)
-		upperQueryText := strings.ToUpper(queryText)
-		log.Info("Query Text: %s", strings.Split(upperQueryText, " ")[0])
-		//if !supportedStatements[strings.Split(upperQueryText, " ")[0]] {
-		//	log.Info("Skipping unsupported query for EXPLAIN: %s", queryText)
-		//	continue
-		//}
-
 		query := "EXPLAIN (FORMAT JSON) " + *individualQuery.RealQueryText
 		log.Info("Execution Plan Query : %s", query)
-		rows, err := dbConn.Queryx(query)
+		rows, err := performanceDbConnection.DbConnections[*individualQuery.DatabaseName].Queryx(query)
 		if err != nil {
 			log.Info("Error executing query: %v", err)
 			continue
@@ -90,17 +66,6 @@ func processExecutionPlanOfQueries(individualQueriesList []datamodels.Individual
 		}
 		fetchNestedExecutionPlanDetails(individualQuery, 0, execPlan[0]["Plan"].(map[string]interface{}), executionPlanMetricsList)
 	}
-}
-
-func GroupQueriesByDatabase(results []datamodels.IndividualQueryMetrics) map[string][]datamodels.IndividualQueryMetrics {
-	databaseMap := make(map[string][]datamodels.IndividualQueryMetrics)
-
-	for _, query := range results {
-		dbName := *query.DatabaseName
-		databaseMap[dbName] = append(databaseMap[dbName], query)
-	}
-
-	return databaseMap
 }
 
 func fetchNestedExecutionPlanDetails(individualQuery datamodels.IndividualQueryMetrics, level int, execPlan map[string]interface{}, executionPlanMetricsList *[]interface{}) {
