@@ -25,8 +25,7 @@ const (
     JOIN
         pg_database pd ON pss.dbid = pd.oid
     WHERE 
-        pss.query NOT LIKE 'EXPLAIN (FORMAT JSON) %'   
-    AND pss.query LIKE 'update%'
+        pss.query NOT LIKE 'EXPLAIN (FORMAT JSON) %'
 
     ORDER BY
         avg_elapsed_time_ms DESC -- Order by the average elapsed time in descending order
