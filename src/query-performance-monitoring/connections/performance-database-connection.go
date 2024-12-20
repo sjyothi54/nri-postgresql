@@ -220,6 +220,7 @@ func GetDbSpecificConnections(args args.ArgumentList, conn *PGSQLConnection) {
 		databasesList = append(databasesList, dbName)
 
 	}
+	log.Info("Databases List: ", databasesList)
 	dbConnections := make(map[string]*PGSQLConnection)
 	for _, dbName := range databasesList {
 		dbConn, err := OpenDB(args, dbName)
