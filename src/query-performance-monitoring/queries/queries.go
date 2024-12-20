@@ -119,4 +119,6 @@ const (
 				queryid IN (%s)
 			GROUP BY
 				query, queryid, datname, planid, cpu_user_time, cpu_sys_time, calls`
+
+	ListOfDatabases = `SELECT datname as database_name FROM pg_database WHERE datistemplate = false;`
 )

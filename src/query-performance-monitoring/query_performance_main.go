@@ -3,7 +3,9 @@ package query_performance_monitoring
 // this is the main go file for the query_monitoring package
 import (
 	"fmt"
+	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	performanceDbConnection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/connections"
+	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
 
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/nri-postgresql/src/args"
@@ -17,6 +19,8 @@ func QueryPerformanceMain(args args.ArgumentList, pgIntegration *integration.Int
 		fmt.Println("Error creating connection: ", err)
 		return
 	}
+	dbSpecificMap := validations.GetExtensionEnabledDbList(newConnection, args)
+	log.Info("dbSpecificMap", dbSpecificMap)
 	slowRunningQueries := performance_metrics.PopulateSlowRunningMetrics(newConnection, pgIntegration, args)
 	performance_metrics.PopulateWaitEventMetrics(newConnection, pgIntegration, args)
 	performance_metrics.PopulateBlockingMetrics(newConnection, pgIntegration, args)
