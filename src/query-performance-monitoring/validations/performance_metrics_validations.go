@@ -37,6 +37,8 @@ func CheckDbWithWaitMetricsEligibility() ([]*performanceDbConnection.PGSQLConnec
 	log.Info("sasassa", extensionDbMap)
 	dbWithPgWaitExtension := extensionDbMap[pg_wait_sampling_extension]
 	dbWIthPgStatExtension := extensionDbMap[pg_stat_statements_extension]
+	log.Info("dbWIthPgStatExtension", dbWIthPgStatExtension)
+	log.Info("dbWithPgWaitExtension", dbWithPgWaitExtension)
 	dbStatMap := make(map[string]bool)
 	for _, db := range dbWIthPgStatExtension {
 		dbStatMap[db] = true
