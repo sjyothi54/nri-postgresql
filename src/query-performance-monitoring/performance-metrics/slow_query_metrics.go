@@ -11,41 +11,43 @@ import (
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
 )
 
-func GetSlowRunningMetrics(conn *performanceDbConnection.PGSQLConnection) ([]datamodels.SlowRunningQueryMetrics, []interface{}, error) {
+func GetSlowRunningMetrics(connList []*performanceDbConnection.PGSQLConnection) ([]datamodels.SlowRunningQueryMetrics, []interface{}, error) {
 	var slowQueryMetricsList []datamodels.SlowRunningQueryMetrics
 	var slowQueryMetricsListInterface []interface{}
 	var query = queries.SlowQueries
-	rows, err := conn.Queryx(query)
-	if err != nil {
-		return nil, nil, err
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var slowQuery datamodels.SlowRunningQueryMetrics
-		if err := rows.StructScan(&slowQuery); err != nil {
+	for _, conn := range connList {
+		rows, err := conn.Queryx(query)
+		if err != nil {
 			return nil, nil, err
 		}
-		slowQueryMetricsList = append(slowQueryMetricsList, slowQuery)
-		slowQueryMetricsListInterface = append(slowQueryMetricsListInterface, slowQuery)
+		defer rows.Close()
+
+		for rows.Next() {
+			var slowQuery datamodels.SlowRunningQueryMetrics
+			if err := rows.StructScan(&slowQuery); err != nil {
+				return nil, nil, err
+			}
+			slowQueryMetricsList = append(slowQueryMetricsList, slowQuery)
+			slowQueryMetricsListInterface = append(slowQueryMetricsListInterface, slowQuery)
+		}
 	}
 
 	return slowQueryMetricsList, slowQueryMetricsListInterface, nil
 }
 
-func PopulateSlowRunningMetrics(conn *performanceDbConnection.PGSQLConnection, pgIntegration *integration.Integration, args args.ArgumentList) []datamodels.SlowRunningQueryMetrics {
-	isExtensionEnabled, err := validations.CheckPgStatStatementsExtensionEnabled(conn)
+func PopulateSlowRunningMetrics(pgIntegration *integration.Integration, args args.ArgumentList) []datamodels.SlowRunningQueryMetrics {
+	dbConnList, err := validations.CheckDbsWithSlowQueryMetricsEligibility()
 	if err != nil {
 		log.Error("Error executing query: %v", err)
 		return nil
 	}
-	if !isExtensionEnabled {
-		log.Info("Extension 'pg_stat_statements' is not enabled.")
+	if len(dbConnList) == 0 {
+		log.Info("Extension 'pg_stat_statements' is not enabled. No databases found.")
 		return nil
 	}
 
 	log.Info("Extension 'pg_stat_statements' enabled.")
-	slowQueryMetricsList, slowQueryMetricsListInterface, err := GetSlowRunningMetrics(conn)
+	slowQueryMetricsList, slowQueryMetricsListInterface, err := GetSlowRunningMetrics(dbConnList)
 	if err != nil {
 		log.Error("Error fetching slow-running queries: %v", err)
 		return nil

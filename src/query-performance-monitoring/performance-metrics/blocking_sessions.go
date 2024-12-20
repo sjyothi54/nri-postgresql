@@ -11,38 +11,40 @@ import (
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
 )
 
-func GetBlockingMetrics(conn *performanceDbConnection.PGSQLConnection) ([]interface{}, error) {
+func GetBlockingMetrics(dbConnList []*performanceDbConnection.PGSQLConnection) ([]interface{}, error) {
 	var blockingQueriesMetricsList []interface{}
 	var query = queries.BlockingQueries
-	rows, err := conn.Queryx(query)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var blockingQueryMetric datamodels.BlockingSessionMetrics
-		if err := rows.StructScan(&blockingQueryMetric); err != nil {
+	for _, conn := range dbConnList {
+		rows, err := conn.Queryx(query)
+		if err != nil {
 			return nil, err
 		}
-		blockingQueriesMetricsList = append(blockingQueriesMetricsList, blockingQueryMetric)
+		defer rows.Close()
+
+		for rows.Next() {
+			var blockingQueryMetric datamodels.BlockingSessionMetrics
+			if err := rows.StructScan(&blockingQueryMetric); err != nil {
+				return nil, err
+			}
+			blockingQueriesMetricsList = append(blockingQueriesMetricsList, blockingQueryMetric)
+		}
 	}
 
 	return blockingQueriesMetricsList, nil
 }
 
-func PopulateBlockingMetrics(conn *performanceDbConnection.PGSQLConnection, pgIntegration *integration.Integration, args args.ArgumentList) {
-	isExtensionEnabled, err := validations.CheckPgStatStatementsExtensionEnabled(conn)
+func PopulateBlockingMetrics(pgIntegration *integration.Integration, args args.ArgumentList) {
+	dbConnList, err := validations.CheckDbsWithBlockingSessionMetricsEligibility()
 	if err != nil {
 		log.Error("Error executing query: %v", err)
 		return
 	}
-	if !isExtensionEnabled {
-		log.Info("Extension 'pg_stat_statements' is not enabled.")
+	if len(dbConnList) == 0 {
+		log.Info("Extension 'pg_stat_statements' is not enabled for no databases.")
 		return
 	}
 	log.Info("Extension 'pg_stat_statements' enabled.")
-	blockingQueriesMetricsList, err := GetBlockingMetrics(conn)
+	blockingQueriesMetricsList, err := GetBlockingMetrics(dbConnList)
 	if err != nil {
 		log.Error("Error fetching Blocking queries: %v", err)
 		return

@@ -4,12 +4,15 @@ package performanceDbConnection
 import (
 	"fmt"
 	"github.com/jmoiron/sqlx"
+	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
 	"net/url"
 	// pq is required for postgreSQL driver but isn't used in code
 	_ "github.com/lib/pq"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
 )
+
+var DbConnections = make(map[string]*PGSQLConnection)
 
 const (
 	extensionsQuery = `
@@ -198,4 +201,34 @@ func OpenDB(args args.ArgumentList, dbName string) (*PGSQLConnection, error) {
 		return nil, err
 	}
 	return &PGSQLConnection{connection: db}, nil
+}
+
+func GetDbSpecificConnections(args args.ArgumentList, conn *PGSQLConnection) {
+	databaseRows, err := conn.Queryx(queries.ListOfDatabases)
+	if err != nil {
+		log.Error("Error executing query: ", err.Error())
+		return
+
+	}
+	var databasesList []string
+	defer databaseRows.Close()
+	for databaseRows.Next() {
+		var dbName string
+		if err := databaseRows.Scan(&dbName); err != nil {
+			log.Error("Error scanning rows: ", err.Error())
+		}
+		databasesList = append(databasesList, dbName)
+
+	}
+	dbConnections := make(map[string]*PGSQLConnection)
+	for _, dbName := range databasesList {
+		dbConn, err := OpenDB(args, dbName)
+		if err != nil {
+			log.Error("Error opening database connection: %v", err)
+			continue
+		}
+		defer dbConn.Close()
+		dbConnections[dbName] = dbConn
+	}
+
 }
