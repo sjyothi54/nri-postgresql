@@ -86,9 +86,9 @@ func GetExtensionEnabledDbList() {
 	log.Info("dbCOnnections", performanceDbConnection.DbConnections)
 	extensionDbMap = make(map[string][]string)
 	for dbName, dbConn := range performanceDbConnection.DbConnections {
-
+		//stat
 		isPgStatStatementExtensionEnabled, err := checkIsExtensionEnabled(dbConn, pg_stat_statements_extension)
-		log.Info("Checking extension enabled for %s %s", dbName, isPgStatStatementExtensionEnabled)
+		log.Info("Checking stat extension enabled for %s %s", dbName, isPgStatStatementExtensionEnabled)
 		if err != nil {
 			log.Error("Error executing query: %v", err)
 			return
@@ -99,8 +99,9 @@ func GetExtensionEnabledDbList() {
 		}
 		extensionDbMap[pg_stat_statements_extension] = append(extensionDbMap[pg_stat_statements_extension], dbName)
 
+		//monitor
 		isPgStatMonitorExtensionEnabled, err := checkIsExtensionEnabled(dbConn, pg_stat_monitor_extension)
-		log.Info("Checking extension enabled for %s %s", dbName, isPgStatMonitorExtensionEnabled)
+		log.Info("Checking monitor extension enabled for %s %s", dbName, isPgStatMonitorExtensionEnabled)
 		if err != nil {
 			log.Error("Error executing query: %v", err)
 			return
@@ -111,8 +112,9 @@ func GetExtensionEnabledDbList() {
 		}
 		extensionDbMap[pg_stat_monitor_extension] = append(extensionDbMap[pg_stat_monitor_extension], dbName)
 
+		//wait
 		isPgWaitSamplingExtensionEnabled, err := checkIsExtensionEnabled(dbConn, pg_wait_sampling_extension)
-		log.Info("Checking extension enabled for %s %s", dbName, isPgWaitSamplingExtensionEnabled)
+		log.Info("Checking wait extension enabled for %s %s", dbName, isPgWaitSamplingExtensionEnabled)
 		if err != nil {
 			log.Error("Error executing query: %v", err)
 			return
