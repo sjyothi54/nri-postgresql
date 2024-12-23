@@ -1,0 +1,60 @@
+package performance_metrics
+
+import (
+	"github.com/newrelic/infra-integrations-sdk/v3/integration"
+	"github.com/newrelic/infra-integrations-sdk/v3/log"
+	"github.com/newrelic/nri-postgresql/src/args"
+	common_utils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
+	performanceDbConnection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/connections"
+	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
+	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
+	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
+)
+
+func GetBlockingMetrics(dbConnList []*performanceDbConnection.PGSQLConnection) ([]interface{}, error) {
+	var blockingQueriesMetricsList []interface{}
+	var query = queries.BlockingQueries
+	for _, conn := range dbConnList {
+		rows, err := conn.Queryx(query)
+		if err != nil {
+			return nil, err
+		}
+		defer rows.Close()
+
+		for rows.Next() {
+			var blockingQueryMetric datamodels.BlockingSessionMetrics
+			if err := rows.StructScan(&blockingQueryMetric); err != nil {
+				return nil, err
+			}
+			blockingQueriesMetricsList = append(blockingQueriesMetricsList, blockingQueryMetric)
+		}
+	}
+
+	return blockingQueriesMetricsList, nil
+}
+
+func PopulateBlockingMetrics(pgIntegration *integration.Integration, args args.ArgumentList) {
+	dbConnList, err := validations.CheckDbsWithBlockingSessionMetricsEligibility()
+	if err != nil {
+		log.Error("Error executing query: %v", err)
+		return
+	}
+	if len(dbConnList) == 0 {
+		log.Info("Extension PopulateBlockingMetrics is not eligible for no databases.")
+		return
+	}
+	log.Info("Extension 'pg_stat_statements' enabled.")
+	blockingQueriesMetricsList, err := GetBlockingMetrics(dbConnList)
+	if err != nil {
+		log.Error("Error fetching Blocking queries: %v", err)
+		return
+	}
+
+	if len(blockingQueriesMetricsList) == 0 {
+		log.Info("No Blocking queries found.")
+		return
+	}
+	log.Info("Populate Blocking running: %+v", blockingQueriesMetricsList)
+	common_utils.IngestMetric(blockingQueriesMetricsList, "PostgresBlockingSessions", pgIntegration, args)
+
+}

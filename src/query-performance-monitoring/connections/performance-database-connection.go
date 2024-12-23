@@ -1,16 +1,18 @@
 // Package connection contains the PGSQLConnection type and methods for manipulating and querying a PostgreSQL connection
-package connection
+package performanceDbConnection
 
 import (
 	"fmt"
-	"net/url"
-
 	"github.com/jmoiron/sqlx"
+	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
+	"net/url"
 	// pq is required for postgreSQL driver but isn't used in code
 	_ "github.com/lib/pq"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
 )
+
+var DbConnections = make(map[string]*PGSQLConnection)
 
 const (
 	extensionsQuery = `
@@ -170,6 +172,7 @@ func createConnectionURL(ci *connectionInfo, database string) string {
 	}
 
 	connectionURL.RawQuery = query.Encode()
+
 	return connectionURL.String()
 }
 
@@ -188,4 +191,44 @@ func addSSLQueries(query url.Values, ci *connectionInfo) {
 		query.Add("sslmode", "verify-full")
 		query.Add("sslrootcert", ci.SSLRootCertLocation)
 	}
+}
+
+func OpenDB(args args.ArgumentList, dbName string) (*PGSQLConnection, error) {
+	connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		args.Hostname, args.Port, args.Username, args.Password, dbName)
+	db, err := sqlx.Open("postgres", connStr)
+	if err != nil {
+		return nil, err
+	}
+	return &PGSQLConnection{connection: db}, nil
+}
+
+func GetDbSpecificConnections(args args.ArgumentList, conn *PGSQLConnection) {
+	databaseRows, err := conn.Queryx(queries.ListOfDatabases)
+	if err != nil {
+		log.Error("Error executing query: ", err.Error())
+		return
+
+	}
+	var databasesList []string
+	defer databaseRows.Close()
+	for databaseRows.Next() {
+		var dbName string
+		if err := databaseRows.Scan(&dbName); err != nil {
+			log.Error("Error scanning rows: ", err.Error())
+		}
+		databasesList = append(databasesList, dbName)
+
+	}
+	log.Info("Databases List: ", databasesList)
+	DbConnections = make(map[string]*PGSQLConnection)
+	for _, dbName := range databasesList {
+		dbConn, err := OpenDB(args, dbName)
+		if err != nil {
+			log.Error("Error opening database connection: %v", err)
+			continue
+		}
+		DbConnections[dbName] = dbConn
+	}
+
 }
