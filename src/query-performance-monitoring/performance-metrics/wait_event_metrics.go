@@ -1,8 +1,11 @@
 package performance_metrics
 
 import (
+	"fmt"
+
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
+	"github.com/newrelic/nri-postgresql/src/args"
 	common_utils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
 	performanceDbConnection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/connections"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
@@ -10,11 +13,13 @@ import (
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
 )
 
-func GetWaitEventMetrics(conn *performanceDbConnection.PGSQLConnection) ([]interface{}, error) {
+func GetWaitEventMetrics(conn *performanceDbConnection.PGSQLConnection, args args.ArgumentList) ([]interface{}, error) {
 	var waitEventMetricsList []interface{}
-	var query = queries.WaitEvents
+	query := fmt.Sprintf(queries.WaitEvents, args.QueryCountThreshold)
+	fmt.Print("Query: ", query)
 	rows, err := conn.Queryx(query)
 	if err != nil {
+		log.Error("Error executing query: %v", err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -29,8 +34,8 @@ func GetWaitEventMetrics(conn *performanceDbConnection.PGSQLConnection) ([]inter
 	return waitEventMetricsList, nil
 }
 
-func PopulateWaitEventMetrics(conn *performanceDbConnection.PGSQLConnection, pgIntegration *integration.Integration) {
-	isExtensionEnabled, err := validations.CheckPgWaitSamplingExtensionEnabled(conn)
+func PopulateWaitEventMetrics(conn *performanceDbConnection.PGSQLConnection, pgIntegration *integration.Integration, args args.ArgumentList) {
+	isExtensionEnabled, err := validations.CheckWaitEventMetricsFetchEligibility(conn)
 	if err != nil {
 		log.Error("Error executing query: %v", err)
 		return
@@ -40,7 +45,7 @@ func PopulateWaitEventMetrics(conn *performanceDbConnection.PGSQLConnection, pgI
 		return
 	}
 	log.Info("Extension 'pg_wait_sampling' enabled.")
-	waitEventMetricsList, err := GetWaitEventMetrics(conn)
+	waitEventMetricsList, err := GetWaitEventMetrics(conn, args)
 	if err != nil {
 		log.Error("Error fetching wait event queries: %v", err)
 		return
@@ -52,6 +57,6 @@ func PopulateWaitEventMetrics(conn *performanceDbConnection.PGSQLConnection, pgI
 	}
 	log.Info("Populate wait event : %+v", waitEventMetricsList)
 
-	common_utils.IngestMetric(waitEventMetricsList, "PostgresWaitEventsV5", pgIntegration)
+	common_utils.IngestMetric(waitEventMetricsList, "PostgresWaitEvents", pgIntegration, args)
 
 }

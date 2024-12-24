@@ -1,8 +1,11 @@
 package performance_metrics
 
 import (
+	"fmt"
+
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
+	"github.com/newrelic/nri-postgresql/src/args"
 	common_utils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
 	performanceDbConnection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/connections"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
@@ -10,9 +13,10 @@ import (
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
 )
 
-func GetBlockingMetrics(conn *performanceDbConnection.PGSQLConnection) ([]interface{}, error) {
+func GetBlockingMetrics(conn *performanceDbConnection.PGSQLConnection, args args.ArgumentList) ([]interface{}, error) {
 	var blockingQueriesMetricsList []interface{}
-	var query = queries.BlockingQueries
+	query := fmt.Sprintf(queries.BlockingQueries, args.QueryCountThreshold)
+	log.Info("Query: %s", query)
 	rows, err := conn.Queryx(query)
 	if err != nil {
 		return nil, err
@@ -30,18 +34,18 @@ func GetBlockingMetrics(conn *performanceDbConnection.PGSQLConnection) ([]interf
 	return blockingQueriesMetricsList, nil
 }
 
-func PopulateBlockingMetrics(conn *performanceDbConnection.PGSQLConnection, pgIntegration *integration.Integration) {
-	isExtensionEnabled, err := validations.CheckPgStatStatementsExtensionEnabled(conn)
+func PopulateBlockingMetrics(conn *performanceDbConnection.PGSQLConnection, pgIntegration *integration.Integration, args args.ArgumentList) {
+	isExtensionEnabled, err := validations.CheckBlockingSessionMetricsFetchEligibility(conn)
 	if err != nil {
 		log.Error("Error executing query: %v", err)
 		return
 	}
 	if !isExtensionEnabled {
-		log.Info("Extension 'pg_stat_statements' is not enabled.")
+		log.Info("Ineligible to collect Blocking session metrics")
 		return
 	}
 	log.Info("Extension 'pg_stat_statements' enabled.")
-	blockingQueriesMetricsList, err := GetBlockingMetrics(conn)
+	blockingQueriesMetricsList, err := GetBlockingMetrics(conn, args)
 	if err != nil {
 		log.Error("Error fetching Blocking queries: %v", err)
 		return
@@ -52,6 +56,6 @@ func PopulateBlockingMetrics(conn *performanceDbConnection.PGSQLConnection, pgIn
 		return
 	}
 	log.Info("Populate Blocking running: %+v", blockingQueriesMetricsList)
-	common_utils.IngestMetric(blockingQueriesMetricsList, "PostgresBlockingQueriesV5", pgIntegration)
+	common_utils.IngestMetric(blockingQueriesMetricsList, "PostgresBlockingSessions", pgIntegration, args)
 
 }
