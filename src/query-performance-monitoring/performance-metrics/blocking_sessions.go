@@ -15,7 +15,7 @@ import (
 
 func GetBlockingMetrics(conn *performanceDbConnection.PGSQLConnection, args args.ArgumentList) ([]interface{}, error) {
 	var blockingQueriesMetricsList []interface{}
-	query := fmt.Sprintf(queries.BlockingQueries, args.QueryCountThreshold)
+	query := fmt.Sprintf(queries.BlockingQueries)
 	log.Info("Query: %s", query)
 	rows, err := conn.Queryx(query)
 	if err != nil {

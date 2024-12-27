@@ -1,0 +1,15 @@
+mode: set
+github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations/performance_metrics_validations.go:9.108,11.16 2 1
+github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations/performance_metrics_validations.go:11.16,14.3 2 1
+github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations/performance_metrics_validations.go:15.2,18.18 3 1
+github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations/performance_metrics_validations.go:18.18,19.43 1 1
+github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations/performance_metrics_validations.go:19.43,21.4 1 0
+github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations/performance_metrics_validations.go:23.2,23.35 1 1
+github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations/performance_metrics_validations.go:23.35,25.3 1 0
+github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations/performance_metrics_validations.go:27.2,27.23 1 1
+github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations/performance_metrics_validations.go:30.105,32.2 1 1
+github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations/performance_metrics_validations.go:34.105,37.16 3 0
+github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations/performance_metrics_validations.go:37.16,39.3 1 0
+github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations/performance_metrics_validations.go:40.2,40.48 1 0
+github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations/performance_metrics_validations.go:43.111,45.2 1 0
+github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations/performance_metrics_validations.go:47.111,49.2 1 0

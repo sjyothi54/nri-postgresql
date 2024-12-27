@@ -25,6 +25,10 @@ type PGSQLConnection struct {
 	connection *sqlx.DB
 }
 
+func (p *PGSQLConnection) SetConnection(db *sqlx.DB) {
+    p.connection = db
+}
+
 // Info holds all the information needed from the user to create a new connection
 type Info interface {
 	NewConnection(database string) (*PGSQLConnection, error)

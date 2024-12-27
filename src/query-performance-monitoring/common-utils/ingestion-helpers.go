@@ -7,6 +7,7 @@ import (
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
 	"reflect"
+	"sync"
 )
 
 const publishThreshold = 100
@@ -96,4 +97,28 @@ func IngestMetric(metricList []interface{}, eventName string, pgIntegration *int
 		return
 	}
 
+}
+var (
+
+    ingestMetricFunc func(metrics []interface{}, metricName string, integration *integration.Integration, argList args.ArgumentList)
+
+    mu               sync.Mutex
+
+)
+func SetIngestMetricFunc(f func(metrics []interface{}, metricName string, integration *integration.Integration, argList args.ArgumentList)) {
+
+    mu.Lock()
+
+    defer mu.Unlock()
+
+    ingestMetricFunc = f
+
+}
+func GetIngestMetricFunc() func(metrics []interface{}, metricName string, integration *integration.Integration, argList args.ArgumentList) {
+
+    mu.Lock()
+
+    defer mu.Unlock()
+
+    return ingestMetricFunc
 }

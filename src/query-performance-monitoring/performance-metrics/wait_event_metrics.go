@@ -15,7 +15,7 @@ import (
 
 func GetWaitEventMetrics(conn *performanceDbConnection.PGSQLConnection, args args.ArgumentList) ([]interface{}, error) {
 	var waitEventMetricsList []interface{}
-	query := fmt.Sprintf(queries.WaitEvents, args.QueryCountThreshold)
+	query := fmt.Sprintf(queries.WaitEvents)
 	fmt.Print("Query: ", query)
 	rows, err := conn.Queryx(query)
 	if err != nil {
