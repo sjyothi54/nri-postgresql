@@ -2,11 +2,12 @@ package common_utils
 
 import (
 	"fmt"
+	"reflect"
+
 	"github.com/newrelic/infra-integrations-sdk/v3/data/metric"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
-	"reflect"
 )
 
 const publishThreshold = 100
@@ -88,7 +89,7 @@ func IngestMetric(metricList []interface{}, eventName string, pgIntegration *int
 		log.Error("Error publishing metrics: %v", err)
 		return
 	}
-	
+
 	if err != nil {
 		log.Error("Error publishing metrics: %v", err)
 		return
