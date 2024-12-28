@@ -1,4 +1,4 @@
-package queryPerformancemonitoring
+package queryperformancemonitoring
 
 // this is the main go file for the query_monitoring package
 import (
