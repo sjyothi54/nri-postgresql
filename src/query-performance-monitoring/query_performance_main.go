@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/newrelic/infra-integrations-sdk/v3/log"
+	performancedbconnection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/connections"
+
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
