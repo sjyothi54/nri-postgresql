@@ -1,4 +1,4 @@
-package performanceMetrics
+package performancemetrics
 
 import (
 	"encoding/json"
@@ -15,8 +15,7 @@ import (
 // var supportedStatements = map[string]bool{"SELECT": true, "INSERT": true, "UPDATE": true, "DELETE": true, "WITH": true}
 
 func PopulateExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, pgIntegration *integration.Integration, args args.ArgumentList) {
-
-	if results == nil || len(results) == 0 {
+	if len(results) == 0 {
 		log.Info("No individual queries found.")
 		return
 	}
@@ -27,7 +26,6 @@ func PopulateExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, p
 }
 
 func GetExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, args args.ArgumentList) []interface{} {
-
 	var executionPlanMetricsList []interface{}
 
 	var groupIndividualQueriesByDatabase = GroupQueriesByDatabase(results)
@@ -45,9 +43,7 @@ func GetExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, args a
 	return executionPlanMetricsList
 
 }
-
 func processExecutionPlanOfQueries(individualQueriesList []datamodels.IndividualQueryMetrics, dbConn *performancedbconnection.PGSQLConnection, executionPlanMetricsList *[]interface{}) {
-
 	for _, individualQuery := range individualQueriesList {
 
 		// queryText := strings.TrimSpace(*individualQuery.QueryText)

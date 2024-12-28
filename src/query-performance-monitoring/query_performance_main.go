@@ -21,27 +21,27 @@ func QueryPerformanceMain(args args.ArgumentList, pgIntegration *integration.Int
 	}
 	start := time.Now()
 	log.Info("Start PopulateSlowRunningMetrics:", start)
-	slowRunningQueries := performanceMetrics.PopulateSlowRunningMetrics(newConnection, pgIntegration, args)
+	slowRunningQueries := performancemetrics.PopulateSlowRunningMetrics(newConnection, pgIntegration, args)
 	log.Info("End PopulateSlowRunningMetrics:", time.Since(start).Seconds())
 
 	start = time.Now()
 	log.Info("Start PopulateWaitEventMetrics:", start)
-	performanceMetrics.PopulateWaitEventMetrics(newConnection, pgIntegration, args)
+	performancemetrics.PopulateWaitEventMetrics(newConnection, pgIntegration, args)
 	log.Info("End PopulateWaitEventMetrics:", time.Since(start).Seconds())
 
 	start = time.Now()
 	log.Info("Start PopulateBlockingMetrics:", start)
-	performanceMetrics.PopulateBlockingMetrics(newConnection, pgIntegration, args)
+	performancemetrics.PopulateBlockingMetrics(newConnection, pgIntegration, args)
 	log.Info("End PopulateBlockingMetrics:", time.Since(start).Seconds())
 
 	start = time.Now()
 	log.Info("Start PopulateIndividualQueryMetrics:", start)
-	individualQueries := performanceMetrics.PopulateIndividualQueryMetrics(newConnection, slowRunningQueries, pgIntegration, args)
+	individualQueries := performancemetrics.PopulateIndividualQueryMetrics(newConnection, slowRunningQueries, pgIntegration, args)
 	log.Info("End PopulateIndividualQueryMetrics:", time.Since(start).Seconds())
 
 	start = time.Now()
 	log.Info("Start PopulateExecutionPlanMetrics:", start)
-	performanceMetrics.PopulateExecutionPlanMetrics(individualQueries, pgIntegration, args)
+	performancemetrics.PopulateExecutionPlanMetrics(individualQueries, pgIntegration, args)
 	log.Info("End PopulateExecutionPlanMetrics:", time.Since(start).Seconds())
 
 	log.Info("Query analysis completed.")

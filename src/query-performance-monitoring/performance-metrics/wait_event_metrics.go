@@ -1,4 +1,4 @@
-package performanceMetrics
+package performancemetrics
 
 import (
 	"fmt"
