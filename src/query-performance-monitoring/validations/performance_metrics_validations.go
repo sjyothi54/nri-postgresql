@@ -2,6 +2,7 @@ package validations
 
 import (
 	"fmt"
+
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	performanceDbConnection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/connections"
 )
