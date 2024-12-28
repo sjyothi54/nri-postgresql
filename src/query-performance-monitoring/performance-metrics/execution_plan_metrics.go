@@ -1,4 +1,4 @@
-package performanceMetrics
+package performancemetrics
 
 import (
 	"encoding/json"
@@ -7,7 +7,7 @@ import (
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
-	common_utils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
+	commonUtils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
 	performancedbconnection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/connections"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
 )
@@ -15,19 +15,17 @@ import (
 // var supportedStatements = map[string]bool{"SELECT": true, "INSERT": true, "UPDATE": true, "DELETE": true, "WITH": true}
 
 func PopulateExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, pgIntegration *integration.Integration, args args.ArgumentList) {
-
-	if results == nil || len(results) == 0 {
+	if len(results) == 0 {
 		log.Info("No individual queries found.")
 		return
 	}
 
 	executionDetailsList := GetExecutionPlanMetrics(results, args)
 	log.Info("ExecutionPlanList len:", len(executionDetailsList))
-	common_utils.IngestMetric(executionDetailsList, "PostgresExecutionPlanMetrics", pgIntegration, args)
+	commonUtils.IngestMetric(executionDetailsList, "PostgresExecutionPlanMetrics", pgIntegration, args)
 }
 
 func GetExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, args args.ArgumentList) []interface{} {
-
 	var executionPlanMetricsList []interface{}
 
 	var groupIndividualQueriesByDatabase = GroupQueriesByDatabase(results)
@@ -45,9 +43,7 @@ func GetExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, args a
 	return executionPlanMetricsList
 
 }
-
 func processExecutionPlanOfQueries(individualQueriesList []datamodels.IndividualQueryMetrics, dbConn *performancedbconnection.PGSQLConnection, executionPlanMetricsList *[]interface{}) {
-
 	for _, individualQuery := range individualQueriesList {
 
 		// queryText := strings.TrimSpace(*individualQuery.QueryText)
