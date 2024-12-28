@@ -1,15 +1,14 @@
-package query_performance_monitoring
+package queryPerformanceMonitoring
 
 // this is the main go file for the query_monitoring package
 import (
 	"fmt"
 	"time"
 
-	"github.com/newrelic/infra-integrations-sdk/v3/log"
-	performancedbconnection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/connections"
-
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
+	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
+	performancedbconnection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/connections"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-metrics"
 )
 

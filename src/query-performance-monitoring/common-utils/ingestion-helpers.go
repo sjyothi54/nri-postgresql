@@ -94,5 +94,4 @@ func IngestMetric(metricList []interface{}, eventName string, pgIntegration *int
 		log.Error("Error publishing metrics: %v", err)
 		return
 	}
-
 }
