@@ -8,13 +8,13 @@ import (
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
 	common_utils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
-	performanceDbConnection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/connections"
+	performancedbconnection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/connections"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
 )
 
-func PopulateIndividualQueryMetrics(conn *performanceDbConnection.PGSQLConnection, slowRunningQueries []datamodels.SlowRunningQueryMetrics, pgIntegration *integration.Integration, args args.ArgumentList) []datamodels.IndividualQueryMetrics {
+func PopulateIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, slowRunningQueries []datamodels.SlowRunningQueryMetrics, pgIntegration *integration.Integration, args args.ArgumentList) []datamodels.IndividualQueryMetrics {
 	isExtensionEnabled, err := validations.CheckIndividualQueryMetricsFetchEligibility(conn)
 	if err != nil {
 		log.Error("Error validating eligibility for IndividualQueryMetrics: %v", err)
@@ -43,7 +43,7 @@ func ConstructIndividualQuery(slowRunningQueries []datamodels.SlowRunningQueryMe
 	return query
 }
 
-func GetIndividualQueryMetrics(conn *performanceDbConnection.PGSQLConnection, args args.ArgumentList, slowRunningQueries []datamodels.SlowRunningQueryMetrics) ([]interface{}, []datamodels.IndividualQueryMetrics) {
+func GetIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, args args.ArgumentList, slowRunningQueries []datamodels.SlowRunningQueryMetrics) ([]interface{}, []datamodels.IndividualQueryMetrics) {
 	query := ConstructIndividualQuery(slowRunningQueries, args)
 	rows, err := conn.Queryx(query)
 	if err != nil {
@@ -62,7 +62,7 @@ func GetIndividualQueryMetrics(conn *performanceDbConnection.PGSQLConnection, ar
 			continue
 		}
 		individualQueryMetric := model
-		anonymizedQueryText := anonymizedQueriesByDb[*model.DatabaseName][*model.QueryId]
+		anonymizedQueryText := anonymizedQueriesByDb[*model.DatabaseName][*model.QueryID]
 		individualQueryMetric.QueryText = &anonymizedQueryText
 
 		model.RealQueryText = model.QueryText
@@ -75,18 +75,18 @@ func GetIndividualQueryMetrics(conn *performanceDbConnection.PGSQLConnection, ar
 
 }
 
-func processForAnonymizeQueryMap(queryCpuMetricsList []datamodels.SlowRunningQueryMetrics) map[string]map[int64]string {
-	anonymizeQueryMapByDb := make(map[string]map[int64]string)
+func processForAnonymizeQueryMap(slowRunningQueryMetricsList []datamodels.SlowRunningQueryMetrics) map[string]map[int64]string {
+	anonymizeQueryMapByDB := make(map[string]map[int64]string)
 
-	for _, metric := range queryCpuMetricsList {
+	for _, metric := range slowRunningQueryMetricsList {
 		dbName := *metric.DatabaseName
 		queryID := *metric.QueryID
 		anonymizedQuery := *metric.QueryText
 
-		if _, exists := anonymizeQueryMapByDb[dbName]; !exists {
-			anonymizeQueryMapByDb[dbName] = make(map[int64]string)
+		if _, exists := anonymizeQueryMapByDB[dbName]; !exists {
+			anonymizeQueryMapByDB[dbName] = make(map[int64]string)
 		}
-		anonymizeQueryMapByDb[dbName][queryID] = anonymizedQuery
+		anonymizeQueryMapByDB[dbName][queryID] = anonymizedQuery
 	}
-	return anonymizeQueryMapByDb
+	return anonymizeQueryMapByDB
 }

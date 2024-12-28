@@ -4,10 +4,10 @@ import (
 	"fmt"
 
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
-	performanceDbConnection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/connections"
+	performancedbconnection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/connections"
 )
 
-func isExtensionEnabled(conn *performanceDbConnection.PGSQLConnection, extensionName string) (bool, error) {
+func isExtensionEnabled(conn *performancedbconnection.PGSQLConnection, extensionName string) (bool, error) {
 	rows, err := conn.Queryx(fmt.Sprintf("SELECT count(*) FROM pg_extension WHERE extname = '%s'", extensionName))
 	if err != nil {
 		log.Error("Error executing query: ", err.Error())
@@ -28,11 +28,11 @@ func isExtensionEnabled(conn *performanceDbConnection.PGSQLConnection, extension
 	return count > 0, nil
 }
 
-func CheckSlowQueryMetricsFetchEligibility(conn *performanceDbConnection.PGSQLConnection) (bool, error) {
+func CheckSlowQueryMetricsFetchEligibility(conn *performancedbconnection.PGSQLConnection) (bool, error) {
 	return isExtensionEnabled(conn, "pg_stat_statements")
 }
 
-func CheckWaitEventMetricsFetchEligibility(conn *performanceDbConnection.PGSQLConnection) (bool, error) {
+func CheckWaitEventMetricsFetchEligibility(conn *performancedbconnection.PGSQLConnection) (bool, error) {
 	pgWaitExtension, err := isExtensionEnabled(conn, "pg_wait_sampling")
 	pgStatExtension, err := isExtensionEnabled(conn, "pg_stat_statements")
 	if err != nil {
@@ -41,10 +41,10 @@ func CheckWaitEventMetricsFetchEligibility(conn *performanceDbConnection.PGSQLCo
 	return pgWaitExtension && pgStatExtension, nil
 }
 
-func CheckBlockingSessionMetricsFetchEligibility(conn *performanceDbConnection.PGSQLConnection) (bool, error) {
+func CheckBlockingSessionMetricsFetchEligibility(conn *performancedbconnection.PGSQLConnection) (bool, error) {
 	return isExtensionEnabled(conn, "pg_stat_statements")
 }
 
-func CheckIndividualQueryMetricsFetchEligibility(conn *performanceDbConnection.PGSQLConnection) (bool, error) {
+func CheckIndividualQueryMetricsFetchEligibility(conn *performancedbconnection.PGSQLConnection) (bool, error) {
 	return isExtensionEnabled(conn, "pg_stat_monitor")
 }
