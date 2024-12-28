@@ -6,7 +6,7 @@ import (
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
-	common_utils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
+	commonUtils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
 	performancedbconnection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/connections"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
@@ -57,6 +57,6 @@ func PopulateSlowRunningMetrics(conn *performancedbconnection.PGSQLConnection, p
 		log.Info("No slow-running queries found.")
 		return nil
 	}
-	common_utils.IngestMetric(slowQueryMetricsListInterface, "PostgresSlowQueries", pgIntegration, args)
+	commonUtils.IngestMetric(slowQueryMetricsListInterface, "PostgresSlowQueries", pgIntegration, args)
 	return slowQueryMetricsList
 }
