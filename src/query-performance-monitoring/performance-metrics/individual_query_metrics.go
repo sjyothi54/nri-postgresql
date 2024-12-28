@@ -7,7 +7,7 @@ import (
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
-	commonUtils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
+	commonutils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
 	performancedbconnection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/connections"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
@@ -30,7 +30,7 @@ func PopulateIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnectio
 		log.Info("No individual queries found.")
 		return nil
 	}
-	commonUtils.IngestMetric(individualQueryMetricsInterface, "PostgresIndividualQueries", pgIntegration, args)
+	commonutils.IngestMetric(individualQueryMetricsInterface, "PostgresIndividualQueries", pgIntegration, args)
 	return individualQueriesForExecPlan
 }
 
