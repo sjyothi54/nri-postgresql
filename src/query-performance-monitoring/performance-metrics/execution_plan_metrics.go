@@ -7,7 +7,7 @@ import (
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
-	commonUtils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
+	commonutils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
 	performancedbconnection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/connections"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
 )
@@ -22,7 +22,7 @@ func PopulateExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, p
 
 	executionDetailsList := GetExecutionPlanMetrics(results, args)
 	log.Info("ExecutionPlanList len:", len(executionDetailsList))
-	commonUtils.IngestMetric(executionDetailsList, "PostgresExecutionPlanMetrics", pgIntegration, args)
+	commonutils.IngestMetric(executionDetailsList, "PostgresExecutionPlanMetrics", pgIntegration, args)
 }
 
 func GetExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, args args.ArgumentList) []interface{} {
@@ -39,13 +39,10 @@ func GetExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, args a
 		processExecutionPlanOfQueries(individualQueriesList, dbConn, &executionPlanMetricsList)
 		dbConn.Close()
 	}
-
 	return executionPlanMetricsList
-
 }
 func processExecutionPlanOfQueries(individualQueriesList []datamodels.IndividualQueryMetrics, dbConn *performancedbconnection.PGSQLConnection, executionPlanMetricsList *[]interface{}) {
 	for _, individualQuery := range individualQueriesList {
-
 		// queryText := strings.TrimSpace(*individualQuery.QueryText)
 		// upperQueryText := strings.ToUpper(queryText)
 		// log.Info("Query Text: %s", strings.Split(upperQueryText, " ")[0])
