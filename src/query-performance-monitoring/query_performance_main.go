@@ -3,9 +3,10 @@ package query_performance_monitoring
 // this is the main go file for the query_monitoring package
 import (
 	"fmt"
-	"github.com/newrelic/infra-integrations-sdk/v3/log"
-	performanceDbConnection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/connections"
 	"time"
+
+	"github.com/newrelic/infra-integrations-sdk/v3/log"
+	performancedbconnection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/connections"
 
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/nri-postgresql/src/args"
@@ -13,7 +14,7 @@ import (
 )
 
 func QueryPerformanceMain(args args.ArgumentList, pgIntegration *integration.Integration) {
-	connectionInfo := performanceDbConnection.DefaultConnectionInfo(&args)
+	connectionInfo := performancedbconnection.DefaultConnectionInfo(&args)
 	newConnection, err := connectionInfo.NewConnection(connectionInfo.DatabaseName())
 	if err != nil {
 		fmt.Println("Error creating connection: ", err)

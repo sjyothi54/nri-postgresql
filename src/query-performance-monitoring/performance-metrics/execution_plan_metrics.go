@@ -2,12 +2,13 @@ package performance_metrics
 
 import (
 	"encoding/json"
+
 	"github.com/mitchellh/mapstructure"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
 	common_utils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
-	performanceDbConnection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/connections"
+	performancedbconnection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/connections"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
 )
 
@@ -32,7 +33,7 @@ func GetExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, args a
 	var groupIndividualQueriesByDatabase = GroupQueriesByDatabase(results)
 
 	for dbName, individualQueriesList := range groupIndividualQueriesByDatabase {
-		dbConn, err := performanceDbConnection.OpenDB(args, dbName)
+		dbConn, err := performancedbconnection.OpenDB(args, dbName)
 		if err != nil {
 			log.Error("Error opening database connection: %v", err)
 			continue
@@ -45,7 +46,7 @@ func GetExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, args a
 
 }
 
-func processExecutionPlanOfQueries(individualQueriesList []datamodels.IndividualQueryMetrics, dbConn *performanceDbConnection.PGSQLConnection, executionPlanMetricsList *[]interface{}) {
+func processExecutionPlanOfQueries(individualQueriesList []datamodels.IndividualQueryMetrics, dbConn *performancedbconnection.PGSQLConnection, executionPlanMetricsList *[]interface{}) {
 
 	for _, individualQuery := range individualQueriesList {
 
@@ -65,7 +66,7 @@ func processExecutionPlanOfQueries(individualQueriesList []datamodels.Individual
 		}
 		defer rows.Close()
 		if !rows.Next() {
-			log.Info("Execution plan not found for queryId", *individualQuery.QueryId)
+			log.Info("Execution plan not found for queryId", *individualQuery.QueryID)
 			continue
 		}
 		var execPlanJSON string
@@ -104,14 +105,14 @@ func fetchNestedExecutionPlanDetails(individualQuery datamodels.IndividualQueryM
 		return
 	}
 	execPlanMetrics.QueryText = *individualQuery.QueryText
-	execPlanMetrics.QueryId = *individualQuery.QueryId
+	execPlanMetrics.QueryID = *individualQuery.QueryID
 	execPlanMetrics.DatabaseName = *individualQuery.DatabaseName
 	execPlanMetrics.Level = *level
 	*level++
-	if individualQuery.PlanId != nil {
-		execPlanMetrics.PlanId = *individualQuery.PlanId
+	if individualQuery.PlanID != nil {
+		execPlanMetrics.PlanID = *individualQuery.PlanID
 	} else {
-		execPlanMetrics.PlanId = 999
+		execPlanMetrics.PlanID = 999
 	}
 
 	*executionPlanMetricsList = append(*executionPlanMetricsList, execPlanMetrics)

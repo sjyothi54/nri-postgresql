@@ -1,4 +1,4 @@
-package performanceDbConnection
+package performancedbconnection
 
 import (
 	"fmt"
