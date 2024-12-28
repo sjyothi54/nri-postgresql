@@ -1,4 +1,4 @@
-package performance_metrics
+package performanceMetrics
 
 import (
 	"fmt"
@@ -55,5 +55,4 @@ func PopulateBlockingMetrics(conn *performancedbconnection.PGSQLConnection, pgIn
 		return
 	}
 	common_utils.IngestMetric(blockingQueriesMetricsList, "PostgresBlockingSessions", pgIntegration, args)
-
 }

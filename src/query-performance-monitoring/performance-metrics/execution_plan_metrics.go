@@ -1,4 +1,4 @@
-package performance_metrics
+package performanceMetrics
 
 import (
 	"encoding/json"
@@ -12,7 +12,7 @@ import (
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
 )
 
-var supportedStatements = map[string]bool{"SELECT": true, "INSERT": true, "UPDATE": true, "DELETE": true, "WITH": true}
+// var supportedStatements = map[string]bool{"SELECT": true, "INSERT": true, "UPDATE": true, "DELETE": true, "WITH": true}
 
 func PopulateExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, pgIntegration *integration.Integration, args args.ArgumentList) {
 
@@ -50,13 +50,13 @@ func processExecutionPlanOfQueries(individualQueriesList []datamodels.Individual
 
 	for _, individualQuery := range individualQueriesList {
 
-		//queryText := strings.TrimSpace(*individualQuery.QueryText)
-		//upperQueryText := strings.ToUpper(queryText)
-		//log.Info("Query Text: %s", strings.Split(upperQueryText, " ")[0])
-		//if !supportedStatements[strings.Split(upperQueryText, " ")[0]] {
-		//	log.Info("Skipping unsupported query for EXPLAIN: %s", queryText)
-		//	continue
-		//}
+		// queryText := strings.TrimSpace(*individualQuery.QueryText)
+		// upperQueryText := strings.ToUpper(queryText)
+		// log.Info("Query Text: %s", strings.Split(upperQueryText, " ")[0])
+		// if !supportedStatements[strings.Split(upperQueryText, " ")[0]] {
+		// log.Info("Skipping unsupported query for EXPLAIN: %s", queryText)
+		// continue
+		// }
 
 		query := "EXPLAIN (FORMAT JSON) " + *individualQuery.RealQueryText
 		rows, err := dbConn.Queryx(query)

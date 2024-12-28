@@ -1,15 +1,14 @@
-package query_performance_monitoring
+package queryPerformanceMonitoring
 
 // this is the main go file for the query_monitoring package
 import (
 	"fmt"
 	"time"
 
-	"github.com/newrelic/infra-integrations-sdk/v3/log"
-	performancedbconnection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/connections"
-
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
+	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
+	performancedbconnection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/connections"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-metrics"
 )
 
@@ -22,27 +21,27 @@ func QueryPerformanceMain(args args.ArgumentList, pgIntegration *integration.Int
 	}
 	start := time.Now()
 	log.Info("Start PopulateSlowRunningMetrics:", start)
-	slowRunningQueries := performance_metrics.PopulateSlowRunningMetrics(newConnection, pgIntegration, args)
+	slowRunningQueries := performanceMetrics.PopulateSlowRunningMetrics(newConnection, pgIntegration, args)
 	log.Info("End PopulateSlowRunningMetrics:", time.Since(start).Seconds())
 
 	start = time.Now()
 	log.Info("Start PopulateWaitEventMetrics:", start)
-	performance_metrics.PopulateWaitEventMetrics(newConnection, pgIntegration, args)
+	performanceMetrics.PopulateWaitEventMetrics(newConnection, pgIntegration, args)
 	log.Info("End PopulateWaitEventMetrics:", time.Since(start).Seconds())
 
 	start = time.Now()
 	log.Info("Start PopulateBlockingMetrics:", start)
-	performance_metrics.PopulateBlockingMetrics(newConnection, pgIntegration, args)
+	performanceMetrics.PopulateBlockingMetrics(newConnection, pgIntegration, args)
 	log.Info("End PopulateBlockingMetrics:", time.Since(start).Seconds())
 
 	start = time.Now()
 	log.Info("Start PopulateIndividualQueryMetrics:", start)
-	individualQueries := performance_metrics.PopulateIndividualQueryMetrics(newConnection, slowRunningQueries, pgIntegration, args)
+	individualQueries := performanceMetrics.PopulateIndividualQueryMetrics(newConnection, slowRunningQueries, pgIntegration, args)
 	log.Info("End PopulateIndividualQueryMetrics:", time.Since(start).Seconds())
 
 	start = time.Now()
 	log.Info("Start PopulateExecutionPlanMetrics:", start)
-	performance_metrics.PopulateExecutionPlanMetrics(individualQueries, pgIntegration, args)
+	performanceMetrics.PopulateExecutionPlanMetrics(individualQueries, pgIntegration, args)
 	log.Info("End PopulateExecutionPlanMetrics:", time.Since(start).Seconds())
 
 	log.Info("Query analysis completed.")

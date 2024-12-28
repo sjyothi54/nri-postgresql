@@ -1,4 +1,4 @@
-package performance_metrics
+package performanceMetrics
 
 import (
 	"fmt"
@@ -51,7 +51,7 @@ func GetIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, ar
 		return nil, nil
 	}
 	defer rows.Close()
-	anonymizedQueriesByDb := processForAnonymizeQueryMap(slowRunningQueries)
+	anonymizedQueriesByDB := processForAnonymizeQueryMap(slowRunningQueries)
 	var individualQueryMetricsForExecPlanList []datamodels.IndividualQueryMetrics
 	var individualQueryMetricsListInterface []interface{}
 	for rows.Next() {
@@ -62,7 +62,7 @@ func GetIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, ar
 			continue
 		}
 		individualQueryMetric := model
-		anonymizedQueryText := anonymizedQueriesByDb[*model.DatabaseName][*model.QueryID]
+		anonymizedQueryText := anonymizedQueriesByDB[*model.DatabaseName][*model.QueryID]
 		individualQueryMetric.QueryText = &anonymizedQueryText
 
 		model.RealQueryText = model.QueryText

@@ -1,4 +1,4 @@
-package performance_metrics
+package performanceMetrics
 
 import (
 	"fmt"
@@ -55,5 +55,4 @@ func PopulateWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, pgI
 		return
 	}
 	common_utils.IngestMetric(waitEventMetricsList, "PostgresWaitEvents", pgIntegration, args)
-
 }

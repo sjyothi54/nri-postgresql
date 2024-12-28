@@ -1,4 +1,4 @@
-package performance_metrics
+package performanceMetrics
 
 import (
 	"fmt"
@@ -59,5 +59,4 @@ func PopulateSlowRunningMetrics(conn *performancedbconnection.PGSQLConnection, p
 	}
 	common_utils.IngestMetric(slowQueryMetricsListInterface, "PostgresSlowQueries", pgIntegration, args)
 	return slowQueryMetricsList
-
 }
