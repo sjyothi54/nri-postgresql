@@ -1,8 +1,9 @@
 package commonutils
 
 import (
+	"crypto/rand"
 	"fmt"
-	"math/rand"
+	"math/big"
 	"reflect"
 	"time"
 
@@ -101,9 +102,11 @@ func IngestMetric(metricList []interface{}, eventName string, pgIntegration *int
 }
 
 func GenerateRandomIntegerString(queryID int64) *string {
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	randomInt := r.Intn(randomIntRange) // Adjust the range as needed
+	randomInt, err := rand.Int(rand.Reader, big.NewInt(randomIntRange))
+	if err != nil {
+		return nil
+	}
 	currentTime := time.Now().Format("20060102150405")
-	result := fmt.Sprintf("%d-%d-%s", queryID, randomInt, currentTime)
+	result := fmt.Sprintf("%d-%d-%s", queryID, randomInt.Int64(), currentTime)
 	return &result
 }
