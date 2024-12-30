@@ -59,24 +59,7 @@ func IngestMetric(metricList []interface{}, eventName string, pgIntegration *int
 			continue
 		}
 		modelType := reflect.TypeOf(model)
-		for i := 0; i < modelValue.NumField(); i++ {
-			field := modelValue.Field(i)
-			fieldType := modelType.Field(i)
-			metricName := fieldType.Tag.Get("metric_name")
-			sourceType := fieldType.Tag.Get("source_type")
-			ingestData := fieldType.Tag.Get("ingest_data")
-
-			if ingestData == "false" {
-				log.Info("not ingesting data for field: %s", metricName)
-				continue
-			}
-
-			if field.Kind() == reflect.Ptr && !field.IsNil() {
-				SetMetric(metricSet, metricName, field.Elem().Interface(), sourceType)
-			} else if field.Kind() != reflect.Ptr {
-				SetMetric(metricSet, metricName, field.Interface(), sourceType)
-			}
-		}
+		setMetricParser(modelValue, modelType, metricSet)
 
 		if metricCount == publishThreshold || metricCount == lenOfMetricList {
 			metricCount = 0
@@ -97,6 +80,27 @@ func IngestMetric(metricList []interface{}, eventName string, pgIntegration *int
 		if publishError != nil {
 			log.Error("Error publishing metrics: %v", entityError)
 			return
+		}
+	}
+}
+
+func setMetricParser(modelValue reflect.Value, modelType reflect.Type, metricSet *metric.Set) {
+	for i := 0; i < modelValue.NumField(); i++ {
+		field := modelValue.Field(i)
+		fieldType := modelType.Field(i)
+		metricName := fieldType.Tag.Get("metric_name")
+		sourceType := fieldType.Tag.Get("source_type")
+		ingestData := fieldType.Tag.Get("ingest_data")
+
+		if ingestData == "false" {
+			log.Info("not ingesting data for field: %s", metricName)
+			continue
+		}
+
+		if field.Kind() == reflect.Ptr && !field.IsNil() {
+			SetMetric(metricSet, metricName, field.Elem().Interface(), sourceType)
+		} else if field.Kind() != reflect.Ptr {
+			SetMetric(metricSet, metricName, field.Interface(), sourceType)
 		}
 	}
 }
