@@ -108,9 +108,9 @@ const (
 			FROM
 				pg_stat_monitor
 			WHERE
-				queryid IN (%s) AND (ROUND((total_exec_time / NULLIF(calls, 0))::numeric, 3)  > %d) AND (bucket_start_time >= NOW() - INTERVAL '60 seconds')
+				queryid IN (%s) AND (ROUND((total_exec_time / NULLIF(calls, 0))::numeric, 3)  > %d)
 			GROUP BY
-				query, queryid, datname, planid, cpu_user_time, cpu_sys_time, calls LIMIT (%d)`
+				query, queryid, datname, planid, cpu_user_time, cpu_sys_time, calls `
 
 	IndividualQuerySearchTest = `SELECT
 		query,
