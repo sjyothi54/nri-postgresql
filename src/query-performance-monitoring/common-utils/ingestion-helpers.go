@@ -13,6 +13,7 @@ import (
 )
 
 const publishThreshold = 100
+const randomIntRange = 1000000
 
 func SetMetric(metricSet *metric.Set, name string, value interface{}, sourceType string) {
 	switch sourceType {
@@ -95,7 +96,7 @@ func IngestMetric(metricList []interface{}, eventName string, pgIntegration *int
 
 func GenerateRandomIntegerString(queryID int64) *string {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	randomInt := r.Intn(1000000) // Adjust the range as needed
+	randomInt := r.Intn(randomIntRange) // Adjust the range as needed
 	currentTime := time.Now().Format("20060102150405")
 	result := fmt.Sprintf("%d-%d-%s", queryID, randomInt, currentTime)
 	return &result
