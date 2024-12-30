@@ -62,6 +62,7 @@ func IngestMetric(metricList []interface{}, eventName string, pgIntegration *int
 			ingestData := fieldType.Tag.Get("ingest_data")
 
 			if ingestData == "false" {
+				log.Info("not ingesting data for field: %s", metricName)
 				continue
 			}
 

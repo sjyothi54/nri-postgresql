@@ -59,8 +59,8 @@ func GetIndividualQueryMetrics(conn *performanceDbConnection.PGSQLConnection, sl
 	for rows.Next() {
 
 		var model datamodels.IndividualQueryMetrics
-		if err := rows.StructScan(&model); err != nil {
-			log.Error("Could not scan row: ", err)
+		if scanErr := rows.StructScan(&model); scanErr != nil {
+			log.Error("Could not scan row: ", scanErr)
 			continue
 		}
 		individualQueryMetric := model
