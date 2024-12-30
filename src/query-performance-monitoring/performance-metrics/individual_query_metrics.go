@@ -48,7 +48,6 @@ func GetIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, sl
 	log.Info("Individual query :", query)
 	rows, err := conn.Queryx(query)
 	if err != nil {
-
 		log.Info("Error executing query in individual query: %v", err)
 		return nil, nil
 	}
@@ -57,7 +56,6 @@ func GetIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, sl
 	var individualQueryMetricsForExecPlanList []datamodels.IndividualQueryMetrics
 	var individualQueryMetricsListInterface []interface{}
 	for rows.Next() {
-
 		var model datamodels.IndividualQueryMetrics
 		if scanErr := rows.StructScan(&model); scanErr != nil {
 			log.Error("Could not scan row: ", scanErr)
