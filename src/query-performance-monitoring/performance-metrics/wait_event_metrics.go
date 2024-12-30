@@ -55,7 +55,6 @@ func PopulateWaitEventMetrics(pgIntegration *integration.Integration, args args.
 		log.Info("No wait event queries found.")
 		return
 	}
-	log.Info("Populate wait event : %+v", waitEventMetricsList)
 
 	common_utils.IngestMetric(waitEventMetricsList, "PostgresWaitEvents", pgIntegration, args)
 

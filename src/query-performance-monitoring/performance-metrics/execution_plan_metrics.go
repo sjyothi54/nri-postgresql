@@ -2,7 +2,6 @@ package performance_metrics
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/mitchellh/mapstructure"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
@@ -18,11 +17,8 @@ func PopulateExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, p
 		log.Info("No individual queries found.")
 		return
 	}
-	log.Info("PopulateExecutionPlanMetrics queries: %+v", results)
 
 	executionDetailsList := GetExecutionPlanMetrics(results, args)
-
-	log.Info("executionDetailsList", executionDetailsList)
 
 	common_utils.IngestMetric(executionDetailsList, "PostgresExecutionPlanMetrics", pgIntegration, args)
 }
@@ -85,7 +81,6 @@ func fetchNestedExecutionPlanDetails(individualQuery datamodels.IndividualQueryM
 		execPlanMetrics.PlanId = 999
 	}
 
-	fmt.Printf("executionPlanMetrics: %+v\n", execPlanMetrics)
 	*executionPlanMetricsList = append(*executionPlanMetricsList, execPlanMetrics)
 
 	if nestedPlans, ok := execPlan["Plans"].([]interface{}); ok {

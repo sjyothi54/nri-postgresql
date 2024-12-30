@@ -57,7 +57,6 @@ func PopulateSlowRunningMetrics(pgIntegration *integration.Integration, args arg
 		log.Info("No slow-running queries found.")
 		return nil
 	}
-	log.Info("Populate-slow running: %+v", slowQueryMetricsList)
 	common_utils.IngestMetric(slowQueryMetricsListInterface, "PostgresSlowQueries", pgIntegration, args)
 	return slowQueryMetricsList
 

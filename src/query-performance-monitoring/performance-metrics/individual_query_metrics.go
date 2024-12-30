@@ -30,7 +30,6 @@ func PopulateIndividualQueryMetrics(slowRunningQueries []datamodels.SlowRunningQ
 		log.Info("No individual queries found.")
 		return nil
 	}
-	log.Info("Populate individual queries: %+v forExecPlan : %+v", individualQueryMetricsInterface, individualQueriesForExecPlan)
 	common_utils.IngestMetric(individualQueryMetricsInterface, "PostgresIndividualQueries", pgIntegration, args)
 	return individualQueriesForExecPlan
 }
@@ -92,6 +91,5 @@ func processForAnonymizeQueryMap(queryCpuMetricsList []datamodels.SlowRunningQue
 		}
 		anonymizeQueryMapByDb[dbName][queryID] = anonymizedQuery
 	}
-	log.Info("Anonymize Query Map By Db: %+v", anonymizeQueryMapByDb)
 	return anonymizeQueryMapByDb
 }

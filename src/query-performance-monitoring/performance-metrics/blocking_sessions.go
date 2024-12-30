@@ -54,7 +54,6 @@ func PopulateBlockingMetrics(pgIntegration *integration.Integration, args args.A
 		log.Info("No Blocking queries found.")
 		return
 	}
-	log.Info("Populate Blocking running: %+v", blockingQueriesMetricsList)
 	common_utils.IngestMetric(blockingQueriesMetricsList, "PostgresBlockingSessions", pgIntegration, args)
 
 }
