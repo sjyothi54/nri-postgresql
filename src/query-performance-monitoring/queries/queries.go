@@ -108,7 +108,7 @@ const (
 			FROM
 				pg_stat_monitor
 			WHERE
-				queryid IN (%s)
+				queryid IN (%s) AND AND ROUND((total_exec_time / calls)::numeric, 3)  > %d
 			GROUP BY
 				query, queryid, datname, planid, cpu_user_time, cpu_sys_time, calls`
 
