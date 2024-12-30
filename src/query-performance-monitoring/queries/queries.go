@@ -13,10 +13,10 @@ const (
         pss.shared_blks_read / pss.calls AS avg_disk_reads,
         pss.shared_blks_written / pss.calls AS avg_disk_writes,
         CASE
-            WHEN pss.query ILIKE 'SELECT%' THEN 'SELECT'
-            WHEN pss.query ILIKE 'INSERT%' THEN 'INSERT'
-            WHEN pss.query ILIKE 'UPDATE%' THEN 'UPDATE'
-            WHEN pss.query ILIKE 'DELETE%' THEN 'DELETE'
+            WHEN pss.query ILIKE 'SELECT%%' THEN 'SELECT'
+            WHEN pss.query ILIKE 'INSERT%%' THEN 'INSERT'
+            WHEN pss.query ILIKE 'UPDATE%%' THEN 'UPDATE'
+            WHEN pss.query ILIKE 'DELETE%%' THEN 'DELETE'
             ELSE 'OTHER'
         END AS statement_type,
         to_char(NOW() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS collection_timestamp
@@ -25,12 +25,11 @@ const (
     JOIN
         pg_database pd ON pss.dbid = pd.oid
     WHERE 
-        pss.query NOT LIKE 'EXPLAIN (FORMAT JSON) %' 
---         pss.query LIKE 'select * from actor%'
+        pss.query NOT LIKE 'EXPLAIN (FORMAT JSON) %%' 
     ORDER BY
         avg_elapsed_time_ms DESC -- Order by the average elapsed time in descending order
     LIMIT
-        20;`
+        %d;`
 
 	WaitEvents = `WITH wait_history AS (
         SELECT
@@ -64,7 +63,7 @@ const (
         query_text,
         database_name
     FROM wait_history
-    WHERE query_text NOT LIKE 'EXPLAIN (FORMAT JSON) %' AND query_id IS NOT NULL AND event_type IS NOT NULL
+    WHERE query_text NOT LIKE 'EXPLAIN (FORMAT JSON) %%' AND query_id IS NOT NULL AND event_type IS NOT NULL
     GROUP BY event_type, event, query_id, query_text, database_name
     ORDER BY total_wait_time_ms DESC
     LIMIT 10;`
