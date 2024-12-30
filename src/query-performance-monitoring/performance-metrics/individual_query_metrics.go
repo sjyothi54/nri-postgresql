@@ -66,7 +66,9 @@ func GetIndividualQueryMetrics(conn *performanceDbConnection.PGSQLConnection, sl
 		individualQueryMetric := model
 		anonymizedQueryText := anonymizedQueriesByDb[*model.DatabaseName][*model.QueryId]
 		individualQueryMetric.QueryText = &anonymizedQueryText
-		individualQueryMetric.PlanId = common_utils.GenerateRandomIntegerString(*model.QueryId)
+		generatedPlanId := common_utils.GenerateRandomIntegerString(*model.QueryId)
+		individualQueryMetric.PlanId = generatedPlanId
+		model.PlanId = generatedPlanId
 		log.Info("Plan Id :", individualQueryMetric.PlanId, " PlanId Id :", *individualQueryMetric.QueryId)
 		model.RealQueryText = model.QueryText
 		model.QueryText = &anonymizedQueryText
