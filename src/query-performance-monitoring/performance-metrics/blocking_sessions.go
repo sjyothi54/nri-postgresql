@@ -11,7 +11,7 @@ import (
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
 )
 
-func GetBlockingMetrics(conn *performanceDbConnection.PGSQLConnection) ([]interface{}, error) {
+func GetBlockingMetrics(conn *performanceDbConnection.PGSQLConnection, args args.ArgumentList) ([]interface{}, error) {
 	var blockingQueriesMetricsList []interface{}
 	var query = queries.BlockingQueries
 	rows, err := conn.Queryx(query)
@@ -42,7 +42,7 @@ func PopulateBlockingMetrics(conn *performanceDbConnection.PGSQLConnection, pgIn
 		return
 	}
 	log.Info("Extension 'pg_stat_statements' enabled.")
-	blockingQueriesMetricsList, err := GetBlockingMetrics(conn)
+	blockingQueriesMetricsList, err := GetBlockingMetrics(conn, args)
 	if err != nil {
 		log.Error("Error fetching Blocking queries: %v", err)
 		return

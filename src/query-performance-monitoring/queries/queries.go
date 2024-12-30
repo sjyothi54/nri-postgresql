@@ -66,7 +66,7 @@ const (
     WHERE query_text NOT LIKE 'EXPLAIN (FORMAT JSON) %%' AND query_id IS NOT NULL AND event_type IS NOT NULL
     GROUP BY event_type, event, query_id, query_text, database_name
     ORDER BY total_wait_time_ms DESC
-    LIMIT 10;`
+    LIMIT %d;`
 
 	BlockingQueries = `SELECT
           blocked_activity.pid AS blocked_pid,
