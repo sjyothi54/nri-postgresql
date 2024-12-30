@@ -17,21 +17,20 @@ import (
 func PopulateBlockingMetrics(conn *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, args args.ArgumentList) {
 	isPgStatStatementEnabled, enableCheckError := validations.CheckPgStatStatementsExtensionEnabled(conn)
 	if enableCheckError != nil {
-		log.Error("Error executing query: %v in PopulateBlockingMetrics", enableCheckError)
+		log.Debug("Error executing query: %v in PopulateBlockingMetrics", enableCheckError)
 		return
 	}
 	if !isPgStatStatementEnabled {
-		log.Info("Extension 'pg_stat_statements' is not enabled for the database.")
+		log.Debug("Extension 'pg_stat_statements' is not enabled for the database.")
 		return
 	}
-	log.Info("Extension 'pg_stat_statements' enabled.")
 	blockingQueriesMetricsList, blockQueryFetchErr := GetBlockingMetrics(conn, args)
 	if blockQueryFetchErr != nil {
 		log.Error("Error fetching Blocking queries: %v", blockQueryFetchErr)
 		return
 	}
 	if len(blockingQueriesMetricsList) == 0 {
-		log.Info("No Blocking queries found.")
+		log.Debug("No Blocking queries found.")
 		return
 	}
 	commonutils.IngestMetric(blockingQueriesMetricsList, "PostgresBlockingSessions", pgIntegration, args)
