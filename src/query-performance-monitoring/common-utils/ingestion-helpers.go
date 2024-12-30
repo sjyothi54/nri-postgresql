@@ -6,7 +6,9 @@ import (
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
+	"math/rand"
 	"reflect"
+	"time"
 )
 
 const publishThreshold = 100
@@ -97,4 +99,12 @@ func IngestMetric(metricList []interface{}, eventName string, pgIntegration *int
 		return
 	}
 
+}
+
+func GenerateRandomIntegerString(queryID int64) *string {
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	randomInt := r.Intn(1000000) // Adjust the range as needed
+	currentTime := time.Now().Format("20060102150405")
+	result := fmt.Sprintf("%d-%d-%s", queryID, randomInt, currentTime)
+	return &result
 }

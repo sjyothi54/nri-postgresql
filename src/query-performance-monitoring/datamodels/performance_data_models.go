@@ -40,7 +40,7 @@ type IndividualQueryMetrics struct {
 	QueryId        *int64   `json:"queryid" db:"queryid" metric_name:"query_id" source_type:"gauge"`
 	DatabaseName   *string  `json:"datname" db:"datname" metric_name:"database_name" source_type:"attribute"`
 	AvgCPUTimeInMS *float64 `json:"avg_cpu_time_ms" db:"avg_cpu_time_ms" metric_name:"avg_cpu_time_ms" source_type:"gauge"`
-	PlanId         *int64   `json:"planid" db:"planid" metric_name:"plan_id" source_type:"gauge"`
+	PlanId         *string  `json:"planid" db:"planid" metric_name:"plan_id" source_type:"attribute"`
 	RealQueryText  *string  `ingestData:"false"`
 }
 
@@ -66,6 +66,6 @@ type QueryExecutionPlanMetrics struct {
 	DatabaseName        string  `mapstructure:"Database"            json:"Database"            metric_name:"database_name"              source_type:"attribute"`
 	QueryText           string  `mapstructure:"Query"               json:"Query"               metric_name:"query_text"                 source_type:"attribute"`
 	QueryId             int64   `mapstructure:"Query Id"            json:"Query Id"            metric_name:"query_id"              source_type:"gauge"`
-	PlanId              int64   `mapstructure:"Plan Id"             json:"Plan Id"             metric_name:"plan_id"               source_type:"gauge"`
+	PlanId              string  `mapstructure:"Plan Id"             json:"Plan Id"             metric_name:"plan_id"               source_type:"attribute"`
 	Level               int     `mapstructure:"Level"               json:"Level"             metric_name:"level_id"               source_type:"gauge"`
 }

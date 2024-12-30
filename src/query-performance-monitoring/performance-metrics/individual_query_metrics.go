@@ -39,7 +39,7 @@ func ConstructIndividualQuery(slowRunningQueries []datamodels.SlowRunningQueryMe
 		queryIDs = append(queryIDs, fmt.Sprintf("%d", *query.QueryID))
 	}
 	//query := fmt.Sprintf(queries.IndividualQuerySearchTest, strings.Join(queryIDs, ","), args.QueryResponseTimeThreshold, args.QueryCountThreshold)
-	query := fmt.Sprintf(queries.IndividualQuerySearch, strings.Join(queryIDs, ","), args.QueryResponseTimeThreshold)
+	query := fmt.Sprintf(queries.IndividualQuerySearch, strings.Join(queryIDs, ","))
 	return query
 }
 
@@ -66,6 +66,7 @@ func GetIndividualQueryMetrics(conn *performanceDbConnection.PGSQLConnection, sl
 		individualQueryMetric := model
 		anonymizedQueryText := anonymizedQueriesByDb[*model.DatabaseName][*model.QueryId]
 		individualQueryMetric.QueryText = &anonymizedQueryText
+		individualQueryMetric.PlanId = common_utils.GenerateRandomIntegerString(*model.QueryId)
 
 		model.RealQueryText = model.QueryText
 		model.QueryText = &anonymizedQueryText
