@@ -110,8 +110,7 @@ const (
 			WHERE
 				queryid IN (%s)
 			GROUP BY
-				query, queryid, datname, planid, cpu_user_time, cpu_sys_time, calls
-			LIMIT %d;`
+				query, queryid, datname, planid, cpu_user_time, cpu_sys_time, calls`
 
 	IndividualQuerySearchTest = `SELECT
 		query,
