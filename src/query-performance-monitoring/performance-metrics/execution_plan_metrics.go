@@ -37,7 +37,6 @@ func processExecutionPlanOfQueries(individualQueriesList []datamodels.Individual
 
 	for _, individualQuery := range individualQueriesList {
 		query := "EXPLAIN (FORMAT JSON) " + *individualQuery.RealQueryText
-		log.Info("Execution Plan Query : %s", query)
 		rows, err := performanceDbConnection.DbConnections[*individualQuery.DatabaseName].Queryx(query)
 		if err != nil {
 			log.Info("Error executing query: %v", err)
