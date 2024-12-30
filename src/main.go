@@ -27,7 +27,6 @@ var (
 )
 
 func main() {
-
 	var args args.ArgumentList
 	// Create Integration
 	pgIntegration, err := integration.New(integrationName, integrationVersion, integration.Args(&args))
@@ -63,6 +62,7 @@ func main() {
 		log.Error("Error creating list of entities to collect: %s", err)
 		os.Exit(1)
 	}
+
 	instance, err := pgIntegration.Entity(fmt.Sprintf("%s:%s", args.Hostname, args.Port), "pg-instance")
 	if err != nil {
 		log.Error("Error creating instance entity: %s", err.Error())
@@ -93,5 +93,4 @@ func main() {
 	if args.EnableQueryMonitoring {
 		queryperformancemonitoring.QueryPerformanceMain(args, pgIntegration)
 	}
-
 }
