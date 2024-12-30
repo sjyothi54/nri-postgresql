@@ -38,7 +38,11 @@ func SetMetric(metricSet *metric.Set, name string, value interface{}, sourceType
 func IngestMetric(metricList []interface{}, eventName string, pgIntegration *integration.Integration, args args.ArgumentList) {
 	metricCount := 0
 	lenOfMetricList := len(metricList)
-	instanceEntity, err := pgIntegration.Entity(fmt.Sprintf("%s:%s", args.Hostname, args.Port), "pg-instance")
+	instanceEntity, entityError := pgIntegration.Entity(fmt.Sprintf("%s:%s", args.Hostname, args.Port), "pg-instance")
+	if entityError != nil {
+		log.Error("Error creating instance entity: %v", entityError)
+		return
+	}
 	for _, model := range metricList {
 		if model == nil {
 			continue
@@ -75,22 +79,24 @@ func IngestMetric(metricList []interface{}, eventName string, pgIntegration *int
 
 		if metricCount == publishThreshold || metricCount == lenOfMetricList {
 			metricCount = 0
-			err := pgIntegration.Publish()
-			instanceEntity, err = pgIntegration.Entity(fmt.Sprintf("%s:%s", "localhost", "5432"), "pg-instance")
-			if err != nil {
-				log.Error("Error publishing metrics: %v", err)
+			publishErr := pgIntegration.Publish()
+			if publishErr != nil {
+				log.Error("Error publishing metrics: %v", entityError)
+				return
+			}
+			instanceEntity, entityError = pgIntegration.Entity(fmt.Sprintf("%s:%s", "localhost", "5432"), "pg-instance")
+			if entityError != nil {
+				log.Error("Error creating instance entity: %v", entityError)
 				return
 			}
 		}
 	}
-	err = pgIntegration.Publish()
-	if err != nil {
-		log.Error("Error publishing metrics: %v", err)
-		return
-	}
-	if err != nil {
-		log.Error("Error publishing metrics: %v", err)
-		return
+	if metricCount > 0 {
+		publishError := pgIntegration.Publish()
+		if publishError != nil {
+			log.Error("Error publishing metrics: %v", entityError)
+			return
+		}
 	}
 }
 

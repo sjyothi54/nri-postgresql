@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
-	queryperformancemonitoring "github.com/newrelic/nri-postgresql/src/query-performance-monitoring"
 	"os"
 	"runtime"
 	"strings"
+
+	queryperformancemonitoring "github.com/newrelic/nri-postgresql/src/query-performance-monitoring"
 
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
