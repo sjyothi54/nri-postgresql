@@ -15,13 +15,13 @@ import (
 )
 
 func PopulateBlockingMetrics(conn *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, args args.ArgumentList) {
-	isExtensionEnabled, err := validations.CheckPgStatStatementsExtensionEnabled(conn)
+	isPgStatStatementEnabled, err := validations.CheckPgStatStatementsExtensionEnabled(conn)
 	if err != nil {
-		log.Error("Error executing query: %v", err)
+		log.Error("Error executing query: %v in PopulateBlockingMetrics", err)
 		return
 	}
-	if !isExtensionEnabled {
-		log.Info("Extension 'pg_stat_statements' is not enabled.")
+	if !isPgStatStatementEnabled {
+		log.Info("Extension 'pg_stat_statements' is not enabled for the database.")
 		return
 	}
 	log.Info("Extension 'pg_stat_statements' enabled.")
@@ -40,16 +40,16 @@ func PopulateBlockingMetrics(conn *performancedbconnection.PGSQLConnection, pgIn
 func GetBlockingMetrics(conn *performancedbconnection.PGSQLConnection, args args.ArgumentList) ([]interface{}, error) {
 	var blockingQueriesMetricsList []interface{}
 	var query = fmt.Sprintf(queries.BlockingQueries, args.QueryCountThreshold)
-	log.Info("Blocking query :", query)
 	rows, err := conn.Queryx(query)
 	if err != nil {
+		log.Error("Failed to execute query: %v", err)
 		return nil, err
 	}
 	defer rows.Close()
 
 	for rows.Next() {
 		var blockingQueryMetric datamodels.BlockingSessionMetrics
-		if err := rows.StructScan(&blockingQueryMetric); err != nil {
+		if scanError := rows.StructScan(&blockingQueryMetric); scanError != nil {
 			return nil, err
 		}
 		blockingQueriesMetricsList = append(blockingQueriesMetricsList, blockingQueryMetric)
