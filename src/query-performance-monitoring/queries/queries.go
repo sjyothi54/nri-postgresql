@@ -108,7 +108,7 @@ const (
 			FROM
 				pg_stat_monitor
 			WHERE
-				queryid IN (%s) AND ((total_exec_time / NULLIF(calls, 0)) > (%d))
+				queryid IN (%s) AND ((total_exec_time / NULLIF(calls, 0)) > %d)
 			GROUP BY
 				query, queryid, datname, planid, cpu_user_time, cpu_sys_time, calls `
 
