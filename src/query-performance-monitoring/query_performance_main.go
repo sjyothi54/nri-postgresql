@@ -1,27 +1,27 @@
-package query_performance_monitoring
+package queryperformancemonitoring
 
 // this is the main go file for the query_monitoring package
 import (
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
-	performanceDbConnection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/connections"
+	performancedbconnection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/connections"
 
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/nri-postgresql/src/args"
-	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-metrics"
+	performancemetrics "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-metrics"
 )
 
 func QueryPerformanceMain(args args.ArgumentList, pgIntegration *integration.Integration) {
-	connectionInfo := performanceDbConnection.DefaultConnectionInfo(&args)
+	connectionInfo := performancedbconnection.DefaultConnectionInfo(&args)
 	newConnection, err := connectionInfo.NewConnection(connectionInfo.DatabaseName())
-	// newConnection, err := performanceDbConnection.OpenDB(args, connectionInfo.DatabaseName())
+	// newConnection, err := performancedbconnection.OpenDB(args, connectionInfo.DatabaseName())
 	if err != nil {
 		log.Info("Error creating connection: ", err)
 		return
 	}
-	slowRunningQueries := performance_metrics.PopulateSlowRunningMetrics(newConnection, pgIntegration, args)
-	performance_metrics.PopulateWaitEventMetrics(newConnection, pgIntegration, args)
-	performance_metrics.PopulateBlockingMetrics(newConnection, pgIntegration, args)
-	individualQueries := performance_metrics.PopulateIndividualQueryMetrics(newConnection, slowRunningQueries, pgIntegration, args)
-	performance_metrics.PopulateExecutionPlanMetrics(individualQueries, pgIntegration, args)
+	slowRunningQueries := performancemetrics.PopulateSlowRunningMetrics(newConnection, pgIntegration, args)
+	performancemetrics.PopulateWaitEventMetrics(newConnection, pgIntegration, args)
+	performancemetrics.PopulateBlockingMetrics(newConnection, pgIntegration, args)
+	individualQueries := performancemetrics.PopulateIndividualQueryMetrics(newConnection, slowRunningQueries, pgIntegration, args)
+	performancemetrics.PopulateExecutionPlanMetrics(individualQueries, pgIntegration, args)
 	log.Info("Query analysis completed.")
 }

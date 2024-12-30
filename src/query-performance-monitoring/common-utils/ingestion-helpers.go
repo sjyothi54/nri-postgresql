@@ -1,14 +1,15 @@
-package common_utils
+package commonutils
 
 import (
 	"fmt"
+	"math/rand"
+	"reflect"
+	"time"
+
 	"github.com/newrelic/infra-integrations-sdk/v3/data/metric"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
-	"math/rand"
-	"reflect"
-	"time"
 )
 
 const publishThreshold = 100

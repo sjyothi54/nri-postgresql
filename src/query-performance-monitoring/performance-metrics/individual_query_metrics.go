@@ -1,19 +1,20 @@
-package performance_metrics
+package performancemetrics
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
-	common_utils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
-	performanceDbConnection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/connections"
+	commonutils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
+	performancedbconnection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/connections"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
-	"strings"
 )
 
-func PopulateIndividualQueryMetrics(conn *performanceDbConnection.PGSQLConnection, slowRunningQueries []datamodels.SlowRunningQueryMetrics, pgIntegration *integration.Integration, args args.ArgumentList) []datamodels.IndividualQueryMetrics {
+func PopulateIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, slowRunningQueries []datamodels.SlowRunningQueryMetrics, pgIntegration *integration.Integration, args args.ArgumentList) []datamodels.IndividualQueryMetrics {
 	isExtensionEnabled, err := validations.CheckPgStatMonitorExtensionEnabled(conn)
 	if err != nil {
 		log.Error("Error executing query: %v", err)
@@ -29,7 +30,7 @@ func PopulateIndividualQueryMetrics(conn *performanceDbConnection.PGSQLConnectio
 		log.Info("No individual queries found.")
 		return nil
 	}
-	common_utils.IngestMetric(individualQueryMetricsInterface, "PostgresIndividualQueries", pgIntegration, args)
+	commonutils.IngestMetric(individualQueryMetricsInterface, "PostgresIndividualQueries", pgIntegration, args)
 	return individualQueriesForExecPlan
 }
 
@@ -38,12 +39,11 @@ func ConstructIndividualQuery(slowRunningQueries []datamodels.SlowRunningQueryMe
 	for _, query := range slowRunningQueries {
 		queryIDs = append(queryIDs, fmt.Sprintf("%d", *query.QueryID))
 	}
-	//query := fmt.Sprintf(queries.IndividualQuerySearchTest, strings.Join(queryIDs, ","), args.QueryResponseTimeThreshold, args.QueryCountThreshold)
 	query := fmt.Sprintf(queries.IndividualQuerySearch, strings.Join(queryIDs, ","))
 	return query
 }
 
-func GetIndividualQueryMetrics(conn *performanceDbConnection.PGSQLConnection, slowRunningQueries []datamodels.SlowRunningQueryMetrics, args args.ArgumentList) ([]interface{}, []datamodels.IndividualQueryMetrics) {
+func GetIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, slowRunningQueries []datamodels.SlowRunningQueryMetrics, args args.ArgumentList) ([]interface{}, []datamodels.IndividualQueryMetrics) {
 	query := ConstructIndividualQuery(slowRunningQueries, args)
 	log.Info("Individual query :", query)
 	rows, err := conn.Queryx(query)
@@ -66,7 +66,7 @@ func GetIndividualQueryMetrics(conn *performanceDbConnection.PGSQLConnection, sl
 		individualQueryMetric := model
 		anonymizedQueryText := anonymizedQueriesByDb[*model.DatabaseName][*model.QueryId]
 		individualQueryMetric.QueryText = &anonymizedQueryText
-		generatedPlanId := common_utils.GenerateRandomIntegerString(*model.QueryId)
+		generatedPlanId := commonutils.GenerateRandomIntegerString(*model.QueryId)
 		individualQueryMetric.PlanId = generatedPlanId
 		model.PlanId = generatedPlanId
 		model.RealQueryText = model.QueryText

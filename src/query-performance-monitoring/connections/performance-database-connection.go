@@ -1,10 +1,12 @@
 // Package connection contains the PGSQLConnection type and methods for manipulating and querying a PostgreSQL connection
-package performanceDbConnection
+package performancedbconnection
 
 import (
 	"fmt"
-	"github.com/jmoiron/sqlx"
 	"net/url"
+
+	"github.com/jmoiron/sqlx"
+
 	// pq is required for postgreSQL driver but isn't used in code
 	_ "github.com/lib/pq"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
@@ -148,7 +150,7 @@ func (p PGSQLConnection) HaveExtensionInSchema(extensionName, schemaName string)
 	return true
 }
 
-// createConnectionURL creates the connection string. A list of paramters
+// createConnectionURL creates the connection string. A list of parameters
 // can be found here https://godoc.org/github.com/lib/pq#hdr-Connection_String_Parameters
 func createConnectionURL(ci *connectionInfo, database string) string {
 	connectionURL := &url.URL{

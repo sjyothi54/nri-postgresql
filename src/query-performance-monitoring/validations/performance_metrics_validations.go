@@ -2,11 +2,12 @@ package validations
 
 import (
 	"fmt"
+
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
-	performanceDbConnection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/connections"
+	performancedbconnection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/connections"
 )
 
-func isExtensionEnabled(conn *performanceDbConnection.PGSQLConnection, extensionName string) (bool, error) {
+func isExtensionEnabled(conn *performancedbconnection.PGSQLConnection, extensionName string) (bool, error) {
 	rows, err := conn.Queryx(fmt.Sprintf("SELECT count(*) FROM pg_extension WHERE extname = '%s'", extensionName))
 	if err != nil {
 		log.Error("Error executing query: ", err.Error())
@@ -27,14 +28,14 @@ func isExtensionEnabled(conn *performanceDbConnection.PGSQLConnection, extension
 	return count > 0, nil
 }
 
-func CheckPgWaitSamplingExtensionEnabled(conn *performanceDbConnection.PGSQLConnection) (bool, error) {
+func CheckPgWaitSamplingExtensionEnabled(conn *performancedbconnection.PGSQLConnection) (bool, error) {
 	return isExtensionEnabled(conn, "pg_wait_sampling")
 }
 
-func CheckPgStatStatementsExtensionEnabled(conn *performanceDbConnection.PGSQLConnection) (bool, error) {
+func CheckPgStatStatementsExtensionEnabled(conn *performancedbconnection.PGSQLConnection) (bool, error) {
 	return isExtensionEnabled(conn, "pg_stat_statements")
 }
 
-func CheckPgStatMonitorExtensionEnabled(conn *performanceDbConnection.PGSQLConnection) (bool, error) {
+func CheckPgStatMonitorExtensionEnabled(conn *performancedbconnection.PGSQLConnection) (bool, error) {
 	return isExtensionEnabled(conn, "pg_stat_monitor")
 }
