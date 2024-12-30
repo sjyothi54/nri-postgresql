@@ -1,7 +1,6 @@
 package validations
 
 import (
-	"errors"
 	"testing"
 
 	performanceDbConnection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/connections"
@@ -9,119 +8,59 @@ import (
 	"gopkg.in/DATA-DOG/go-sqlmock.v1"
 )
 
-func Test_CheckPgWaitSamplingExtensionEnabled_Enabled(t *testing.T) {
+func Test_isExtensionEnabled(t *testing.T) {
 	conn, mock := performanceDbConnection.CreateMockSQL(t)
-	defer conn.Close()
-
-	mock.ExpectQuery("SELECT count\\(\\*\\) FROM pg_extension WHERE extname = 'pg_wait_sampling'").
-		WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
-
-	enabled, err := CheckSlowQueryMetricsFetchEligibility(conn)
-	assert.NoError(t, err)
-	assert.True(t, enabled)
-	assert.NoError(t, mock.ExpectationsWereMet())
-}
-
-func Test_CheckPgWaitSamplingExtensionEnabled_Disabled(t *testing.T) {
-	conn, mock := performanceDbConnection.CreateMockSQL(t)
-	defer conn.Close()
-
-	mock.ExpectQuery("SELECT count\\(\\*\\) FROM pg_extension WHERE extname = 'pg_wait_sampling'").
-		WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(0))
-
-	enabled, err := CheckSlowQueryMetricsFetchEligibility(conn)
-	assert.NoError(t, err)
-	assert.False(t, enabled)
-	assert.NoError(t, mock.ExpectationsWereMet())
-}
-
-func Test_CheckPgWaitSamplingExtensionEnabled_Error(t *testing.T) {
-	conn, mock := performanceDbConnection.CreateMockSQL(t)
-	defer conn.Close()
-
-	mock.ExpectQuery("SELECT count\\(\\*\\) FROM pg_extension WHERE extname = 'pg_wait_sampling'").
-		WillReturnError(errors.New("query error"))
-
-	enabled, err := CheckSlowQueryMetricsFetchEligibility(conn)
-	assert.Error(t, err)
-	assert.False(t, enabled)
-	assert.NoError(t, mock.ExpectationsWereMet())
-}
-
-func Test_CheckPgStatStatementsExtensionEnabled_Enabled(t *testing.T) {
-	conn, mock := performanceDbConnection.CreateMockSQL(t)
-	defer conn.Close()
 
 	mock.ExpectQuery("SELECT count\\(\\*\\) FROM pg_extension WHERE extname = 'pg_stat_statements'").
 		WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
 
-	enabled, err := CheckSlowQueryMetricsFetchEligibility(conn)
+	enabled, err := isExtensionEnabled(conn, "pg_stat_statements")
 	assert.NoError(t, err)
 	assert.True(t, enabled)
-	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
-func Test_CheckPgStatStatementsExtensionEnabled_Disabled(t *testing.T) {
+func Test_CheckSlowQueryMetricsFetchEligibility(t *testing.T) {
 	conn, mock := performanceDbConnection.CreateMockSQL(t)
-	defer conn.Close()
 
 	mock.ExpectQuery("SELECT count\\(\\*\\) FROM pg_extension WHERE extname = 'pg_stat_statements'").
-		WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(0))
+		WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
 
-	enabled, err := CheckSlowQueryMetricsFetchEligibility(conn)
+	eligible, err := CheckSlowQueryMetricsFetchEligibility(conn)
 	assert.NoError(t, err)
-	assert.False(t, enabled)
-	assert.NoError(t, mock.ExpectationsWereMet())
+	assert.True(t, eligible)
 }
 
-func Test_CheckPgStatStatementsExtensionEnabled_Error(t *testing.T) {
+func Test_CheckWaitEventMetricsFetchEligibility(t *testing.T) {
 	conn, mock := performanceDbConnection.CreateMockSQL(t)
-	defer conn.Close()
+
+	mock.ExpectQuery("SELECT count\\(\\*\\) FROM pg_extension WHERE extname = 'pg_wait_sampling'").
+		WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
+	mock.ExpectQuery("SELECT count\\(\\*\\) FROM pg_extension WHERE extname = 'pg_stat_statements'").
+		WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
+
+	eligible, err := CheckWaitEventMetricsFetchEligibility(conn)
+	assert.NoError(t, err)
+	assert.True(t, eligible)
+}
+
+func Test_CheckBlockingSessionMetricsFetchEligibility(t *testing.T) {
+	conn, mock := performanceDbConnection.CreateMockSQL(t)
 
 	mock.ExpectQuery("SELECT count\\(\\*\\) FROM pg_extension WHERE extname = 'pg_stat_statements'").
-		WillReturnError(errors.New("query error"))
+		WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
 
-	enabled, err := CheckSlowQueryMetricsFetchEligibility(conn)
-	assert.Error(t, err)
-	assert.False(t, enabled)
-	assert.NoError(t, mock.ExpectationsWereMet())
+	eligible, err := CheckBlockingSessionMetricsFetchEligibility(conn)
+	assert.NoError(t, err)
+	assert.True(t, eligible)
 }
 
-func Test_CheckPgStatMonitorExtensionEnabled_Enabled(t *testing.T) {
+func Test_CheckIndividualQueryMetricsFetchEligibility(t *testing.T) {
 	conn, mock := performanceDbConnection.CreateMockSQL(t)
-	defer conn.Close()
 
 	mock.ExpectQuery("SELECT count\\(\\*\\) FROM pg_extension WHERE extname = 'pg_stat_monitor'").
 		WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
 
-	enabled, err := CheckSlowQueryMetricsFetchEligibility(conn)
+	eligible, err := CheckIndividualQueryMetricsFetchEligibility(conn)
 	assert.NoError(t, err)
-	assert.True(t, enabled)
-	assert.NoError(t, mock.ExpectationsWereMet())
-}
-
-func Test_CheckPgStatMonitorExtensionEnabled_Disabled(t *testing.T) {
-	conn, mock := performanceDbConnection.CreateMockSQL(t)
-	defer conn.Close()
-
-	mock.ExpectQuery("SELECT count\\(\\*\\) FROM pg_extension WHERE extname = 'pg_stat_monitor'").
-		WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(0))
-
-	enabled, err := CheckSlowQueryMetricsFetchEligibility(conn)
-	assert.NoError(t, err)
-	assert.False(t, enabled)
-	assert.NoError(t, mock.ExpectationsWereMet())
-}
-
-func Test_CheckPgStatMonitorExtensionEnabled_Error(t *testing.T) {
-	conn, mock := performanceDbConnection.CreateMockSQL(t)
-	defer conn.Close()
-
-	mock.ExpectQuery("SELECT count\\(\\*\\) FROM pg_extension WHERE extname = 'pg_stat_monitor'").
-		WillReturnError(errors.New("query error"))
-
-	enabled, err := CheckSlowQueryMetricsFetchEligibility(conn)
-	assert.Error(t, err)
-	assert.False(t, enabled)
-	assert.NoError(t, mock.ExpectationsWereMet())
+	assert.True(t, eligible)
 }

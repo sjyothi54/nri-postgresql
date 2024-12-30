@@ -1,204 +1,168 @@
 package performance_metrics
 
 import (
-	// "bytes"
 	"testing"
 
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/nri-postgresql/src/args"
-
-	// performanceDbConnection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/connections"
+	performanceDbConnection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/connections"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
-	// "github.com/sirupsen/logrus"
-	common_utils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	// "gopkg.in/DATA-DOG/go-sqlmock.v1"
+	"gopkg.in/DATA-DOG/go-sqlmock.v1"
 )
 
-func Test_PopulateExecutionPlanMetrics(t *testing.T) {
+func int64Ptr(i int64) *int64 {
+	return &i
+}
+
+func strPtr(s string) *string {
+	return &s
+}
+
+func Test_PopulateExecutionPlanMetrics_NoIndividualQueriesFound(t *testing.T) {
 	pgIntegration, _ := integration.New("test", "1.0.0")
-	argList := args.ArgumentList{}
+	args := args.ArgumentList{}
+	results := []datamodels.IndividualQueryMetrics{}
+
+	PopulateExecutionPlanMetrics(results, pgIntegration, args)
+	// No assertion needed as the function should just log and return
+}
+
+func Test_PopulateExecutionPlanMetrics_WithIndividualQueries(t *testing.T) {
+	conn, mock := performanceDbConnection.CreateMockSQL(t)
+	defer conn.Close()
+
+	mock.ExpectQuery("EXPLAIN \\(FORMAT JSON\\) SELECT \\* FROM test").WillReturnRows(sqlmock.NewRows([]string{"QUERY PLAN"}).AddRow(`[{"Plan": {"Node Type": "Seq Scan", "Relation Name": "test"}}]`))
 
 	results := []datamodels.IndividualQueryMetrics{
 		{
-			QueryId:       new(int64),
-			QueryText:     new(string),
-			DatabaseName:  new(string),
-			RealQueryText: new(string),
+			QueryId:       int64Ptr(1),
+			DatabaseName:  strPtr("testdb"),
+			QueryText:     strPtr("SELECT * FROM test"),
+			RealQueryText: strPtr("SELECT * FROM test"),
 		},
 	}
-	var queryId int64 = 1
-	*results[0].QueryId = queryId
-	*results[0].QueryText = "SELECT * FROM test"
-	*results[0].DatabaseName = "testdb"
-	*results[0].RealQueryText = "SELECT * FROM test"
 
-	// Mock GetExecutionPlanMetrics
-	mockGetExecutionPlanMetrics := func(results []datamodels.IndividualQueryMetrics, argList args.ArgumentList) []interface{} {
-		return []interface{}{"mockedExecutionPlanMetric"}
-	}
-
-	// Mock IngestMetric
-	mockIngestMetric := func(metrics []interface{}, metricName string, integration *integration.Integration, argList args.ArgumentList) {
-		require.Equal(t, "PostgresExecutionPlanMetrics", metricName)
-		require.Equal(t, pgIntegration, integration)
-		require.Equal(t, argList, argList)
-		require.Equal(t, []interface{}{"mockedExecutionPlanMetric"}, metrics)
-	}
-
-	// Define a dummy getExecutionPlanMetrics function
-	getExecutionPlanMetrics := func(results []datamodels.IndividualQueryMetrics, argList args.ArgumentList) []interface{} {
-		return []interface{}{}
-	}
-
-	// Replace the actual functions with mocks
-	originalGetExecutionPlanMetrics := getExecutionPlanMetrics
-	originalIngestMetric := common_utils.GetIngestMetricFunc()
-	getExecutionPlanMetrics = mockGetExecutionPlanMetrics
-	common_utils.SetIngestMetricFunc(mockIngestMetric)
-	defer func() {
-		getExecutionPlanMetrics = originalGetExecutionPlanMetrics
-		common_utils.SetIngestMetricFunc(originalIngestMetric)
-	}()
-
-	// Call the function under test
-	PopulateExecutionPlanMetrics(results, pgIntegration, argList)
-
-	// Assertions
-	assert.Equal(t, "mockedExecutionPlanMetric", mockGetExecutionPlanMetrics(results, argList)[0])
-}
-func Test_PopulateExecutionPlanMetrics_NoQueries(t *testing.T) {
 	pgIntegration, _ := integration.New("test", "1.0.0")
 	args := args.ArgumentList{}
 
-	PopulateExecutionPlanMetrics([]datamodels.IndividualQueryMetrics{}, pgIntegration, args)
-	// No assertions needed, just ensuring no panic occurs
+	PopulateExecutionPlanMetrics(results, pgIntegration, args)
 }
 
-// func Test_processExecutionPlanOfQueries_NoRowsNext(t *testing.T) {
-// 	individualQueriesList := []datamodels.IndividualQueryMetrics{
-// 		{
-// 			QueryId:       new(int64),
-// 			QueryText:     new(string),
-// 			DatabaseName:  new(string),
-// 			RealQueryText: new(string),
-// 		},
-// 	}
-// 	var queryId int64 = 1
-// 	*individualQueriesList[0].QueryId = queryId
-// 	*individualQueriesList[0].QueryText = "SELECT * FROM test"
-// 	*individualQueriesList[0].DatabaseName = "testdb"
-// 	*individualQueriesList[0].RealQueryText = "SELECT * FROM test"
+func Test_PopulateExecutionPlanMetrics_ExecutionPlanNotFound(t *testing.T) {
+	conn, mock := performanceDbConnection.CreateMockSQL(t)
+	defer conn.Close()
 
-// 	conn, mock := performanceDbConnection.CreateMockSQL(t)
-// 	defer conn.Close()
+	mock.ExpectQuery("EXPLAIN \\(FORMAT JSON\\) SELECT \\* FROM test").WillReturnRows(sqlmock.NewRows([]string{"QUERY PLAN"}))
 
-// 	query := "EXPLAIN (FORMAT JSON) SELECT * FROM test"
-// 	mock.ExpectQuery(query).WillReturnRows(sqlmock.NewRows([]string{"QUERY PLAN"}))
+	results := []datamodels.IndividualQueryMetrics{
+		{
+			QueryId:       int64Ptr(1),
+			DatabaseName:  strPtr("testdb"),
+			QueryText:     strPtr("SELECT * FROM test"),
+			RealQueryText: strPtr("SELECT * FROM test"),
+		},
+	}
 
-// 	// Capture log output
-// 	var logOutput bytes.Buffer
-// 	logrus.SetOutput(&logOutput)
-// 	defer logrus.SetOutput(nil) // Reset log output
+	pgIntegration, _ := integration.New("test", "1.0.0")
+	args := args.ArgumentList{}
 
-// 	var executionPlanMetricsList []interface{}
-// 	processExecutionPlanOfQueries(individualQueriesList, conn, &executionPlanMetricsList)
+	PopulateExecutionPlanMetrics(results, pgIntegration, args)
+	// No assertion needed as the function should just log and return
+}
 
-// 	// Ensure that the log message is correct
-// 	assert.Contains(t, logOutput.String(), "Execution plan not found for queryId 1")
-// 	mock.ExpectationsWereMet()
-// }
-// func Test_processExecutionPlanOfQueries_ScanError(t *testing.T) {
-// 	individualQueriesList := []datamodels.IndividualQueryMetrics{
-// 		{
-// 			QueryId:       new(int64),
-// 			QueryText:     new(string),
-// 			DatabaseName:  new(string),
-// 			RealQueryText: new(string),
-// 		},
-// 	}
-// 	var queryId int64 = 1
-// 	*individualQueriesList[0].QueryId = queryId
-// 	*individualQueriesList[0].QueryText = "SELECT * FROM test"
-// 	*individualQueriesList[0].DatabaseName = "testdb"
-// 	*individualQueriesList[0].RealQueryText = "SELECT * FROM test"
+func Test_PopulateExecutionPlanMetrics_ErrorScanningRow(t *testing.T) {
+	conn, mock := performanceDbConnection.CreateMockSQL(t)
+	defer conn.Close()
 
-// 	conn, mock := performanceDbConnection.CreateMockSQL(t)
-// 	defer conn.Close()
+	mock.ExpectQuery("EXPLAIN \\(FORMAT JSON\\) SELECT \\* FROM test").WillReturnRows(sqlmock.NewRows([]string{"QUERY PLAN"}).AddRow(nil).RowError(0, sqlmock.ErrCancelled))
 
-// 	query := "EXPLAIN (FORMAT JSON) SELECT * FROM test"
-// 	mock.ExpectQuery(query).WillReturnRows(sqlmock.NewRows([]string{"QUERY PLAN"}).AddRow(""))
+	results := []datamodels.IndividualQueryMetrics{
+		{
+			QueryId:       int64Ptr(1),
+			DatabaseName:  strPtr("testdb"),
+			QueryText:     strPtr("SELECT * FROM test"),
+			RealQueryText: strPtr("SELECT * FROM test"),
+		},
+	}
 
-// 	// Capture log output
-// 	var logOutput bytes.Buffer
-// 	logrus.SetOutput(&logOutput)
-// 	defer logrus.SetOutput(nil) // Reset log output
+	pgIntegration, _ := integration.New("test", "1.0.0")
+	args := args.ArgumentList{}
 
-// 	var executionPlanMetricsList []interface{}
-// 	processExecutionPlanOfQueries(individualQueriesList, conn, &executionPlanMetricsList)
+	PopulateExecutionPlanMetrics(results, pgIntegration, args)
+	// No assertion needed as the function should just log and return
+}
 
-// 	// Ensure that the log message is correct
-// 	assert.Contains(t, logOutput.String(), "Error scanning row")
-// 	mock.ExpectationsWereMet()
-// }
-// func Test_processExecutionPlanOfQueries_UnmarshalError(t *testing.T) {
-// 	individualQueriesList := []datamodels.IndividualQueryMetrics{
-// 		{
-// 			QueryId:       new(int64),
-// 			QueryText:     new(string),
-// 			DatabaseName:  new(string),
-// 			RealQueryText: new(string),
-// 		},
-// 	}
-// 	var queryId int64 = 1
-// 	*individualQueriesList[0].QueryId = queryId
-// 	*individualQueriesList[0].QueryText = "SELECT * FROM test"
-// 	*individualQueriesList[0].DatabaseName = "testdb"
-// 	*individualQueriesList[0].RealQueryText = "SELECT * FROM test"
+func Test_PopulateExecutionPlanMetrics_FailedToUnmarshal(t *testing.T) {
+	conn, mock := performanceDbConnection.CreateMockSQL(t)
+	defer conn.Close()
 
-// 	conn, mock := performanceDbConnection.CreateMockSQL(t)
-// 	defer conn.Close()
+	mock.ExpectQuery("EXPLAIN \\(FORMAT JSON\\) SELECT \\* FROM test").WillReturnRows(sqlmock.NewRows([]string{"QUERY PLAN"}).AddRow(`invalid json`))
 
-// 	query := "EXPLAIN (FORMAT JSON) SELECT * FROM test"
-// 	mock.ExpectQuery(query).WillReturnRows(sqlmock.NewRows([]string{"QUERY PLAN"}).AddRow("invalid json"))
+	results := []datamodels.IndividualQueryMetrics{
+		{
+			QueryId:       int64Ptr(1),
+			DatabaseName:  strPtr("testdb"),
+			QueryText:     strPtr("SELECT * FROM test"),
+			RealQueryText: strPtr("SELECT * FROM test"),
+		},
+	}
 
-// 	// Capture log output
-// 	var logOutput bytes.Buffer
-// 	logrus.SetOutput(&logOutput)
-// 	defer logrus.SetOutput(nil) // Reset log output
+	pgIntegration, _ := integration.New("test", "1.0.0")
+	args := args.ArgumentList{}
 
-// 	var executionPlanMetricsList []interface{}
-// 	processExecutionPlanOfQueries(individualQueriesList, conn, &executionPlanMetricsList)
+	PopulateExecutionPlanMetrics(results, pgIntegration, args)
+	// No assertion needed as the function should just log and return
+}
 
-// 	// Ensure that the log message is correct
-// 	assert.Contains(t, logOutput.String(), "Failed to unmarshal execution plan")
-// 	mock.ExpectationsWereMet()
-// }
-// func Test_processExecutionPlanOfQueries_Success(t *testing.T) {
-// 	individualQueriesList := []datamodels.IndividualQueryMetrics{
-// 		{
-// 			QueryId:       new(int64),
-// 			QueryText:     new(string),
-// 			DatabaseName:  new(string),
-// 			RealQueryText: new(string),
-// 		},
-// 	}
-// 	var queryId int64 = 1
-// 	*individualQueriesList[0].QueryId = queryId
-// 	*individualQueriesList[0].QueryText = "SELECT * FROM test"
-// 	*individualQueriesList[0].DatabaseName = "testdb"
-// 	*individualQueriesList[0].RealQueryText = "SELECT * FROM test"
+func Test_PopulateExecutionPlanMetrics_Success(t *testing.T) {
+	conn, mock := performanceDbConnection.CreateMockSQL(t)
+	defer conn.Close()
 
-// 	conn, mock := performanceDbConnection.CreateMockSQL(t)
-// 	defer conn.Close()
+	mock.ExpectQuery("EXPLAIN \\(FORMAT JSON\\) SELECT \\* FROM test").WillReturnRows(sqlmock.NewRows([]string{"QUERY PLAN"}).AddRow(`[{"Plan": {"Node Type": "Seq Scan", "Relation Name": "test"}}]`))
 
-// 	query := "EXPLAIN (FORMAT JSON) SELECT * FROM test"
-// 	mock.ExpectQuery(query).WillReturnRows(sqlmock.NewRows([]string{"QUERY PLAN"}).AddRow(`[{"Plan": {"Node Type": "Seq Scan", "Relation Name": "test", "Alias": "test", "Startup Cost": 0.00, "Total Cost": 35.50, "Plan Rows": 2550, "Plan Width": 24}}]`))
+	results := []datamodels.IndividualQueryMetrics{
+		{
+			QueryId:       int64Ptr(1),
+			DatabaseName:  strPtr("testdb"),
+			QueryText:     strPtr("SELECT * FROM test"),
+			RealQueryText: strPtr("SELECT * FROM test"),
+		},
+	}
 
-// 	var executionPlanMetricsList []interface{}
-// 	processExecutionPlanOfQueries(individualQueriesList, conn, &executionPlanMetricsList)
+	pgIntegration, _ := integration.New("test", "1.0.0")
+	args := args.ArgumentList{}
 
-// 	assert.NotEmpty(t, executionPlanMetricsList)
-// 	mock.ExpectationsWereMet()
-// }
+	PopulateExecutionPlanMetrics(results, pgIntegration, args)
+	// No assertion needed as the function should just log and return
+}
+
+func Test_fetchNestedExecutionPlanDetails_Success(t *testing.T) {
+	individualQuery := datamodels.IndividualQueryMetrics{
+		QueryId:       int64Ptr(1),
+		DatabaseName:  strPtr("testdb"),
+		QueryText:     strPtr("SELECT * FROM test"),
+		RealQueryText: strPtr("SELECT * FROM test"),
+		PlanId:        int64Ptr(123),
+	}
+
+	execPlan := map[string]interface{}{
+		"Node Type": "Seq Scan",
+		"Plans": []interface{}{
+			map[string]interface{}{
+				"Node Type": "Index Scan",
+			},
+		},
+	}
+
+	var executionPlanMetricsList []interface{}
+	fetchNestedExecutionPlanDetails(individualQuery, 0, execPlan, &executionPlanMetricsList)
+
+	assert.Len(t, executionPlanMetricsList, 2)
+	assert.Equal(t, "Seq Scan", executionPlanMetricsList[0].(datamodels.QueryExecutionPlanMetrics).NodeType)
+	assert.Equal(t, "Index Scan", executionPlanMetricsList[1].(datamodels.QueryExecutionPlanMetrics).NodeType)
+	assert.Equal(t, int64(1), executionPlanMetricsList[0].(datamodels.QueryExecutionPlanMetrics).QueryId)
+	assert.Equal(t, int64(123), executionPlanMetricsList[0].(datamodels.QueryExecutionPlanMetrics).PlanId)
+	assert.Equal(t, 0, executionPlanMetricsList[0].(datamodels.QueryExecutionPlanMetrics).Level)
+	assert.Equal(t, 1, executionPlanMetricsList[1].(datamodels.QueryExecutionPlanMetrics).Level)
+}

@@ -98,27 +98,27 @@ func IngestMetric(metricList []interface{}, eventName string, pgIntegration *int
 	}
 
 }
+
 var (
+	ingestMetricFunc func(metrics []interface{}, metricName string, integration *integration.Integration, argList args.ArgumentList)
 
-    ingestMetricFunc func(metrics []interface{}, metricName string, integration *integration.Integration, argList args.ArgumentList)
-
-    mu               sync.Mutex
-
+	mu sync.Mutex
 )
+
 func SetIngestMetricFunc(f func(metrics []interface{}, metricName string, integration *integration.Integration, argList args.ArgumentList)) {
 
-    mu.Lock()
+	mu.Lock()
 
-    defer mu.Unlock()
+	defer mu.Unlock()
 
-    ingestMetricFunc = f
+	ingestMetricFunc = f
 
 }
 func GetIngestMetricFunc() func(metrics []interface{}, metricName string, integration *integration.Integration, argList args.ArgumentList) {
 
-    mu.Lock()
+	mu.Lock()
 
-    defer mu.Unlock()
+	defer mu.Unlock()
 
-    return ingestMetricFunc
+	return ingestMetricFunc
 }

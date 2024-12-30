@@ -26,7 +26,7 @@ type PGSQLConnection struct {
 }
 
 func (p *PGSQLConnection) SetConnection(db *sqlx.DB) {
-    p.connection = db
+	p.connection = db
 }
 
 // Info holds all the information needed from the user to create a new connection
