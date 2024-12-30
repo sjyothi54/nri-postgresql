@@ -109,7 +109,7 @@ func fetchNestedExecutionPlanDetails(individualQuery datamodels.IndividualQueryM
 	execPlanMetrics.DatabaseName = *individualQuery.DatabaseName
 	execPlanMetrics.Level = *level
 	*level++
-	log.Info("Plan Id: %s", *individualQuery.PlanId)
+	log.Info("Plan Id: %s", individualQuery.PlanId)
 	execPlanMetrics.PlanId = *individualQuery.PlanId
 
 	*executionPlanMetricsList = append(*executionPlanMetricsList, execPlanMetrics)
