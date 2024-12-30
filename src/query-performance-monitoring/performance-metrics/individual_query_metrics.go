@@ -35,7 +35,7 @@ func PopulateIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnectio
 }
 
 func ConstructIndividualQuery(slowRunningQueries []datamodels.SlowRunningQueryMetrics, args args.ArgumentList) string {
-	var queryIDs []string
+	var queryIDs = make([]string, 0)
 	for _, query := range slowRunningQueries {
 		queryIDs = append(queryIDs, fmt.Sprintf("%d", *query.QueryID))
 	}
