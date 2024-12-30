@@ -52,7 +52,6 @@ func PopulateBlockingMetrics(conn *performanceDbConnection.PGSQLConnection, pgIn
 		log.Info("No Blocking queries found.")
 		return
 	}
-	log.Info("Populate Blocking running: %+v", blockingQueriesMetricsList)
 	common_utils.IngestMetric(blockingQueriesMetricsList, "PostgresBlockingSessions", pgIntegration, args)
 
 }
