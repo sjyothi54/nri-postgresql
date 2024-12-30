@@ -12,26 +12,18 @@ import (
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
 )
 
-var supportedStatements = map[string]bool{"SELECT": true, "INSERT": true, "UPDATE": true, "DELETE": true, "WITH": true}
-
 func PopulateExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, pgIntegration *integration.Integration, args args.ArgumentList) {
-
 	if len(results) == 0 {
 		log.Info("No individual queries found.")
 		return
 	}
-
 	executionDetailsList := GetExecutionPlanMetrics(results, args)
-
 	commonutils.IngestMetric(executionDetailsList, "PostgresExecutionPlanMetrics", pgIntegration, args)
 }
 
 func GetExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, args args.ArgumentList) []interface{} {
-
 	var executionPlanMetricsList []interface{}
-
 	var groupIndividualQueriesByDatabase = GroupQueriesByDatabase(results)
-
 	for dbName, individualQueriesList := range groupIndividualQueriesByDatabase {
 		dbConn, err := performancedbconnection.OpenDB(args, dbName)
 		if err != nil {
@@ -43,21 +35,10 @@ func GetExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, args a
 	}
 
 	return executionPlanMetricsList
-
 }
 
 func processExecutionPlanOfQueries(individualQueriesList []datamodels.IndividualQueryMetrics, dbConn *performancedbconnection.PGSQLConnection, executionPlanMetricsList *[]interface{}) {
-
 	for _, individualQuery := range individualQueriesList {
-
-		// queryText := strings.TrimSpace(*individualQuery.QueryText)
-		// upperQueryText := strings.ToUpper(queryText)
-		// log.Info("Query Text: %s", strings.Split(upperQueryText, " ")[0])
-		// if !supportedStatements[strings.Split(upperQueryText, " ")[0]] {
-		// log.Info("Skipping unsupported query for EXPLAIN: %s", queryText)
-		// continue
-		// }
-
 		query := "EXPLAIN (FORMAT JSON) " + *individualQuery.RealQueryText
 		log.Info("Execution Plan Query : %s", query)
 		rows, err := dbConn.Queryx(query)
@@ -94,7 +75,6 @@ func GroupQueriesByDatabase(results []datamodels.IndividualQueryMetrics) map[str
 		dbName := *query.DatabaseName
 		databaseMap[dbName] = append(databaseMap[dbName], query)
 	}
-
 	return databaseMap
 }
 

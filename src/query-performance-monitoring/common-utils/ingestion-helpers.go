@@ -35,11 +35,9 @@ func SetMetric(metricSet *metric.Set, name string, value interface{}, sourceType
 }
 
 func IngestMetric(metricList []interface{}, eventName string, pgIntegration *integration.Integration, args args.ArgumentList) {
-
 	metricCount := 0
 	lenOfMetricList := len(metricList)
 	instanceEntity, err := pgIntegration.Entity(fmt.Sprintf("%s:%s", args.Hostname, args.Port), "pg-instance")
-
 	for _, model := range metricList {
 		if model == nil {
 			continue
@@ -54,9 +52,7 @@ func IngestMetric(metricList []interface{}, eventName string, pgIntegration *int
 		if !modelValue.IsValid() || modelValue.Kind() != reflect.Struct {
 			continue
 		}
-
 		modelType := reflect.TypeOf(model)
-
 		for i := 0; i < modelValue.NumField(); i++ {
 			field := modelValue.Field(i)
 			fieldType := modelType.Field(i)
@@ -86,7 +82,6 @@ func IngestMetric(metricList []interface{}, eventName string, pgIntegration *int
 			}
 		}
 	}
-
 	err = pgIntegration.Publish()
 	if err != nil {
 		log.Error("Error publishing metrics: %v", err)
@@ -94,12 +89,10 @@ func IngestMetric(metricList []interface{}, eventName string, pgIntegration *int
 	}
 	pgIntegration.Entities = append(pgIntegration.Entities, instanceEntity)
 	instanceEntity, err = pgIntegration.Entity(fmt.Sprintf("%s:%s", "localhost", "5432"), "pg-instance")
-
 	if err != nil {
 		log.Error("Error publishing metrics: %v", err)
 		return
 	}
-
 }
 
 func GenerateRandomIntegerString(queryID int64) *string {
