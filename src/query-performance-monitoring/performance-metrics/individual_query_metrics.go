@@ -74,7 +74,6 @@ func GetIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, sl
 		individualQueryMetricsListInterface = append(individualQueryMetricsListInterface, individualQueryMetric)
 	}
 	return individualQueryMetricsListInterface, individualQueryMetricsForExecPlanList
-
 }
 
 func processForAnonymizeQueryMap(queryCPUMetricsList []datamodels.SlowRunningQueryMetrics) map[string]map[int64]string {
