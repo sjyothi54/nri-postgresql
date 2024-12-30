@@ -39,7 +39,7 @@ func ConstructIndividualQuery(slowRunningQueries []datamodels.SlowRunningQueryMe
 		queryIDs = append(queryIDs, fmt.Sprintf("%d", *query.QueryID))
 	}
 	query := fmt.Sprintf(queries.IndividualQuerySearchTest, strings.Join(queryIDs, ","), args.QueryResponseTimeThreshold, args.QueryCountThreshold)
-	log.Info("Individual query :", query)
+
 	return query
 }
 
@@ -48,6 +48,8 @@ func GetIndividualQueryMetrics(conn *performanceDbConnection.PGSQLConnection, sl
 	log.Info("Individual query :", query)
 	rows, err := conn.Queryx(query)
 	if err != nil {
+
+		log.Info("Error executing query in individual query: %v", err)
 		return nil, nil
 	}
 	defer rows.Close()
