@@ -15,9 +15,9 @@ import (
 )
 
 func PopulateBlockingMetrics(conn *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, args args.ArgumentList) {
-	isPgStatStatementEnabled, err := validations.CheckPgStatStatementsExtensionEnabled(conn)
-	if err != nil {
-		log.Error("Error executing query: %v in PopulateBlockingMetrics", err)
+	isPgStatStatementEnabled, enableCheckError := validations.CheckPgStatStatementsExtensionEnabled(conn)
+	if enableCheckError != nil {
+		log.Error("Error executing query: %v in PopulateBlockingMetrics", enableCheckError)
 		return
 	}
 	if !isPgStatStatementEnabled {
@@ -25,9 +25,9 @@ func PopulateBlockingMetrics(conn *performancedbconnection.PGSQLConnection, pgIn
 		return
 	}
 	log.Info("Extension 'pg_stat_statements' enabled.")
-	blockingQueriesMetricsList, err := GetBlockingMetrics(conn, args)
-	if err != nil {
-		log.Error("Error fetching Blocking queries: %v", err)
+	blockingQueriesMetricsList, blockQueryFetchErr := GetBlockingMetrics(conn, args)
+	if blockQueryFetchErr != nil {
+		log.Error("Error fetching Blocking queries: %v", blockQueryFetchErr)
 		return
 	}
 	if len(blockingQueriesMetricsList) == 0 {
