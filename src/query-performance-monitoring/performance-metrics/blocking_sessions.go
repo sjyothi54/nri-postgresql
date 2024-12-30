@@ -1,6 +1,7 @@
 package performance_metrics
 
 import (
+	"fmt"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
@@ -13,7 +14,8 @@ import (
 
 func GetBlockingMetrics(conn *performanceDbConnection.PGSQLConnection, args args.ArgumentList) ([]interface{}, error) {
 	var blockingQueriesMetricsList []interface{}
-	var query = queries.BlockingQueries
+	var query = fmt.Sprintf(queries.BlockingQueries, args.QueryCountThreshold)
+	log.Info("Blocking query :", query)
 	rows, err := conn.Queryx(query)
 	if err != nil {
 		return nil, err
