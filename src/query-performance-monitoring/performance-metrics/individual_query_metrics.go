@@ -53,7 +53,7 @@ func GetIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, sl
 		return nil, nil
 	}
 	defer rows.Close()
-	anonymizedQueriesByDb := processForAnonymizeQueryMap(slowRunningQueries)
+	anonymizedQueriesByDB := processForAnonymizeQueryMap(slowRunningQueries)
 	var individualQueryMetricsForExecPlanList []datamodels.IndividualQueryMetrics
 	var individualQueryMetricsListInterface []interface{}
 	for rows.Next() {
@@ -64,11 +64,11 @@ func GetIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, sl
 			continue
 		}
 		individualQueryMetric := model
-		anonymizedQueryText := anonymizedQueriesByDb[*model.DatabaseName][*model.QueryId]
+		anonymizedQueryText := anonymizedQueriesByDB[*model.DatabaseName][*model.QueryID]
 		individualQueryMetric.QueryText = &anonymizedQueryText
-		generatedPlanId := commonutils.GenerateRandomIntegerString(*model.QueryId)
-		individualQueryMetric.PlanId = generatedPlanId
-		model.PlanId = generatedPlanId
+		generatedPlanID := commonutils.GenerateRandomIntegerString(*model.QueryID)
+		individualQueryMetric.PlanID = generatedPlanID
+		model.PlanID = generatedPlanID
 		model.RealQueryText = model.QueryText
 		model.QueryText = &anonymizedQueryText
 
@@ -79,18 +79,18 @@ func GetIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, sl
 
 }
 
-func processForAnonymizeQueryMap(queryCpuMetricsList []datamodels.SlowRunningQueryMetrics) map[string]map[int64]string {
-	anonymizeQueryMapByDb := make(map[string]map[int64]string)
+func processForAnonymizeQueryMap(queryCPUMetricsList []datamodels.SlowRunningQueryMetrics) map[string]map[int64]string {
+	anonymizeQueryMapByDB := make(map[string]map[int64]string)
 
-	for _, metric := range queryCpuMetricsList {
+	for _, metric := range queryCPUMetricsList {
 		dbName := *metric.DatabaseName
 		queryID := *metric.QueryID
 		anonymizedQuery := *metric.QueryText
 
-		if _, exists := anonymizeQueryMapByDb[dbName]; !exists {
-			anonymizeQueryMapByDb[dbName] = make(map[int64]string)
+		if _, exists := anonymizeQueryMapByDB[dbName]; !exists {
+			anonymizeQueryMapByDB[dbName] = make(map[int64]string)
 		}
-		anonymizeQueryMapByDb[dbName][queryID] = anonymizedQuery
+		anonymizeQueryMapByDB[dbName][queryID] = anonymizedQuery
 	}
-	return anonymizeQueryMapByDb
+	return anonymizeQueryMapByDB
 }

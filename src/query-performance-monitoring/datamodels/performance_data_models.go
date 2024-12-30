@@ -26,21 +26,21 @@ type WaitEventMetrics struct {
 type BlockingSessionMetrics struct {
 	BlockedPid         *int64  `db:"blocked_pid"          metric_name:"blocked_pid"          source_type:"gauge"`
 	BlockedQuery       *string `db:"blocked_query"        metric_name:"blocked_query"        source_type:"attribute"`
-	BlockedQueryId     *string `db:"blocked_query_id"     metric_name:"blocked_query_id"     source_type:"attribute"`
+	BlockedQueryID     *string `db:"blocked_query_id"     metric_name:"blocked_query_id"     source_type:"attribute"`
 	BlockedQueryStart  *string `db:"blocked_query_start"  metric_name:"blocked_query_start"  source_type:"attribute"`
 	BlockedDatabase    *string `db:"database_name"        metric_name:"database_name"        source_type:"attribute"`
 	BlockingPid        *int64  `db:"blocking_pid"         metric_name:"blocking_pid"         source_type:"gauge"`
 	BlockingQuery      *string `db:"blocking_query"       metric_name:"blocking_query"       source_type:"attribute"`
-	BlockingQueryId    *string `db:"blocking_query_id"    metric_name:"blocking_query_id"    source_type:"attribute"`
+	BlockingQueryID    *string `db:"blocking_query_id"    metric_name:"blocking_query_id"    source_type:"attribute"`
 	BlockingQueryStart *string `db:"blocking_query_start" metric_name:"blocking_query_start" source_type:"attribute"`
 }
 
 type IndividualQueryMetrics struct {
 	QueryText      *string  `json:"query" db:"query" metric_name:"query_text" source_type:"attribute"`
-	QueryId        *int64   `json:"queryid" db:"queryid" metric_name:"query_id" source_type:"gauge"`
+	QueryID        *int64   `json:"queryid" db:"queryid" metric_name:"query_id" source_type:"gauge"`
 	DatabaseName   *string  `json:"datname" db:"datname" metric_name:"database_name" source_type:"attribute"`
 	AvgCPUTimeInMS *float64 `json:"avg_cpu_time_ms" db:"avg_cpu_time_ms" metric_name:"avg_cpu_time_ms" source_type:"gauge"`
-	PlanId         *string  `json:"planid" db:"planid" metric_name:"plan_id" source_type:"attribute"`
+	PlanID         *string  `json:"planid" db:"planid" metric_name:"plan_id" source_type:"attribute"`
 	RealQueryText  *string  `ingestData:"false"`
 }
 
@@ -65,7 +65,7 @@ type QueryExecutionPlanMetrics struct {
 	TempWrittenBlocks   int64   `mapstructure:"Temp Written Blocks" json:"Temp Written Blocks" metric_name:"temp_written_blocks"   source_type:"gauge"`
 	DatabaseName        string  `mapstructure:"Database"            json:"Database"            metric_name:"database_name"              source_type:"attribute"`
 	QueryText           string  `mapstructure:"Query"               json:"Query"               metric_name:"query_text"                 source_type:"attribute"`
-	QueryId             int64   `mapstructure:"Query Id"            json:"Query Id"            metric_name:"query_id"              source_type:"gauge"`
-	PlanId              string  `mapstructure:"Plan Id"             json:"Plan Id"             metric_name:"plan_id"               source_type:"attribute"`
+	QueryID             int64   `mapstructure:"Query Id"            json:"Query Id"            metric_name:"query_id"              source_type:"gauge"`
+	PlanID              string  `mapstructure:"Plan Id"             json:"Plan Id"             metric_name:"plan_id"               source_type:"attribute"`
 	Level               int     `mapstructure:"Level"               json:"Level"             metric_name:"level_id"               source_type:"gauge"`
 }

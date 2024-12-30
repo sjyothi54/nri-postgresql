@@ -48,7 +48,7 @@ func processExecutionPlanOfQueries(individualQueriesList []datamodels.Individual
 		}
 		defer rows.Close()
 		if !rows.Next() {
-			log.Info("Execution plan not found for queryId", *individualQuery.QueryId)
+			log.Info("Execution plan not found for queryId", *individualQuery.QueryID)
 			continue
 		}
 		var execPlanJSON string
@@ -86,12 +86,12 @@ func fetchNestedExecutionPlanDetails(individualQuery datamodels.IndividualQueryM
 		return
 	}
 	execPlanMetrics.QueryText = *individualQuery.QueryText
-	execPlanMetrics.QueryId = *individualQuery.QueryId
+	execPlanMetrics.QueryID = *individualQuery.QueryID
 	execPlanMetrics.DatabaseName = *individualQuery.DatabaseName
 	execPlanMetrics.Level = *level
 	*level++
-	log.Info("Plan Id: %s", individualQuery.PlanId)
-	execPlanMetrics.PlanId = *individualQuery.PlanId
+	log.Info("Plan Id: %s", individualQuery.PlanID)
+	execPlanMetrics.PlanID = *individualQuery.PlanID
 
 	*executionPlanMetricsList = append(*executionPlanMetricsList, execPlanMetrics)
 
