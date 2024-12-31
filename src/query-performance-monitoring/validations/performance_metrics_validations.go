@@ -28,14 +28,26 @@ func isExtensionEnabled(conn *performancedbconnection.PGSQLConnection, extension
 	return count > 0, nil
 }
 
-func CheckPgWaitSamplingExtensionEnabled(conn *performancedbconnection.PGSQLConnection) (bool, error) {
-	return isExtensionEnabled(conn, "pg_wait_sampling")
-}
-
-func CheckPgStatStatementsExtensionEnabled(conn *performancedbconnection.PGSQLConnection) (bool, error) {
+func CheckSlowQueryMetricsFetchEligibility(conn *performancedbconnection.PGSQLConnection) (bool, error) {
 	return isExtensionEnabled(conn, "pg_stat_statements")
 }
 
-func CheckPgStatMonitorExtensionEnabled(conn *performancedbconnection.PGSQLConnection) (bool, error) {
+func CheckWaitEventMetricsFetchEligibility(conn *performancedbconnection.PGSQLConnection) (bool, error) {
+	pgWaitExtension, waitErr := isExtensionEnabled(conn, "pg_wait_sampling")
+	if waitErr != nil {
+		return false, waitErr
+	}
+	pgStatExtension, statErr := isExtensionEnabled(conn, "pg_stat_statements")
+	if statErr != nil {
+		return false, statErr
+	}
+	return pgWaitExtension && pgStatExtension, nil
+}
+
+func CheckBlockingSessionMetricsFetchEligibility(conn *performancedbconnection.PGSQLConnection) (bool, error) {
+	return isExtensionEnabled(conn, "pg_stat_statements")
+}
+
+func CheckIndividualQueryMetricsFetchEligibility(conn *performancedbconnection.PGSQLConnection) (bool, error) {
 	return isExtensionEnabled(conn, "pg_stat_monitor")
 }

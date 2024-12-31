@@ -15,7 +15,7 @@ import (
 )
 
 func PopulateIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, slowRunningQueries []datamodels.SlowRunningQueryMetrics, pgIntegration *integration.Integration, args args.ArgumentList) []datamodels.IndividualQueryMetrics {
-	isExtensionEnabled, err := validations.CheckPgStatMonitorExtensionEnabled(conn)
+	isExtensionEnabled, err := validations.CheckIndividualQueryMetricsFetchEligibility(conn)
 	if err != nil {
 		log.Error("Error executing query: %v", err)
 		return nil

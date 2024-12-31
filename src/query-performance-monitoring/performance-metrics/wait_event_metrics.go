@@ -14,13 +14,13 @@ import (
 )
 
 func PopulateWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, args args.ArgumentList) {
-	isExtensionEnabled, err := validations.CheckPgWaitSamplingExtensionEnabled(conn)
+	isExtensionEnabled, err := validations.CheckWaitEventMetricsFetchEligibility(conn)
 	if err != nil {
 		log.Error("Error executing query: %v", err)
 		return
 	}
 	if !isExtensionEnabled {
-		log.Debug("Extension 'pg_wait_sampling' is not enabled.")
+		log.Debug("Extension 'pg_wait_sampling' or 'pg_stat_statement' is not enabled.")
 		return
 	}
 	waitEventMetricsList, err := GetWaitEventMetrics(conn, args)

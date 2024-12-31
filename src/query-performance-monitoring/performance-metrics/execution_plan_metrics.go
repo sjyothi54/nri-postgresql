@@ -14,7 +14,7 @@ import (
 
 func PopulateExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, pgIntegration *integration.Integration, args args.ArgumentList) {
 	if len(results) == 0 {
-		log.Info("No individual queries found.")
+		log.Debug("No individual queries found.")
 		return
 	}
 	executionDetailsList := GetExecutionPlanMetrics(results, args)
