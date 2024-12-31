@@ -44,7 +44,6 @@ func GetBlockingMetrics(conn *performancedbconnection.PGSQLConnection, args args
 		log.Error("Failed to execute query: %v", err)
 		return nil, err
 	}
-	defer rows.Close()
 
 	for rows.Next() {
 		var blockingQueryMetric datamodels.BlockingSessionMetrics
@@ -52,6 +51,11 @@ func GetBlockingMetrics(conn *performancedbconnection.PGSQLConnection, args args
 			return nil, err
 		}
 		blockingQueriesMetricsList = append(blockingQueriesMetricsList, blockingQueryMetric)
+	}
+
+	if closeErr := rows.Close(); closeErr != nil {
+		log.Error("Error closing rows: %v", closeErr)
+		return nil, closeErr
 	}
 	return blockingQueriesMetricsList, nil
 }

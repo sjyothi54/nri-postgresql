@@ -30,8 +30,8 @@ func GetExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, args a
 			log.Error("Error opening database connection: %v", err)
 			continue
 		}
-		defer dbConn.Close()
 		processExecutionPlanOfQueries(individualQueriesList, dbConn, &executionPlanMetricsList)
+		dbConn.Close()
 	}
 
 	return executionPlanMetricsList
@@ -46,14 +46,17 @@ func processExecutionPlanOfQueries(individualQueriesList []datamodels.Individual
 			log.Info("Error executing query: %v", err)
 			continue
 		}
-		defer rows.Close()
 		if !rows.Next() {
 			log.Info("Execution plan not found for queryId", *individualQuery.QueryID)
 			continue
 		}
 		var execPlanJSON string
-		if err := rows.Scan(&execPlanJSON); err != nil {
-			log.Error("Error scanning row: ", err.Error())
+		if scanErr := rows.Scan(&execPlanJSON); scanErr != nil {
+			log.Error("Error scanning row: ", scanErr.Error())
+			continue
+		}
+		if closeErr := rows.Close(); closeErr != nil {
+			log.Error("Error closing rows: %v", closeErr)
 			continue
 		}
 
@@ -90,14 +93,13 @@ func fetchNestedExecutionPlanDetails(individualQuery datamodels.IndividualQueryM
 	execPlanMetrics.DatabaseName = *individualQuery.DatabaseName
 	execPlanMetrics.Level = *level
 	*level++
-	log.Info("Plan Id: %s", individualQuery.PlanID)
 	execPlanMetrics.PlanID = *individualQuery.PlanID
 
 	*executionPlanMetricsList = append(*executionPlanMetricsList, execPlanMetrics)
 
 	if nestedPlans, ok := execPlan["Plans"].([]interface{}); ok {
 		for _, nestedPlan := range nestedPlans {
-			if nestedPlanMap, ok := nestedPlan.(map[string]interface{}); ok {
+			if nestedPlanMap, nestedOk := nestedPlan.(map[string]interface{}); nestedOk {
 				fetchNestedExecutionPlanDetails(individualQuery, level, nestedPlanMap, executionPlanMetricsList)
 			}
 		}
