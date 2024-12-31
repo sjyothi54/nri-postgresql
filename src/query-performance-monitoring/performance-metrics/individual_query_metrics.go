@@ -2,8 +2,6 @@ package performancemetrics
 
 import (
 	"fmt"
-	"strings"
-
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
@@ -12,6 +10,7 @@ import (
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
+	"strings"
 )
 
 func PopulateIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, slowRunningQueries []datamodels.SlowRunningQueryMetrics, pgIntegration *integration.Integration, args args.ArgumentList) []datamodels.IndividualQueryMetrics {
@@ -44,6 +43,10 @@ func ConstructIndividualQuery(slowRunningQueries []datamodels.SlowRunningQueryMe
 }
 
 func GetIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, slowRunningQueries []datamodels.SlowRunningQueryMetrics, args args.ArgumentList) ([]interface{}, []datamodels.IndividualQueryMetrics) {
+	if len(slowRunningQueries) == 0 {
+		log.Info("No slow running queries found.")
+		return nil, nil
+	}
 	query := ConstructIndividualQuery(slowRunningQueries, args)
 	log.Info("Individual query :", query)
 	rows, err := conn.Queryx(query)
