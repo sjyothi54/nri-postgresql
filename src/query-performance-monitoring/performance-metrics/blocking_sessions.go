@@ -15,7 +15,7 @@ import (
 )
 
 func PopulateBlockingMetrics(conn *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, args args.ArgumentList) {
-	isPgStatStatementEnabled, enableCheckError := validations.CheckPgStatStatementsExtensionEnabled(conn)
+	isPgStatStatementEnabled, enableCheckError := validations.CheckBlockingSessionMetricsFetchEligibility(conn)
 	if enableCheckError != nil {
 		log.Debug("Error executing query: %v in PopulateBlockingMetrics", enableCheckError)
 		return
