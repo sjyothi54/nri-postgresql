@@ -51,7 +51,6 @@ func GetIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, sl
 		log.Info("Error executing query in individual query: %v", err)
 		return nil, nil
 	}
-
 	anonymizedQueriesByDB := processForAnonymizeQueryMap(slowRunningQueries)
 	var individualQueryMetricsForExecPlanList []datamodels.IndividualQueryMetrics
 	var individualQueryMetricsListInterface []interface{}
