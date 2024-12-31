@@ -33,10 +33,13 @@ func CheckSlowQueryMetricsFetchEligibility(conn *performancedbconnection.PGSQLCo
 }
 
 func CheckWaitEventMetricsFetchEligibility(conn *performancedbconnection.PGSQLConnection) (bool, error) {
-	pgWaitExtension, err := isExtensionEnabled(conn, "pg_wait_sampling")
-	pgStatExtension, err := isExtensionEnabled(conn, "pg_stat_statements")
-	if err != nil {
-		return false, err
+	pgWaitExtension, waitErr := isExtensionEnabled(conn, "pg_wait_sampling")
+	if waitErr != nil {
+		return false, waitErr
+	}
+	pgStatExtension, statErr := isExtensionEnabled(conn, "pg_stat_statements")
+	if statErr != nil {
+		return false, statErr
 	}
 	return pgWaitExtension && pgStatExtension, nil
 }
