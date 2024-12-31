@@ -2,6 +2,8 @@ package performancemetrics
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
@@ -10,7 +12,6 @@ import (
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
-	"strings"
 )
 
 func PopulateIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, slowRunningQueries []datamodels.SlowRunningQueryMetrics, pgIntegration *integration.Integration, args args.ArgumentList) []datamodels.IndividualQueryMetrics {
@@ -77,6 +78,7 @@ func GetIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, sl
 	}
 	if closeErr := rows.Close(); closeErr != nil {
 		log.Error("Error closing rows: %v", closeErr)
+		return nil, nil
 	}
 	return individualQueryMetricsListInterface, individualQueryMetricsForExecPlanList
 }
