@@ -100,7 +100,7 @@ const (
 `
 
 	IndividualQuerySearch = `SELECT
-			LEFT(query,4095),
+			LEFT(query,4095) as query,
 			queryid,
 			datname,
 			planid,
