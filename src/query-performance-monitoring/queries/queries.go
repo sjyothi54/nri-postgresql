@@ -4,7 +4,7 @@ package queries
 const (
 	SlowQueries = `SELECT
         pss.queryid AS query_id,
-        pss.query AS query_text,
+        LEFT(pss.query, 4095) AS query_text,
         pd.datname AS database_name,
         current_schema() AS schema_name,
         pss.calls AS execution_count,
@@ -26,7 +26,6 @@ const (
         pg_database pd ON pss.dbid = pd.oid
     WHERE 
         pss.query NOT LIKE 'EXPLAIN (FORMAT JSON) %%' 
-    	AND pss.query LIKE '%%Course.CourseName%%'
     ORDER BY
         avg_elapsed_time_ms DESC -- Order by the average elapsed time in descending order
     LIMIT
@@ -40,7 +39,7 @@ const (
             wh.ts,
             pg_database.datname AS database_name,
             LEAD(wh.ts) OVER (PARTITION BY wh.pid ORDER BY wh.ts) - wh.ts AS duration,
-            sa.query AS query_text,
+            LEFT(sa.query, 4095) AS query_text,
             sa.queryid AS query_id
         FROM
             pg_wait_sampling_history wh
@@ -71,12 +70,12 @@ const (
 
 	BlockingQueries = `SELECT
           blocked_activity.pid AS blocked_pid,
-          blocked_statements.query AS blocked_query,
+          LEFT(blocked_statements.query,4095) AS blocked_query,
           blocked_statements.queryid AS blocked_query_id,
           blocked_activity.query_start AS blocked_query_start,
           blocked_activity.datname AS database_name,
           blocking_activity.pid AS blocking_pid,
-          blocking_statements.query AS blocking_query,
+          LEFT(blocking_statements.query,4095) AS blocking_query,
           blocking_statements.queryid AS blocking_query_id,
           blocking_activity.query_start AS blocking_query_start
       FROM pg_stat_activity AS blocked_activity
@@ -101,15 +100,14 @@ const (
 `
 
 	IndividualQuerySearch = `SELECT
-			query,
+			LEFT(query,4095),
 			queryid,
 			datname,
 			planid,
 			ROUND(((cpu_user_time + cpu_sys_time) / NULLIF(calls, 0))::numeric, 3) AS avg_cpu_time_ms
 			FROM
 				pg_stat_monitor
-			WHERE
-				queryid IN (%s) 
+			Where query NOT LIKE 'EXPLAIN (FORMAT JSON) %%' AND queryid IN (%s) 
 			GROUP BY
 				query, queryid, datname, planid, cpu_user_time, cpu_sys_time, calls `
 )
