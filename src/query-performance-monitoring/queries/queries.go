@@ -25,13 +25,13 @@ const (
     JOIN
         pg_database pd ON pss.dbid = pd.oid
     WHERE 
-        pss.query NOT LIKE 'EXPLAIN (FORMAT JSON) %%' 
-		AND pss.query NOT LIKE 'SELECT $1 as newrelic%%'
-		AND pss.query NOT LIKE 'WITH wait_history AS%%'
-		AND pss.query NOT LIKE 'select -- BLOATQUERY%%'
-		AND pss.query NOT LIKE 'select -- INDEXQUERY%%'
-        AND pss.query NOT LIKE 'SELECT table_schema%%'
-        AND pss.query NOT LIKE 'SELECT D.datname%%'
+        pss.query NOT ILIKE 'EXPLAIN (FORMAT JSON) %%' 
+		AND pss.query NOT ILIKE 'SELECT $1 as newrelic%%'
+		AND pss.query NOT ILIKE 'WITH wait_history AS%%'
+		AND pss.query NOT ILIKE 'select -- BLOATQUERY%%'
+		AND pss.query NOT ILIKE 'select -- INDEXQUERY%%'
+        AND pss.query NOT ILIKE 'SELECT table_schema%%'
+        AND pss.query NOT ILIKE 'SELECT D.datname%%'
     ORDER BY
         avg_elapsed_time_ms DESC -- Order by the average elapsed time in descending order
     LIMIT
