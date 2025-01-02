@@ -109,15 +109,23 @@ const (
       LIMIT %d;
 `
 
-	IndividualQuerySearch = `SELECT 'newrelic' as newrelic,
-			LEFT(query,4095) as query,
+	IndividualQuerySearch = `SELECT 
+    	'newrelic' AS newrelic,
+			LEFT(query, 4095) AS query,
 			queryid,
 			datname,
 			planid,
-			ROUND(((cpu_user_time + cpu_sys_time) / NULLIF(calls, 0))::numeric, 3) AS avg_cpu_time_ms
-			FROM
-				pg_stat_monitor
-			Where queryid IN (%s) and datname in (%s) and (total_exec_time / NULLIF(calls, 0)) > %d and bucket_start_time >= NOW() - INTERVAL '60 seconds'
-			GROUP BY
-				query, queryid, datname, planid, cpu_user_time, cpu_sys_time, calls `
+			ROUND(((cpu_user_time + cpu_sys_time) / NULLIF(calls, 0))::numeric, 3) AS avg_cpu_time_ms,
+			total_exec_time / NULLIF(calls, 0) AS avg_exec_time_ms
+		FROM
+			pg_stat_monitor
+		WHERE 
+			queryid IN (%s) 
+			AND datname IN (%s) 
+			AND (total_exec_time / NULLIF(calls, 0)) > %d 
+			AND bucket_start_time >= NOW() - INTERVAL '60 seconds'
+		GROUP BY
+			query, queryid, datname, planid, cpu_user_time, cpu_sys_time, calls, total_exec_time
+		ORDER BY
+			avg_exec_time_ms DESC`
 )

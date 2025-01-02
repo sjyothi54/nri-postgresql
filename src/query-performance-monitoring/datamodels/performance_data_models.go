@@ -38,13 +38,14 @@ type BlockingSessionMetrics struct {
 }
 
 type IndividualQueryMetrics struct {
-	QueryText      *string  `json:"query" db:"query" metric_name:"query_text" source_type:"attribute"`
-	QueryID        *int64   `json:"queryid" db:"queryid" metric_name:"query_id" source_type:"gauge"`
-	DatabaseName   *string  `json:"datname" db:"datname" metric_name:"database_name" source_type:"attribute"`
-	AvgCPUTimeInMS *float64 `json:"avg_cpu_time_ms" db:"avg_cpu_time_ms" metric_name:"avg_cpu_time_ms" source_type:"gauge"`
-	PlanID         *string  `json:"planid" db:"planid" metric_name:"plan_id" source_type:"attribute"`
-	RealQueryText  *string  `ingestData:"false"`
-	Newrelic       *string  `db:"newrelic"              metric_name:"newrelic"            source_type:"attribute"  ingestData:"false"`
+	QueryText       *string  `json:"query" db:"query" metric_name:"query_text" source_type:"attribute"`
+	QueryID         *int64   `json:"queryid" db:"queryid" metric_name:"query_id" source_type:"gauge"`
+	DatabaseName    *string  `json:"datname" db:"datname" metric_name:"database_name" source_type:"attribute"`
+	AvgCPUTimeInMS  *float64 `json:"avg_cpu_time_ms" db:"avg_cpu_time_ms" metric_name:"avg_cpu_time_ms" source_type:"gauge"`
+	PlanID          *string  `json:"planid" db:"planid" metric_name:"plan_id" source_type:"attribute"`
+	RealQueryText   *string  `ingestData:"false"`
+	AvgExecTimeInMs *float64 `json:"avg_exec_time_ms" db:"avg_exec_time_ms" ingestData:"false"`
+	Newrelic        *string  `db:"newrelic"              metric_name:"newrelic"            source_type:"attribute"  ingestData:"false"`
 }
 
 type QueryExecutionPlanMetrics struct {
