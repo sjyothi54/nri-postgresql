@@ -28,7 +28,7 @@ const (
         pss.query NOT LIKE 'EXPLAIN (FORMAT JSON) %%' 
 		AND pss.query NOT LIKE 'SELECT $1 as newrelic%%'
 		AND pss.query NOT LIKE 'WITH wait_history AS%%'
-        AND pd.datname = %s
+        AND pd.datname = '%s'
     ORDER BY
         avg_elapsed_time_ms DESC -- Order by the average elapsed time in descending order
     LIMIT
