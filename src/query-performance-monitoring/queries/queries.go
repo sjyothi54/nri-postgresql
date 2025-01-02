@@ -2,7 +2,7 @@
 package queries
 
 const (
-	SlowQueries = `SELECT
+	SlowQueries = `SELECT 'newrelic' as newrelic,
         pss.queryid AS query_id,
         LEFT(pss.query, 4095) AS query_text,
         pd.datname AS database_name,
@@ -26,6 +26,8 @@ const (
         pg_database pd ON pss.dbid = pd.oid
     WHERE 
         pss.query NOT LIKE 'EXPLAIN (FORMAT JSON) %%' 
+		AND pss.query NOT LIKE 'SELECT ''newrelic'' as newrelic%%'
+		AND pss.query NOT LIKE 'WITH wait_history AS%%'
     ORDER BY
         avg_elapsed_time_ms DESC -- Order by the average elapsed time in descending order
     LIMIT
@@ -68,7 +70,7 @@ const (
     ORDER BY total_wait_time_ms DESC
     LIMIT %d;`
 
-	BlockingQueries = `SELECT
+	BlockingQueries = `SELECT 'newrelic' as newrelic,
           blocked_activity.pid AS blocked_pid,
           LEFT(blocked_statements.query,4095) AS blocked_query,
           blocked_statements.queryid AS blocked_query_id,
@@ -107,7 +109,7 @@ const (
 			ROUND(((cpu_user_time + cpu_sys_time) / NULLIF(calls, 0))::numeric, 3) AS avg_cpu_time_ms
 			FROM
 				pg_stat_monitor
-			Where query NOT LIKE 'EXPLAIN (FORMAT JSON) %%' AND queryid IN (%s) 
+			Where queryid IN (%s) 
 			GROUP BY
 				query, queryid, datname, planid, cpu_user_time, cpu_sys_time, calls `
 )
