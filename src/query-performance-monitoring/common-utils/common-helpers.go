@@ -8,7 +8,7 @@ import (
 )
 
 func GetQuotedStringFromArray(array []string) string {
-	var quotedDatabaseNames []string
+	var quotedDatabaseNames = make([]string, 0)
 	for _, name := range array {
 		quotedDatabaseNames = append(quotedDatabaseNames, fmt.Sprintf("'%s'", name))
 	}
@@ -16,7 +16,7 @@ func GetQuotedStringFromArray(array []string) string {
 }
 
 func GetDatabaseListInString(dbList collection.DatabaseList) string {
-	var databaseNames []string
+	var databaseNames = make([]string, 0)
 	for dbName := range dbList {
 		databaseNames = append(databaseNames, dbName)
 	}
