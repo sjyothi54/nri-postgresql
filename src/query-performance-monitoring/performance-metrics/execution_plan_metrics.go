@@ -43,11 +43,11 @@ func processExecutionPlanOfQueries(individualQueriesList []datamodels.Individual
 		query := "EXPLAIN (FORMAT JSON) " + *individualQuery.RealQueryText
 		rows, err := dbConn.Queryx(query)
 		if err != nil {
-			log.Info("Error executing query: %v", err)
+			log.Debug("Error executing query: %v", err)
 			continue
 		}
 		if !rows.Next() {
-			log.Info("Execution plan not found for queryId", *individualQuery.QueryID)
+			log.Debug("Execution plan not found for queryId", *individualQuery.QueryID)
 			continue
 		}
 		var execPlanJSON string

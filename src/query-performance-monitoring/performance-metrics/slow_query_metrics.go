@@ -43,7 +43,7 @@ func PopulateSlowRunningMetrics(conn *performancedbconnection.PGSQLConnection, p
 		return nil
 	}
 	if !isExtensionEnabled {
-		log.Info("Extension 'pg_stat_statements' is not enabled.")
+		log.Debug("Extension 'pg_stat_statements' is not enabled.")
 		return nil
 	}
 

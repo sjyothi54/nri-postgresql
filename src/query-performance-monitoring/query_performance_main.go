@@ -20,34 +20,34 @@ func QueryPerformanceMain(args args.ArgumentList, pgIntegration *integration.Int
 	databaseStringList := commonutils.GetDatabaseListInString(databaseList)
 	newConnection, err := connectionInfo.NewConnection(connectionInfo.DatabaseName())
 	if err != nil {
-		log.Info("Error creating connection: ", err)
+		log.Debug("Error creating connection: ", err)
 		return
 	}
 
 	start := time.Now()
-	log.Info("Starting PopulateSlowRunningMetrics at ", start)
+	log.Debug("Starting PopulateSlowRunningMetrics at ", start)
 	slowRunningQueries := performancemetrics.PopulateSlowRunningMetrics(newConnection, pgIntegration, args, databaseStringList)
-	log.Info("PopulateSlowRunningMetrics completed in ", time.Since(start))
+	log.Debug("PopulateSlowRunningMetrics completed in ", time.Since(start))
 
 	start = time.Now()
-	log.Info("Starting PopulateWaitEventMetrics at ", start)
+	log.Debug("Starting PopulateWaitEventMetrics at ", start)
 	performancemetrics.PopulateWaitEventMetrics(newConnection, pgIntegration, args, databaseStringList)
-	log.Info("PopulateWaitEventMetrics completed in ", time.Since(start))
+	log.Debug("PopulateWaitEventMetrics completed in ", time.Since(start))
 
 	start = time.Now()
-	log.Info("Starting PopulateBlockingMetrics at ", start)
+	log.Debug("Starting PopulateBlockingMetrics at ", start)
 	performancemetrics.PopulateBlockingMetrics(newConnection, pgIntegration, args, databaseStringList)
-	log.Info("PopulateBlockingMetrics completed in ", time.Since(start))
+	log.Debug("PopulateBlockingMetrics completed in ", time.Since(start))
 
 	start = time.Now()
-	log.Info("Starting PopulateIndividualQueryMetrics at ", start)
+	log.Debug("Starting PopulateIndividualQueryMetrics at ", start)
 	individualQueries := performancemetrics.PopulateIndividualQueryMetrics(newConnection, slowRunningQueries, pgIntegration, args, databaseStringList)
-	log.Info("PopulateIndividualQueryMetrics completed in ", time.Since(start))
+	log.Debug("PopulateIndividualQueryMetrics completed in ", time.Since(start))
 
 	start = time.Now()
-	log.Info("Starting PopulateExecutionPlanMetrics at ", start)
+	log.Debug("Starting PopulateExecutionPlanMetrics at ", start)
 	performancemetrics.PopulateExecutionPlanMetrics(individualQueries, pgIntegration, args)
-	log.Info("PopulateExecutionPlanMetrics completed in ", time.Since(start))
+	log.Debug("PopulateExecutionPlanMetrics completed in ", time.Since(start))
 
-	log.Info("Query analysis completed.")
+	log.Debug("Query analysis completed.")
 }
