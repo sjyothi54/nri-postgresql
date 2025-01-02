@@ -78,6 +78,7 @@ func GetIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, sl
 	}
 	if closeErr := rows.Close(); closeErr != nil {
 		log.Error("Error closing rows: %v", closeErr)
+		return nil, nil
 	}
 	return individualQueryMetricsListInterface, individualQueryMetricsForExecPlanList
 }
