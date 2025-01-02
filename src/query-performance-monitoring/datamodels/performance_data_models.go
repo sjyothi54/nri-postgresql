@@ -44,6 +44,7 @@ type IndividualQueryMetrics struct {
 	AvgCPUTimeInMS *float64 `json:"avg_cpu_time_ms" db:"avg_cpu_time_ms" metric_name:"avg_cpu_time_ms" source_type:"gauge"`
 	PlanID         *string  `json:"planid" db:"planid" metric_name:"plan_id" source_type:"attribute"`
 	RealQueryText  *string  `ingestData:"false"`
+	Newrelic       *string  `db:"newrelic"              metric_name:"newrelic"            source_type:"attribute"  ingestData:"false"`
 }
 
 type QueryExecutionPlanMetrics struct {
