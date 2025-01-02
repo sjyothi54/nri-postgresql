@@ -55,6 +55,7 @@ const (
             pg_stat_statements sa ON wh.queryid = sa.queryid
         LEFT JOIN
             pg_database ON pg_database.oid = sa.dbid
+		WHERE pg_database.datname in (%s)
     )
     SELECT
         event_type || ':' || event AS wait_event_name,

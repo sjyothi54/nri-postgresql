@@ -30,7 +30,7 @@ func QueryPerformanceMain(args args.ArgumentList, pgIntegration *integration.Int
 
 	start = time.Now()
 	log.Info("Starting PopulateWaitEventMetrics at ", start)
-	performancemetrics.PopulateWaitEventMetrics(newConnection, pgIntegration, args)
+	performancemetrics.PopulateWaitEventMetrics(newConnection, pgIntegration, args, databaseStringList)
 	log.Info("PopulateWaitEventMetrics completed in ", time.Since(start))
 
 	start = time.Now()
