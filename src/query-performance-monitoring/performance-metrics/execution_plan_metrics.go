@@ -7,8 +7,8 @@ import (
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
+	performancedbconnection "github.com/newrelic/nri-postgresql/src/connection"
 	commonutils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
-	performancedbconnection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/connections"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
 )
 
@@ -25,7 +25,10 @@ func GetExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, args a
 	var executionPlanMetricsList []interface{}
 	var groupIndividualQueriesByDatabase = GroupQueriesByDatabase(results)
 	for dbName, individualQueriesList := range groupIndividualQueriesByDatabase {
-		dbConn, err := performancedbconnection.OpenDB(args, dbName)
+		connectionInfo := performancedbconnection.DefaultConnectionInfo(&args)
+		dbConn, err := connectionInfo.NewConnection(dbName)
+
+		//dbConn, err := performancedbconnection.OpenDB(args, dbName)
 		if err != nil {
 			log.Error("Error opening database connection: %v", err)
 			continue

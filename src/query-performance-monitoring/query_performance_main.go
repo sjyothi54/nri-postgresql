@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
-	performancedbconnection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/connections"
+	performancedbconnection "github.com/newrelic/nri-postgresql/src/connection"
 
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/nri-postgresql/src/args"

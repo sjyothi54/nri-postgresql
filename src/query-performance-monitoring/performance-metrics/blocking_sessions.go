@@ -9,7 +9,7 @@ import (
 
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
-	performancedbconnection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/connections"
+	performancedbconnection "github.com/newrelic/nri-postgresql/src/connection"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
 )
