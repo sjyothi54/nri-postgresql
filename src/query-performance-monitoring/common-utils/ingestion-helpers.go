@@ -127,62 +127,43 @@ func GenerateRandomIntegerString(queryID int64) *string {
 	return &result
 }
 
-// func FetchVersion(conn *performancedbconnection.PGSQLConnection) string {
-// 	var versionStr string
-// 	rows, err := conn.Queryx(fmt.Sprintf("SELECT version()"))
-// 	defer rows.Close()
-// 	if rows.Next() {
-// 		if err := rows.Scan(&versionStr); err != nil {
-// 			return ""
-// 		}
-// 	}
-
-// 	log.Info("version", versionStr)
-// 	version, err := strconv.Atoi(versionStr)
-// 	if err != nil {
-// 		return ""
-// 	}
-
-// 	if version == 12 {
-// 		return queries.SlowQueriesForV12
-// 	}
-// 	return queries.SlowQueriesForV13AndAbove
-// }
-
-func FetchVersion(conn *performancedbconnection.PGSQLConnection) string {
+func FetchVersion(conn *performancedbconnection.PGSQLConnection) (string, error) {
 	var versionStr string
 	rows, err := conn.Queryx("SELECT version()")
 	if err != nil {
 		log.Error("Error executing query: %v", err)
-		return ""
+		return "", err
 	}
 	defer rows.Close()
 
 	if rows.Next() {
 		if err := rows.Scan(&versionStr); err != nil {
 			log.Error("Error scanning version: %v", err)
-			return ""
+			return "", err
 		}
 	}
 
 	log.Info("version", versionStr)
 
-	// Extract the major version number from the version string
 	re := regexp.MustCompile(`PostgreSQL (\d+)\.`)
 	matches := re.FindStringSubmatch(versionStr)
 	if len(matches) < 2 {
 		log.Error("Unable to parse PostgreSQL version from string: %s", versionStr)
-		return ""
+		return "", fmt.Errorf("unable to parse PostgreSQL version from string: %s", versionStr)
 	}
 
 	version, err := strconv.Atoi(matches[1])
 	if err != nil {
 		log.Error("Error converting version to integer: %v", err)
-		return ""
+		return "", err
 	}
 
-	if version == 12 {
-		return queries.SlowQueriesForV12
+	switch {
+	case version == 12:
+		return queries.SlowQueriesForV12, nil
+	case version >= 13:
+		return queries.SlowQueriesForV13AndAbove, nil
+	default:
+		return "", fmt.Errorf("unsupported PostgreSQL version: %d", version)
 	}
-	return queries.SlowQueriesForV13AndAbove
 }
