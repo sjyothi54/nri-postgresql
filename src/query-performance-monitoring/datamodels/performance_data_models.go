@@ -8,7 +8,6 @@ type SlowRunningQueryMetrics struct {
 	SchemaName          *string  `db:"schema_name"           metric_name:"schema_name"                source_type:"attribute"`
 	ExecutionCount      *int64   `db:"execution_count"       metric_name:"execution_count"            source_type:"gauge"`
 	AvgElapsedTimeMs    *float64 `db:"avg_elapsed_time_ms"   metric_name:"avg_elapsed_time_ms"        source_type:"gauge"`
-	AvgCPUTimeMs        *float64 `db:"avg_cpu_time_ms"       metric_name:"avg_cpu_time_ms"            source_type:"gauge"`
 	AvgDiskReads        *float64 `db:"avg_disk_reads"        metric_name:"avg_disk_reads"             source_type:"gauge"`
 	AvgDiskWrites       *float64 `db:"avg_disk_writes"       metric_name:"avg_disk_writes"            source_type:"gauge"`
 	StatementType       *string  `db:"statement_type"        metric_name:"statement_type"             source_type:"attribute"`

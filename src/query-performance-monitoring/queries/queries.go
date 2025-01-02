@@ -2,14 +2,13 @@
 package queries
 
 const (
-	SlowQueries = `SELECT 'newrelic' as newrelic,
+	SlowQueriesForV13AndAbove = `SELECT 'newrelic' as newrelic,
         pss.queryid AS query_id,
         LEFT(pss.query, 4095) AS query_text,
         pd.datname AS database_name,
         current_schema() AS schema_name,
         pss.calls AS execution_count,
         ROUND((pss.total_exec_time / pss.calls)::numeric, 3) AS avg_elapsed_time_ms,
-        ROUND((pss.total_exec_time / pss.calls)::numeric, 3) AS avg_cpu_time_ms,
         pss.shared_blks_read / pss.calls AS avg_disk_reads,
         pss.shared_blks_written / pss.calls AS avg_disk_writes,
         CASE
@@ -30,6 +29,41 @@ const (
 		AND pss.query NOT ILIKE 'WITH wait_history AS%%'
 		AND pss.query NOT ILIKE 'select -- BLOATQUERY%%'
 		AND pss.query NOT ILIKE 'select -- INDEXQUERY%%'
+        AND pss.query NOT ILIKE 'SELECT -- TABLEQUERY%%'
+        AND pss.query NOT ILIKE 'SELECT table_schema%%'
+        AND pss.query NOT ILIKE 'SELECT D.datname%%'
+    ORDER BY
+        avg_elapsed_time_ms DESC -- Order by the average elapsed time in descending order
+    LIMIT
+        %d;`
+
+	SlowQueriesForV12 = `SELECT 'newrelic' as newrelic,
+        pss.queryid AS query_id,
+        LEFT(pss.query, 4095) AS query_text,
+        pd.datname AS database_name,
+        current_schema() AS schema_name,
+        pss.calls AS execution_count,
+        ROUND((pss.total_time / pss.calls)::numeric, 3) AS avg_elapsed_time_ms,
+        pss.shared_blks_read / pss.calls AS avg_disk_reads,
+        pss.shared_blks_written / pss.calls AS avg_disk_writes,
+        CASE
+            WHEN pss.query ILIKE 'SELECT%%' THEN 'SELECT'
+            WHEN pss.query ILIKE 'INSERT%%' THEN 'INSERT'
+            WHEN pss.query ILIKE 'UPDATE%%' THEN 'UPDATE'
+            WHEN pss.query ILIKE 'DELETE%%' THEN 'DELETE'
+            ELSE 'OTHER'
+        END AS statement_type,
+        to_char(NOW() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS collection_timestamp
+    FROM
+        pg_stat_statements pss
+    JOIN
+        pg_database pd ON pss.dbid = pd.oid
+    WHERE 
+        pss.query NOT ILIKE 'EXPLAIN (FORMAT JSON) %%' 
+        AND pss.query NOT ILIKE 'SELECT $1 as newrelic%%'
+        AND pss.query NOT ILIKE 'WITH wait_history AS%%'
+        AND pss.query NOT ILIKE 'select -- BLOATQUERY%%'
+        AND pss.query NOT ILIKE 'select -- INDEXQUERY%%'
         AND pss.query NOT ILIKE 'SELECT -- TABLEQUERY%%'
         AND pss.query NOT ILIKE 'SELECT table_schema%%'
         AND pss.query NOT ILIKE 'SELECT D.datname%%'
