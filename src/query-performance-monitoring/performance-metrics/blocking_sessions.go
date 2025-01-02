@@ -39,7 +39,6 @@ func PopulateBlockingMetrics(conn *performancedbconnection.PGSQLConnection, pgIn
 func GetBlockingMetrics(conn *performancedbconnection.PGSQLConnection, args args.ArgumentList, databaseName string) ([]interface{}, error) {
 	var blockingQueriesMetricsList []interface{}
 	var query = fmt.Sprintf(queries.BlockingQueries, databaseName, args.QueryCountThreshold)
-	log.Info("Query to fetch blocking queries: %v", query)
 	rows, err := conn.Queryx(query)
 	if err != nil {
 		log.Error("Failed to execute query: %v", err)
