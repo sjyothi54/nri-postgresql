@@ -1,0 +1,33 @@
+FROM postgres:12.0
+
+# Dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    git \
+    postgresql-server-dev-12
+
+# Postgres Docker Images copy contents of postgresql.conf.sample to postgresql.conf during initialization
+# COPY custom.conf /usr/share/postgresql/postgresql.conf.sample -- DO NOT USE
+RUN echo "shared_preload_libraries = 'pg_stat_statements,pg_wait_sampling,pg_stat_monitor'" >> /usr/share/postgresql/postgresql.conf.sample
+RUN echo "pg_stat_statements.track = all" >> /usr/share/postgresql/postgresql.conf.sample
+RUN echo "pg_stat_statements.save = on" >> /usr/share/postgresql/postgresql.conf.sample
+RUN echo "pg_stat_monitor.pgsm_enable_query_plan = on" >> /usr/share/postgresql/postgresql.conf.sample
+
+# Install pg_wait_sampling
+RUN git clone https://github.com/postgrespro/pg_wait_sampling.git \
+    && cd pg_wait_sampling \
+    && make USE_PGXS=1 \
+    && make USE_PGXS=1 install \
+    && cd .. \
+    && rm -rf pg_wait_sampling
+
+# Install pg_stat_monitor
+RUN git clone https://github.com/percona/pg_stat_monitor.git \
+    && cd pg_stat_monitor \
+    && make USE_PGXS=1 \
+    && make USE_PGXS=1 install \
+    && cd .. \
+    && rm -rf pg_stat_monitor
+
+# Enable the extensions
+COPY init-extensions.sql /docker-entrypoint-initdb.d/init-extensions.sql
