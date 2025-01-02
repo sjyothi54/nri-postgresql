@@ -13,7 +13,7 @@ import (
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
 )
 
-func PopulateWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, args args.ArgumentList) {
+func PopulateWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, args args.ArgumentList, databaseNames string) {
 	isExtensionEnabled, err := validations.CheckWaitEventMetricsFetchEligibility(conn)
 	if err != nil {
 		log.Error("Error executing query: %v", err)
@@ -23,7 +23,7 @@ func PopulateWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, pgI
 		log.Debug("Extension 'pg_wait_sampling' or 'pg_stat_statement' is not enabled.")
 		return
 	}
-	waitEventMetricsList, err := GetWaitEventMetrics(conn, args)
+	waitEventMetricsList, err := GetWaitEventMetrics(conn, args, databaseNames)
 	if err != nil {
 		log.Error("Error fetching wait event queries: %v", err)
 		return
@@ -36,9 +36,9 @@ func PopulateWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, pgI
 	commonutils.IngestMetric(waitEventMetricsList, "PostgresWaitEvents", pgIntegration, args)
 }
 
-func GetWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, args args.ArgumentList) ([]interface{}, error) {
+func GetWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, args args.ArgumentList, databaseNames string) ([]interface{}, error) {
 	var waitEventMetricsList []interface{}
-	var query = fmt.Sprintf(queries.WaitEvents, args.QueryCountThreshold)
+	var query = fmt.Sprintf(queries.WaitEvents, databaseNames, args.QueryCountThreshold)
 	rows, err := conn.Queryx(query)
 	if err != nil {
 		return nil, err

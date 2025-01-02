@@ -25,7 +25,8 @@ const (
     JOIN
         pg_database pd ON pss.dbid = pd.oid
     WHERE 
-        pss.query NOT ILIKE 'EXPLAIN (FORMAT JSON) %%' 
+		pd.datname in (%s)
+        AND pss.query NOT ILIKE 'EXPLAIN (FORMAT JSON) %%' 
 		AND pss.query NOT ILIKE 'SELECT $1 as newrelic%%'
 		AND pss.query NOT ILIKE 'WITH wait_history AS%%'
 		AND pss.query NOT ILIKE 'select -- BLOATQUERY%%'
@@ -54,6 +55,7 @@ const (
             pg_stat_statements sa ON wh.queryid = sa.queryid
         LEFT JOIN
             pg_database ON pg_database.oid = sa.dbid
+		WHERE pg_database.datname in (%s)
     )
     SELECT
         event_type || ':' || event AS wait_event_name,
@@ -101,6 +103,7 @@ const (
       JOIN pg_stat_activity AS blocking_activity ON blocking_locks.pid = blocking_activity.pid
       JOIN pg_stat_statements as blocking_statements on blocking_activity.query_id = blocking_statements.queryid
       WHERE NOT blocked_locks.granted
+          AND blocked_activity.datname IN (%s)
           AND blocked_statements.query NOT LIKE 'EXPLAIN (FORMAT JSON) %%'
           AND blocking_statements.query NOT LIKE 'EXPLAIN (FORMAT JSON) %%'
       LIMIT %d;
@@ -114,7 +117,7 @@ const (
 			ROUND(((cpu_user_time + cpu_sys_time) / NULLIF(calls, 0))::numeric, 3) AS avg_cpu_time_ms
 			FROM
 				pg_stat_monitor
-			Where queryid IN (%s) 
+			Where queryid IN (%s) and datname in (%s)
 			GROUP BY
 				query, queryid, datname, planid, cpu_user_time, cpu_sys_time, calls `
 )

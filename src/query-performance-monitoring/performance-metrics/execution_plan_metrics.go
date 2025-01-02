@@ -27,8 +27,6 @@ func GetExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, args a
 	for dbName, individualQueriesList := range groupIndividualQueriesByDatabase {
 		connectionInfo := performancedbconnection.DefaultConnectionInfo(&args)
 		dbConn, err := connectionInfo.NewConnection(dbName)
-
-		//dbConn, err := performancedbconnection.OpenDB(args, dbName)
 		if err != nil {
 			log.Error("Error opening database connection: %v", err)
 			continue
@@ -43,7 +41,6 @@ func GetExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, args a
 func processExecutionPlanOfQueries(individualQueriesList []datamodels.IndividualQueryMetrics, dbConn *performancedbconnection.PGSQLConnection, executionPlanMetricsList *[]interface{}) {
 	for _, individualQuery := range individualQueriesList {
 		query := "EXPLAIN (FORMAT JSON) " + *individualQuery.RealQueryText
-		log.Info("Execution Plan Query : %s", query)
 		rows, err := dbConn.Queryx(query)
 		if err != nil {
 			log.Info("Error executing query: %v", err)
