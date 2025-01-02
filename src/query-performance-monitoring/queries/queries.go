@@ -103,6 +103,7 @@ const (
       JOIN pg_stat_activity AS blocking_activity ON blocking_locks.pid = blocking_activity.pid
       JOIN pg_stat_statements as blocking_statements on blocking_activity.query_id = blocking_statements.queryid
       WHERE NOT blocked_locks.granted
+          AND blocked_activity.datname NOT IN (%s)
           AND blocked_statements.query NOT LIKE 'EXPLAIN (FORMAT JSON) %%'
           AND blocking_statements.query NOT LIKE 'EXPLAIN (FORMAT JSON) %%'
       LIMIT %d;
