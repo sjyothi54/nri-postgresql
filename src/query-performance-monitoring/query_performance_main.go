@@ -2,6 +2,7 @@ package queryperformancemonitoring
 
 // this is the main go file for the query_monitoring package
 import (
+	"github.com/newrelic/nri-postgresql/src/collection"
 	"time"
 
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
@@ -12,7 +13,7 @@ import (
 	performancemetrics "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-metrics"
 )
 
-func QueryPerformanceMain(args args.ArgumentList, pgIntegration *integration.Integration) {
+func QueryPerformanceMain(args args.ArgumentList, pgIntegration *integration.Integration, databasesList collection.DatabaseList) {
 	connectionInfo := performancedbconnection.DefaultConnectionInfo(&args)
 	newConnection, err := connectionInfo.NewConnection(connectionInfo.DatabaseName())
 	if err != nil {
@@ -22,7 +23,7 @@ func QueryPerformanceMain(args args.ArgumentList, pgIntegration *integration.Int
 
 	start := time.Now()
 	log.Info("Starting PopulateSlowRunningMetrics at ", start)
-	slowRunningQueries := performancemetrics.PopulateSlowRunningMetrics(newConnection, pgIntegration, args)
+	slowRunningQueries := performancemetrics.PopulateSlowRunningMetrics(newConnection, pgIntegration, args, databasesList)
 	log.Info("PopulateSlowRunningMetrics completed in ", time.Since(start))
 
 	start = time.Now()

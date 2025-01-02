@@ -2,6 +2,7 @@ package performancemetrics
 
 import (
 	"fmt"
+	"github.com/newrelic/nri-postgresql/src/collection"
 
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
@@ -13,30 +14,33 @@ import (
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
 )
 
-func GetSlowRunningMetrics(conn *performancedbconnection.PGSQLConnection, args args.ArgumentList) ([]datamodels.SlowRunningQueryMetrics, []interface{}, error) {
+func GetSlowRunningMetrics(conn *performancedbconnection.PGSQLConnection, args args.ArgumentList, databasesList collection.DatabaseList) ([]datamodels.SlowRunningQueryMetrics, []interface{}, error) {
 	var slowQueryMetricsList []datamodels.SlowRunningQueryMetrics
 	var slowQueryMetricsListInterface []interface{}
-	var query = fmt.Sprintf(queries.SlowQueries, args.QueryCountThreshold)
-	rows, err := conn.Queryx(query)
-	if err != nil {
-		return nil, nil, err
-	}
-	for rows.Next() {
-		var slowQuery datamodels.SlowRunningQueryMetrics
-		if err := rows.StructScan(&slowQuery); err != nil {
+	for databaseName, _ := range databasesList {
+		var query = fmt.Sprintf(queries.SlowQueries, databaseName, args.QueryCountThreshold)
+		log.Info("Slow Qurery Query: ", query)
+		rows, err := conn.Queryx(query)
+		if err != nil {
 			return nil, nil, err
 		}
-		slowQueryMetricsList = append(slowQueryMetricsList, slowQuery)
-		slowQueryMetricsListInterface = append(slowQueryMetricsListInterface, slowQuery)
-	}
-	if closeErr := rows.Close(); closeErr != nil {
-		log.Error("Error closing rows: %v", closeErr)
-		return nil, nil, closeErr
+		for rows.Next() {
+			var slowQuery datamodels.SlowRunningQueryMetrics
+			if err := rows.StructScan(&slowQuery); err != nil {
+				return nil, nil, err
+			}
+			slowQueryMetricsList = append(slowQueryMetricsList, slowQuery)
+			slowQueryMetricsListInterface = append(slowQueryMetricsListInterface, slowQuery)
+		}
+		if closeErr := rows.Close(); closeErr != nil {
+			log.Error("Error closing rows: %v", closeErr)
+			return nil, nil, closeErr
+		}
 	}
 	return slowQueryMetricsList, slowQueryMetricsListInterface, nil
 }
 
-func PopulateSlowRunningMetrics(conn *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, args args.ArgumentList) []datamodels.SlowRunningQueryMetrics {
+func PopulateSlowRunningMetrics(conn *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, args args.ArgumentList, databasesList collection.DatabaseList) []datamodels.SlowRunningQueryMetrics {
 	isExtensionEnabled, err := validations.CheckSlowQueryMetricsFetchEligibility(conn)
 	if err != nil {
 		log.Error("Error executing query: %v", err)
@@ -47,7 +51,7 @@ func PopulateSlowRunningMetrics(conn *performancedbconnection.PGSQLConnection, p
 		return nil
 	}
 
-	slowQueryMetricsList, slowQueryMetricsListInterface, err := GetSlowRunningMetrics(conn, args)
+	slowQueryMetricsList, slowQueryMetricsListInterface, err := GetSlowRunningMetrics(conn, args, databasesList)
 	if err != nil {
 		log.Error("Error fetching slow-running queries: %v", err)
 		return nil
