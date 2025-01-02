@@ -25,7 +25,10 @@ func GetExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, args a
 	var executionPlanMetricsList []interface{}
 	var groupIndividualQueriesByDatabase = GroupQueriesByDatabase(results)
 	for dbName, individualQueriesList := range groupIndividualQueriesByDatabase {
-		dbConn, err := performancedbconnection.OpenDB(args, dbName)
+		connectionInfo := performancedbconnection.DefaultConnectionInfo(&args)
+		dbConn, err := connectionInfo.NewConnection(dbName)
+
+		//dbConn, err := performancedbconnection.OpenDB(args, dbName)
 		if err != nil {
 			log.Error("Error opening database connection: %v", err)
 			continue
