@@ -33,7 +33,7 @@ type ArgumentList struct {
 	ShowVersion                  bool   `default:"false" help:"Print build information and exit"`
 	EnableQueryMonitoring        bool   `default:"true" help:"Query monitoring is enabled by default. Set to false to disable."`
 	FetchInterval                int    `default:"15" help:"Fetch interval in seconds for grouped slow queries. Should match the interval in postgres-config.yml."`
-	QueryResponseTimeThreshold   string `default:"0" help:"Threshold in milliseconds for query response time to fetch individual query performance metrics."`
+	QueryResponseTimeThreshold   int    `default:"0" help:"Threshold in milliseconds for query response time to fetch individual query performance metrics."`
 	QueryCountThreshold          int    `default:"20" help:"Query count limit for fetching grouped slow and individual query performance metrics."`
 }
 
