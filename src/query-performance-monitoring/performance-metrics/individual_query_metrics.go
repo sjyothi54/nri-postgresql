@@ -21,13 +21,13 @@ func PopulateIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnectio
 		return nil
 	}
 	if !isExtensionEnabled {
-		log.Info("Extension 'pg_stat_monitor' is not enabled.")
+		log.Debug("Extension 'pg_stat_monitor' is not enabled.")
 		return nil
 	}
 	log.Info("Extension 'pg_stat_monitor' enabled.")
 	individualQueryMetricsInterface, individualQueriesForExecPlan := GetIndividualQueryMetrics(conn, slowRunningQueries, args, databaseNames)
 	if len(individualQueryMetricsInterface) == 0 {
-		log.Info("No individual queries found.")
+		log.Debug("No individual queries found.")
 		return nil
 	}
 	commonutils.IngestMetric(individualQueryMetricsInterface, "PostgresIndividualQueries", pgIntegration, args)
@@ -46,20 +46,18 @@ func ConstructIndividualQuery(slowRunningQueries []datamodels.SlowRunningQueryMe
 
 func GetIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, slowRunningQueries []datamodels.SlowRunningQueryMetrics, args args.ArgumentList, databaseNames string) ([]interface{}, []datamodels.IndividualQueryMetrics) {
 	if len(slowRunningQueries) == 0 {
-		log.Info("No slow running queries found.")
+		log.Debug("No slow running queries found.")
 		return nil, nil
 	}
 	query := ConstructIndividualQuery(slowRunningQueries, args, databaseNames)
 	rows, err := conn.Queryx(query)
 	if err != nil {
-		log.Info("Error executing query in individual query: %v", err)
+		log.Debug("Error executing query in individual query: %v", err)
 		return nil, nil
 	}
-	log.Info("test1")
 	anonymizedQueriesByDB := processForAnonymizeQueryMap(slowRunningQueries)
 	var individualQueryMetricsForExecPlanList []datamodels.IndividualQueryMetrics
 	var individualQueryMetricsListInterface []interface{}
-	log.Info("test2")
 	for rows.Next() {
 		var model datamodels.IndividualQueryMetrics
 		if scanErr := rows.StructScan(&model); scanErr != nil {
