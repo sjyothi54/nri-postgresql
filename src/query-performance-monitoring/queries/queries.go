@@ -30,6 +30,7 @@ const (
 		AND pss.query NOT ILIKE 'WITH wait_history AS%%'
 		AND pss.query NOT ILIKE 'select -- BLOATQUERY%%'
 		AND pss.query NOT ILIKE 'select -- INDEXQUERY%%'
+        AND pss.query NOT ILIKE 'SELECT -- TABLEQUERY%%'
         AND pss.query NOT ILIKE 'SELECT table_schema%%'
         AND pss.query NOT ILIKE 'SELECT D.datname%%'
     ORDER BY
