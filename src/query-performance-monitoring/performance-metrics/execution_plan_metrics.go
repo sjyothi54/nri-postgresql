@@ -43,7 +43,6 @@ func GetExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, args a
 func processExecutionPlanOfQueries(individualQueriesList []datamodels.IndividualQueryMetrics, dbConn *performancedbconnection.PGSQLConnection, executionPlanMetricsList *[]interface{}) {
 	for _, individualQuery := range individualQueriesList {
 		query := "EXPLAIN (FORMAT JSON) " + *individualQuery.RealQueryText
-		log.Info("Execution Plan Query : %s", query)
 		rows, err := dbConn.Queryx(query)
 		if err != nil {
 			log.Info("Error executing query: %v", err)

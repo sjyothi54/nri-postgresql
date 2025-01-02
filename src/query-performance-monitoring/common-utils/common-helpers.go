@@ -2,8 +2,9 @@ package commonutils
 
 import (
 	"fmt"
-	"github.com/newrelic/nri-postgresql/src/collection"
 	"strings"
+
+	"github.com/newrelic/nri-postgresql/src/collection"
 )
 
 func GetQuotedStringFromArray(array []string) string {

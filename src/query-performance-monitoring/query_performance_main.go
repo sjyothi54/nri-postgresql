@@ -2,9 +2,10 @@ package queryperformancemonitoring
 
 // this is the main go file for the query_monitoring package
 import (
+	"time"
+
 	"github.com/newrelic/nri-postgresql/src/collection"
 	commonutils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
-	"time"
 
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	performancedbconnection "github.com/newrelic/nri-postgresql/src/connection"

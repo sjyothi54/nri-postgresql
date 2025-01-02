@@ -2,6 +2,7 @@ package performancemetrics
 
 import (
 	"fmt"
+
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
@@ -16,7 +17,6 @@ func GetSlowRunningMetrics(conn *performancedbconnection.PGSQLConnection, args a
 	var slowQueryMetricsList []datamodels.SlowRunningQueryMetrics
 	var slowQueryMetricsListInterface []interface{}
 	var query = fmt.Sprintf(queries.SlowQueries, databaseNames, args.QueryCountThreshold)
-	log.Info("Slow Query: ", query)
 	rows, err := conn.Queryx(query)
 	if err != nil {
 		return nil, nil, err
