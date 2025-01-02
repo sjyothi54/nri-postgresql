@@ -14,7 +14,7 @@ import (
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
 )
 
-func PopulateIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, slowRunningQueries []datamodels.SlowRunningQueryMetrics, pgIntegration *integration.Integration, args args.ArgumentList) []datamodels.IndividualQueryMetrics {
+func PopulateIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, slowRunningQueries []datamodels.SlowRunningQueryMetrics, pgIntegration *integration.Integration, args args.ArgumentList, databaseNames string) []datamodels.IndividualQueryMetrics {
 	isExtensionEnabled, err := validations.CheckIndividualQueryMetricsFetchEligibility(conn)
 	if err != nil {
 		log.Error("Error executing query: %v", err)
@@ -25,7 +25,7 @@ func PopulateIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnectio
 		return nil
 	}
 	log.Info("Extension 'pg_stat_monitor' enabled.")
-	individualQueryMetricsInterface, individualQueriesForExecPlan := GetIndividualQueryMetrics(conn, slowRunningQueries, args)
+	individualQueryMetricsInterface, individualQueriesForExecPlan := GetIndividualQueryMetrics(conn, slowRunningQueries, args, databaseNames)
 	if len(individualQueryMetricsInterface) == 0 {
 		log.Info("No individual queries found.")
 		return nil
@@ -34,21 +34,21 @@ func PopulateIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnectio
 	return individualQueriesForExecPlan
 }
 
-func ConstructIndividualQuery(slowRunningQueries []datamodels.SlowRunningQueryMetrics, args args.ArgumentList) string {
+func ConstructIndividualQuery(slowRunningQueries []datamodels.SlowRunningQueryMetrics, args args.ArgumentList, databaseNames string) string {
 	var queryIDs = make([]string, 0)
 	for _, query := range slowRunningQueries {
 		queryIDs = append(queryIDs, fmt.Sprintf("%d", *query.QueryID))
 	}
-	query := fmt.Sprintf(queries.IndividualQuerySearch, strings.Join(queryIDs, ","))
+	query := fmt.Sprintf(queries.IndividualQuerySearch, strings.Join(queryIDs, ","), databaseNames)
 	return query
 }
 
-func GetIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, slowRunningQueries []datamodels.SlowRunningQueryMetrics, args args.ArgumentList) ([]interface{}, []datamodels.IndividualQueryMetrics) {
+func GetIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, slowRunningQueries []datamodels.SlowRunningQueryMetrics, args args.ArgumentList, databaseNames string) ([]interface{}, []datamodels.IndividualQueryMetrics) {
 	if len(slowRunningQueries) == 0 {
 		log.Info("No slow running queries found.")
 		return nil, nil
 	}
-	query := ConstructIndividualQuery(slowRunningQueries, args)
+	query := ConstructIndividualQuery(slowRunningQueries, args, databaseNames)
 	log.Info("Individual query :", query)
 	rows, err := conn.Queryx(query)
 	if err != nil {
