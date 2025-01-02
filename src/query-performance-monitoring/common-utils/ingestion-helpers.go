@@ -2,10 +2,10 @@ package commonutils
 
 import (
 	"crypto/rand"
-	"database/sql"
 	"fmt"
 	"math/big"
 	"reflect"
+	"strconv"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -13,6 +13,8 @@ import (
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
+	performancedbconnection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/connections"
+	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
 )
 
 const publishThreshold = 100
@@ -124,12 +126,24 @@ func GenerateRandomIntegerString(queryID int64) *string {
 	return &result
 }
 
-func FetchVersion(db *sql.DB) (string, error) {
-	var version string
-	err := db.QueryRow("SELECT version()").Scan(&version)
-	log.Info("version", version)
-	if err != nil {
-		return "", err
+func FetchVersion(conn *performancedbconnection.PGSQLConnection) string {
+	var versionStr string
+	rows, err := conn.Queryx(fmt.Sprintf("SELECT version()"))
+	defer rows.Close()
+	if rows.Next() {
+		if err := rows.Scan(&versionStr); err != nil {
+			return ""
+		}
 	}
-	return version, nil
+
+	log.Info("version", versionStr)
+	version, err := strconv.Atoi(versionStr)
+	if err != nil {
+		return ""
+	}
+
+	if version == 12 {
+		return queries.SlowQueriesForV12
+	}
+	return queries.SlowQueriesForV13AndAbove
 }

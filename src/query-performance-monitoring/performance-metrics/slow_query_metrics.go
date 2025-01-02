@@ -9,14 +9,14 @@ import (
 	commonutils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
 	performancedbconnection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/connections"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
-	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
 )
 
 func GetSlowRunningMetrics(conn *performancedbconnection.PGSQLConnection, args args.ArgumentList) ([]datamodels.SlowRunningQueryMetrics, []interface{}, error) {
 	var slowQueryMetricsList []datamodels.SlowRunningQueryMetrics
 	var slowQueryMetricsListInterface []interface{}
-	var query = fmt.Sprintf(queries.SlowQueriesForV13AndAbove, args.QueryCountThreshold)
+	version := commonutils.FetchVersion(conn)
+	var query = fmt.Sprintf(version, args.QueryCountThreshold)
 	rows, err := conn.Queryx(query)
 	if err != nil {
 		return nil, nil, err
