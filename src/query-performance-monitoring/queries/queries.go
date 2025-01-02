@@ -117,7 +117,7 @@ const (
 			ROUND(((cpu_user_time + cpu_sys_time) / NULLIF(calls, 0))::numeric, 3) AS avg_cpu_time_ms
 			FROM
 				pg_stat_monitor
-			Where queryid IN (%s) and datname in (%s)
+			Where queryid IN (%s) and datname in (%s) and where total_exec_time / NULLIF(calls, 0) > (%d)
 			GROUP BY
 				query, queryid, datname, planid, cpu_user_time, cpu_sys_time, calls `
 )
