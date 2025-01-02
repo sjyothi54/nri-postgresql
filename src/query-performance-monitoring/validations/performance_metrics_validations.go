@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
-	performancedbconnection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/connections"
+	performancedbconnection "github.com/newrelic/nri-postgresql/src/connection"
 )
 
 func isExtensionEnabled(conn *performancedbconnection.PGSQLConnection, extensionName string) (bool, error) {
