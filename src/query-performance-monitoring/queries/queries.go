@@ -109,7 +109,7 @@ const (
     ORDER BY total_wait_time_ms DESC
     LIMIT %d;`
 
-	BlockingQueries = `SELECT 'newrelic' as newrelic,
+	BlockingQueriesForV14AndAbove = `SELECT 'newrelic' as newrelic,
           blocked_activity.pid AS blocked_pid,
           LEFT(blocked_statements.query,4095) AS blocked_query,
           blocked_statements.queryid AS blocked_query_id,
@@ -139,6 +139,42 @@ const (
           AND blocking_statements.query NOT LIKE 'EXPLAIN (FORMAT JSON) %%'
       LIMIT %d;
 `
+
+	BlockingQueriesForV12AndV13 = `CREATE OR REPLACE FUNCTION mask_query(query TEXT) RETURNS TEXT AS $$
+      DECLARE
+          masked_query TEXT := query;
+      BEGIN
+          masked_query := regexp_replace(masked_query, '''[^'']*''', '$s', 'g');
+          masked_query := regexp_replace(masked_query, '\d+', '$n', 'g');
+          RETURN masked_query;
+      END;
+      $$ LANGUAGE plpgsql;
+      SELECT 
+          'newrelic' as newrelic,
+          blocked_activity.pid AS blocked_pid,
+          LEFT(mask_query(blocked_activity.query), 4095) AS blocked_query,
+          blocked_activity.query_start AS blocked_query_start,
+          blocked_activity.datname AS database_name,
+          blocking_activity.pid AS blocking_pid,
+          LEFT(mask_query(blocking_activity.query), 4095) AS blocking_query,
+          blocking_activity.query_start AS blocking_query_start
+      FROM pg_stat_activity AS blocked_activity
+      JOIN pg_locks blocked_locks ON blocked_activity.pid = blocked_locks.pid
+      JOIN pg_locks blocking_locks ON blocked_locks.locktype = blocking_locks.locktype
+          AND blocked_locks.database IS NOT DISTINCT FROM blocking_locks.database
+          AND blocked_locks.relation IS NOT DISTINCT FROM blocking_locks.relation
+          AND blocked_locks.page IS NOT DISTINCT FROM blocking_locks.page
+          AND blocked_locks.tuple IS NOT DISTINCT FROM blocking_locks.tuple
+          AND blocked_locks.transactionid IS NOT DISTINCT FROM blocking_locks.transactionid
+          AND blocked_locks.classid IS NOT DISTINCT FROM blocking_locks.classid
+          AND blocked_locks.objid IS NOT DISTINCT FROM blocking_locks.objid
+          AND blocked_locks.objsubid IS NOT DISTINCT FROM blocking_locks.objsubid
+          AND blocked_locks.pid <> blocking_locks.pid
+      JOIN pg_stat_activity AS blocking_activity ON blocking_locks.pid = blocking_activity.pid
+      WHERE NOT blocked_locks.granted
+          AND blocked_activity.query NOT LIKE 'EXPLAIN (FORMAT JSON) %%'
+          AND blocking_activity.query NOT LIKE 'EXPLAIN (FORMAT JSON) %%'
+      LIMIT %d;`
 
 	IndividualQuerySearch = `SELECT 'newrelic' as newrelic,
 			LEFT(query,4095) as query,

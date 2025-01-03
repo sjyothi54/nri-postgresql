@@ -11,7 +11,6 @@ import (
 	"github.com/newrelic/nri-postgresql/src/args"
 	performancedbconnection "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/connections"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
-	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
 )
 
 func PopulateBlockingMetrics(conn *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, args args.ArgumentList) {
@@ -38,7 +37,9 @@ func PopulateBlockingMetrics(conn *performancedbconnection.PGSQLConnection, pgIn
 
 func GetBlockingMetrics(conn *performancedbconnection.PGSQLConnection, args args.ArgumentList) ([]interface{}, error) {
 	var blockingQueriesMetricsList []interface{}
-	var query = fmt.Sprintf(queries.BlockingQueries, args.QueryCountThreshold)
+	versionspecificblockingquery, err := commonutils.FetchVersionSpecificBlockingQueries(conn)
+	log.Info("versionblockinghere", versionspecificblockingquery)
+	var query = fmt.Sprintf(versionspecificblockingquery, args.QueryCountThreshold)
 	rows, err := conn.Queryx(query)
 	if err != nil {
 		log.Error("Failed to execute query: %v", err)

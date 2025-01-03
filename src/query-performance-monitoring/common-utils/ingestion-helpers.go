@@ -159,14 +159,6 @@ func FetchVersion(conn *performancedbconnection.PGSQLConnection) (int, error) {
 		return 0, err
 	}
 	return version, nil
-	// switch {
-	// case version == 12:
-	// 	return queries.SlowQueriesForV12, nil
-	// case version >= 13:
-	// 	return queries.SlowQueriesForV13AndAbove, nil
-	// default:
-	// 	return "", fmt.Errorf("unsupported PostgreSQL version: %d", version)
-	// }
 }
 
 func FetchVersionSpecificSlowQueries(conn *performancedbconnection.PGSQLConnection) (string, error) {
@@ -179,6 +171,21 @@ func FetchVersionSpecificSlowQueries(conn *performancedbconnection.PGSQLConnecti
 		return queries.SlowQueriesForV12, nil
 	case version >= 13:
 		return queries.SlowQueriesForV13AndAbove, nil
+	default:
+		return "", fmt.Errorf("unsupported PostgreSQL version: %d", version)
+	}
+}
+
+func FetchVersionSpecificBlockingQueries(conn *performancedbconnection.PGSQLConnection) (string, error) {
+	version, err := FetchVersion(conn)
+	if err != nil {
+		return "", err
+	}
+	switch {
+	case version == 12, version == 13:
+		return queries.BlockingQueriesForV12AndV13, nil
+	case version >= 14:
+		return queries.BlockingQueriesForV14AndAbove, nil
 	default:
 		return "", fmt.Errorf("unsupported PostgreSQL version: %d", version)
 	}
