@@ -109,8 +109,7 @@ const (
       LIMIT %d;
 `
 
-	IndividualQuerySearch = `SELECT 
-    	'newrelic' AS newrelic,
+	IndividualQuerySearch = `SELECT 'newrelic' AS newrelic,
 			LEFT(query, 4095) AS query,
 			queryid,
 			datname,
