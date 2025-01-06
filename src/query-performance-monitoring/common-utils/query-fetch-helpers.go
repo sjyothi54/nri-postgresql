@@ -24,9 +24,6 @@ func FetchVersion(conn *performancedbconnection.PGSQLConnection) (int, error) {
 			return 0, err
 		}
 	}
-
-	log.Info("versionstring", versionStr)
-
 	re := regexp.MustCompile(`PostgreSQL (\d+)\.`)
 	matches := re.FindStringSubmatch(versionStr)
 	if len(matches) < 2 {
@@ -35,7 +32,7 @@ func FetchVersion(conn *performancedbconnection.PGSQLConnection) (int, error) {
 	}
 
 	version, err := strconv.Atoi(matches[1])
-	log.Info("version", version)
+	log.Debug("version", version)
 	if err != nil {
 		log.Error("Error converting version to integer: %v", err)
 		return 0, err
@@ -54,7 +51,7 @@ func FetchVersionSpecificSlowQueries(conn *performancedbconnection.PGSQLConnecti
 	case version >= 13:
 		return queries.SlowQueriesForV13AndAbove, nil
 	default:
-		return "", fmt.Errorf("unsupported PostgreSQL version: %d", version)
+		return "", fmt.Errorf("unsupported PostgreSQL version %d", version)
 	}
 }
 
