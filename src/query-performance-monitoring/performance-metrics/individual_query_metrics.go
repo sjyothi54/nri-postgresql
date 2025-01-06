@@ -9,7 +9,6 @@ import (
 	performancedbconnection "github.com/newrelic/nri-postgresql/src/connection"
 	commonutils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
-	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
 )
 
@@ -33,8 +32,9 @@ func PopulateIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnectio
 	return individualQueriesForExecPlan
 }
 
-func ConstructIndividualQuery(slowRunningQueries datamodels.SlowRunningQueryMetrics, args args.ArgumentList, databaseNames string) string {
-	query := fmt.Sprintf(queries.IndividualQuerySearch, *slowRunningQueries.QueryID, databaseNames, args.QueryResponseTimeThreshold, min(args.QueryCountThreshold, commonutils.MAX_INDIVIDUAL_QUERY_THRESHOLD))
+func ConstructIndividualQuery(slowRunningQueries datamodels.SlowRunningQueryMetrics, conn *performancedbconnection.PGSQLConnection, args args.ArgumentList, databaseNames string) string {
+	versionSpecificIndividualQuery, _ := commonutils.FetchVersionSpecificIndividualQuieries(conn)
+	query := fmt.Sprintf(versionSpecificIndividualQuery, *slowRunningQueries.QueryID, databaseNames, args.QueryResponseTimeThreshold, min(args.QueryCountThreshold, commonutils.MAX_INDIVIDUAL_QUERY_THRESHOLD))
 	return query
 }
 
@@ -54,7 +54,7 @@ func GetIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, sl
 
 func getIndividualQueriesByGroupedQuery(conn *performancedbconnection.PGSQLConnection, slowRunningQueries datamodels.SlowRunningQueryMetrics, args args.ArgumentList, databaseNames string, anonymizedQueriesByDB map[string]map[int64]string, individualQueryMetricsForExecPlanList *[]datamodels.IndividualQueryMetrics, individualQueryMetricsListInterface *[]interface{}) {
 
-	query := ConstructIndividualQuery(slowRunningQueries, args, databaseNames)
+	query := ConstructIndividualQuery(slowRunningQueries, conn, args, databaseNames)
 	rows, err := conn.Queryx(query)
 	if err != nil {
 		log.Debug("Error executing query in individual query: %v", err)

@@ -2,11 +2,12 @@ package commonutils
 
 import (
 	"fmt"
+	"regexp"
+	"strconv"
+
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	performancedbconnection "github.com/newrelic/nri-postgresql/src/connection"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
-	"regexp"
-	"strconv"
 )
 
 func FetchVersion(conn *performancedbconnection.PGSQLConnection) (int, error) {
@@ -67,5 +68,20 @@ func FetchVersionSpecificBlockingQueries(conn *performancedbconnection.PGSQLConn
 		return queries.BlockingQueriesForV14AndAbove, nil
 	default:
 		return "", fmt.Errorf("unsupported PostgreSQL version: %d", version)
+	}
+}
+
+func FetchVersionSpecificIndividualQuieries(conn *performancedbconnection.PGSQLConnection) (string, error) {
+	version, err := FetchVersion(conn)
+	if err != nil {
+		return "", err
+	}
+	switch {
+	case version == 12:
+		return queries.IndividualQuerySearchV12, nil
+	case version >= 13:
+		return queries.IndividualQuerySearchV13AndAbove, nil
+	default:
+		return "", fmt.Errorf("unsupported PostgreSQL version %d", version)
 	}
 }
