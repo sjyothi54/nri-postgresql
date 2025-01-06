@@ -32,7 +32,7 @@ const (
 		AND pss.query NOT ILIKE 'select -- INDEXQUERY%%'
         AND pss.query NOT ILIKE 'SELECT -- TABLEQUERY%%'
         AND pss.query NOT ILIKE 'SELECT table_schema%%'
-        AND pss.query ILIKE '%%ProductCategories%%'
+        AND pss.query ILIKE '%%SongArtists%%'
     ORDER BY
         avg_elapsed_time_ms DESC -- Order by the average elapsed time in descending order
     LIMIT
