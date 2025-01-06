@@ -2,7 +2,6 @@ package performancemetrics
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
@@ -34,13 +33,8 @@ func PopulateIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnectio
 	return individualQueriesForExecPlan
 }
 
-func ConstructIndividualQuery(slowRunningQueries []datamodels.SlowRunningQueryMetrics, args args.ArgumentList, databaseNames string) string {
-	var queryIDs = make([]string, 0)
-	for _, query := range slowRunningQueries {
-		queryIDs = append(queryIDs, fmt.Sprintf("%d", *query.QueryID))
-	}
-
-	query := fmt.Sprintf(queries.IndividualQuerySearch, strings.Join(queryIDs, ","), databaseNames, args.QueryResponseTimeThreshold)
+func ConstructIndividualQuery(slowRunningQueries datamodels.SlowRunningQueryMetrics, args args.ArgumentList, databaseNames string) string {
+	query := fmt.Sprintf(queries.IndividualQuerySearch, slowRunningQueries.QueryID, databaseNames, min(args.QueryResponseTimeThreshold, commonutils.MAX_INDIVIDUAL_QUERY_THRESHOLD))
 	return query
 }
 
@@ -49,16 +43,24 @@ func GetIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, sl
 		log.Debug("No slow running queries found.")
 		return nil, nil
 	}
+	var individualQueryMetricsForExecPlanList []datamodels.IndividualQueryMetrics
+	var individualQueryMetricsListInterface []interface{}
+	anonymizedQueriesByDB := processForAnonymizeQueryMap(slowRunningQueries)
+	for _, slowRunningMetric := range slowRunningQueries {
+		getIndividualQueriesByGroupedQuery(conn, slowRunningMetric, args, databaseNames, anonymizedQueriesByDB, &individualQueryMetricsForExecPlanList, &individualQueryMetricsListInterface)
+	}
+	return individualQueryMetricsListInterface, individualQueryMetricsForExecPlanList
+}
+
+func getIndividualQueriesByGroupedQuery(conn *performancedbconnection.PGSQLConnection, slowRunningQueries datamodels.SlowRunningQueryMetrics, args args.ArgumentList, databaseNames string, anonymizedQueriesByDB map[string]map[int64]string, individualQueryMetricsForExecPlanList *[]datamodels.IndividualQueryMetrics, individualQueryMetricsListInterface *[]interface{}) {
+
 	query := ConstructIndividualQuery(slowRunningQueries, args, databaseNames)
 	log.Info("INDIVIDUAL QUERY: ", query)
 	rows, err := conn.Queryx(query)
 	if err != nil {
 		log.Debug("Error executing query in individual query: %v", err)
-		return nil, nil
+		return
 	}
-	anonymizedQueriesByDB := processForAnonymizeQueryMap(slowRunningQueries)
-	var individualQueryMetricsForExecPlanList []datamodels.IndividualQueryMetrics
-	var individualQueryMetricsListInterface []interface{}
 	for rows.Next() {
 		var model datamodels.IndividualQueryMetrics
 		if scanErr := rows.StructScan(&model); scanErr != nil {
@@ -68,20 +70,19 @@ func GetIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, sl
 		individualQueryMetric := model
 		anonymizedQueryText := anonymizedQueriesByDB[*model.DatabaseName][*model.QueryID]
 		individualQueryMetric.QueryText = &anonymizedQueryText
-		//generatedPlanID := commonutils.GenerateRandomIntegerString(*model.QueryID)
-		//individualQueryMetric.PlanID = generatedPlanID
-		//model.PlanID = generatedPlanID
+		generatedPlanID := commonutils.GenerateRandomIntegerString(*model.QueryID)
+		individualQueryMetric.PlanID = generatedPlanID
+		model.PlanID = generatedPlanID
 		model.RealQueryText = model.QueryText
 		model.QueryText = &anonymizedQueryText
 
-		individualQueryMetricsForExecPlanList = append(individualQueryMetricsForExecPlanList, model)
-		individualQueryMetricsListInterface = append(individualQueryMetricsListInterface, individualQueryMetric)
+		*individualQueryMetricsForExecPlanList = append(*individualQueryMetricsForExecPlanList, model)
+		*individualQueryMetricsListInterface = append(*individualQueryMetricsListInterface, individualQueryMetric)
 	}
 	if closeErr := rows.Close(); closeErr != nil {
 		log.Error("Error closing rows: %v", closeErr)
-		return nil, nil
+		return
 	}
-	return individualQueryMetricsListInterface, individualQueryMetricsForExecPlanList
 }
 
 func processForAnonymizeQueryMap(queryCPUMetricsList []datamodels.SlowRunningQueryMetrics) map[string]map[int64]string {

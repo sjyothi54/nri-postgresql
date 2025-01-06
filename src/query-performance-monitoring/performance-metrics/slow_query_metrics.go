@@ -16,7 +16,7 @@ func GetSlowRunningMetrics(conn *performancedbconnection.PGSQLConnection, args a
 	var slowQueryMetricsList []datamodels.SlowRunningQueryMetrics
 	var slowQueryMetricsListInterface []interface{}
 	versionSpecificQuery, err := commonutils.FetchVersionSpecificSlowQueries(conn)
-	var query = fmt.Sprintf(versionSpecificQuery, databaseNames, args.QueryCountThreshold)
+	var query = fmt.Sprintf(versionSpecificQuery, databaseNames, min(args.QueryCountThreshold, commonutils.MAX_QUERY_THRESHOLD))
 	log.Info("SLOW Query: ", query)
 	rows, err := conn.Queryx(query)
 	if err != nil {

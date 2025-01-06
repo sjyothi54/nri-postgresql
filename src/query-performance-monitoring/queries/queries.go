@@ -192,7 +192,7 @@ const (
 		FROM
 			pg_stat_monitor
 		WHERE 
-			queryid IN (%s) 
+			queryid = %d
 			AND datname IN (%s) 
 			AND (total_exec_time / NULLIF(calls, 0)) > %d 
 			AND bucket_start_time >= NOW() - INTERVAL '60 seconds'
