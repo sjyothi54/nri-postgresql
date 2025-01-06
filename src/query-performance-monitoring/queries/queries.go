@@ -60,6 +60,8 @@ const (
     JOIN
         pg_database pd ON pss.dbid = pd.oid
     WHERE 
+		pd.datname in (%s)
+		pss.query LIKE '%%SongArtists%%'
         pss.query NOT ILIKE 'EXPLAIN (FORMAT JSON) %%' 
         AND pss.query NOT ILIKE 'SELECT $1 as newrelic%%'
         AND pss.query NOT ILIKE 'WITH wait_history AS%%'
@@ -175,6 +177,7 @@ const (
           AND blocked_locks.pid <> blocking_locks.pid
       JOIN pg_stat_activity AS blocking_activity ON blocking_locks.pid = blocking_activity.pid
       WHERE NOT blocked_locks.granted
+		  AND blocked_activity.datname IN (%s)
           AND blocked_activity.query NOT LIKE 'EXPLAIN (FORMAT JSON) %%'
           AND blocking_activity.query NOT LIKE 'EXPLAIN (FORMAT JSON) %%'
       LIMIT %d;`
