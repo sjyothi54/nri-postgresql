@@ -199,5 +199,5 @@ const (
 		GROUP BY
 			query, queryid, datname, planid, cpu_user_time, cpu_sys_time, calls, total_exec_time
 		ORDER BY
-			avg_exec_time_ms DESC`
+			avg_exec_time_ms DESC LIMIT %d;`
 )
