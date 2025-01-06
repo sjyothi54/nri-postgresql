@@ -180,7 +180,7 @@ const (
           AND blocking_activity.query NOT LIKE 'EXPLAIN (FORMAT JSON) %%'
       LIMIT %d;`
 
-	IndividualQuerySearchV12 = `SELECT 'newrelic' as newrelic,
+	IndividualQuerySearchV13AndAbove = `SELECT 'newrelic' as newrelic,
 			LEFT(query,4095) as query,
 			queryid,
 			datname,
@@ -199,7 +199,7 @@ const (
 		ORDER BY
 			avg_exec_time_ms DESC LIMIT %d;`
 
-	IndividualQuerySearchV13AndAbove = `SELECT 'newrelic' as newrelic,  
+	IndividualQuerySearchV12 = `SELECT 'newrelic' as newrelic,  
             LEFT(query,4095) as query,
 			queryid,
 			datname,
