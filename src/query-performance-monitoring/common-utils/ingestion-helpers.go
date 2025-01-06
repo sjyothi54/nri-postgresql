@@ -3,14 +3,14 @@ package commonutils
 import (
 	"crypto/rand"
 	"fmt"
-	"math/big"
-	"reflect"
-	"time"
-
+	_ "github.com/lib/pq"
 	"github.com/newrelic/infra-integrations-sdk/v3/data/metric"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
+	"math/big"
+	"reflect"
+	"time"
 )
 
 const publishThreshold = 100
@@ -112,6 +112,7 @@ func publishMetrics(pgIntegration *integration.Integration, instanceEntity **int
 	*instanceEntity, err = pgIntegration.Entity(fmt.Sprintf("%s:%s", args.Hostname, args.Port), "pg-instance")
 	return err
 }
+
 func GenerateRandomIntegerString(queryID int64) *string {
 	randomInt, err := rand.Int(rand.Reader, big.NewInt(randomIntRange))
 	if err != nil {
