@@ -32,7 +32,6 @@ const (
 		AND pss.query NOT ILIKE 'select -- INDEXQUERY%%'
         AND pss.query NOT ILIKE 'SELECT -- TABLEQUERY%%'
         AND pss.query NOT ILIKE 'SELECT table_schema%%'
-        AND pss.query ILIKE '%%SongArtists%%'
     ORDER BY
         avg_elapsed_time_ms DESC -- Order by the average elapsed time in descending order
     LIMIT
@@ -61,7 +60,6 @@ const (
         pg_database pd ON pss.dbid = pd.oid
     WHERE 
 		pd.datname in (%s)
-		pss.query LIKE '%%SongArtists%%'
         pss.query NOT ILIKE 'EXPLAIN (FORMAT JSON) %%' 
         AND pss.query NOT ILIKE 'SELECT $1 as newrelic%%'
         AND pss.query NOT ILIKE 'WITH wait_history AS%%'
