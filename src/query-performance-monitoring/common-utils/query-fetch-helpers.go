@@ -78,9 +78,9 @@ func FetchVersionSpecificIndividualQuieries(conn *performancedbconnection.PGSQLC
 	}
 	switch {
 	case version == 12:
-		return queries.SlowQueriesForV12, nil
+		return queries.IndividualQuerySearchV12, nil
 	case version >= 13:
-		return queries.SlowQueriesForV13AndAbove, nil
+		return queries.IndividualQuerySearchV13AndAbove, nil
 	default:
 		return "", fmt.Errorf("unsupported PostgreSQL version %d", version)
 	}
