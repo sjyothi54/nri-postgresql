@@ -60,7 +60,7 @@ const (
         pg_database pd ON pss.dbid = pd.oid
     WHERE 
 		pd.datname in (%s)
-		pss.query NOT ILIKE 'EXPLAIN (FORMAT JSON) %%' 
+        AND pss.query NOT ILIKE 'EXPLAIN (FORMAT JSON) %%' 
         AND pss.query NOT ILIKE 'SELECT $1 as newrelic%%'
         AND pss.query NOT ILIKE 'WITH wait_history AS%%'
         AND pss.query NOT ILIKE 'select -- BLOATQUERY%%'
@@ -190,12 +190,12 @@ const (
 		FROM
 			pg_stat_monitor
 		WHERE 
-			queryid IN (%s) 
+			queryid = %d
 			AND datname IN (%s) 
 			AND (total_exec_time / NULLIF(calls, 0)) > %d 
 			AND bucket_start_time >= NOW() - INTERVAL '60 seconds'
 		GROUP BY
 			query, queryid, datname, planid, cpu_user_time, cpu_sys_time, calls, total_exec_time
 		ORDER BY
-			avg_exec_time_ms DESC`
+			avg_exec_time_ms DESC LIMIT %d;`
 )
