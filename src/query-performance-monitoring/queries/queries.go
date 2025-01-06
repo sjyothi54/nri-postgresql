@@ -180,7 +180,7 @@ const (
           AND blocking_activity.query NOT LIKE 'EXPLAIN (FORMAT JSON) %%'
       LIMIT %d;`
 
-	IndividualQuerySearch = `SELECT 'newrelic' as newrelic,
+	IndividualQuerySearchV12 = `SELECT 'newrelic' as newrelic,
 			LEFT(query,4095) as query,
 			queryid,
 			datname,
@@ -196,6 +196,25 @@ const (
 			AND bucket_start_time >= NOW() - INTERVAL '60 seconds'
 		GROUP BY
 			query, queryid, datname, planid, cpu_user_time, cpu_sys_time, calls, total_exec_time
+		ORDER BY
+			avg_exec_time_ms DESC LIMIT %d;`
+
+	IndividualQuerySearchV13AndAbove = `SELECT 'newrelic' as newrelic,  
+            LEFT(query,4095) as query,
+			queryid,
+			datname,
+			planid,
+			ROUND(((cpu_user_time + cpu_sys_time) / NULLIF(calls, 0))::numeric, 3) AS avg_cpu_time_ms,
+			total_time / NULLIF(calls, 0) AS avg_exec_time_ms
+		FROM
+			pg_stat_monitor
+		WHERE 
+			queryid = %d
+			AND datname IN (%s) 
+			AND (total_time / NULLIF(calls, 0)) > %d 
+			AND bucket_start_time >= NOW() - INTERVAL '60 seconds'
+		GROUP BY
+			query, queryid, datname, planid, cpu_user_time, cpu_sys_time, calls, total_time
 		ORDER BY
 			avg_exec_time_ms DESC LIMIT %d;`
 )
