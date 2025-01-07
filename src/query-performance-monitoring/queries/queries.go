@@ -193,7 +193,7 @@ const (
 			queryid = %s
 			AND datname IN (%s) 
 			AND (total_exec_time / NULLIF(calls, 0)) > %d 
-			AND bucket_start_time >= NOW() - INTERVAL '60 seconds'
+			AND bucket_start_time >= NOW() - INTERVAL '120 seconds'
 		GROUP BY
 			query, queryid, datname, planid, cpu_user_time, cpu_sys_time, calls, total_exec_time
 		ORDER BY

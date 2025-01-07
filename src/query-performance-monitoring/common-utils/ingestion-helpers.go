@@ -93,7 +93,6 @@ func processModel(model interface{}, metricSet *metric.Set) {
 		ingestData := fieldType.Tag.Get("ingest_data")
 
 		if ingestData == "false" {
-			log.Info("Skipping metric: %s", metricName)
 			continue
 		}
 
