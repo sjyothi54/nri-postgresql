@@ -120,6 +120,6 @@ func GenerateRandomIntegerString(queryID string) *string {
 		return nil
 	}
 	currentTime := time.Now().Format("20060102150405")
-	result := fmt.Sprintf("%d-%d-%s", queryID, randomInt.Int64(), currentTime)
+	result := fmt.Sprintf("%s-%d-%s", queryID, randomInt.Int64(), currentTime)
 	return &result
 }
