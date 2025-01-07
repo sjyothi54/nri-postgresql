@@ -63,10 +63,11 @@ func IngestMetric(metricList []interface{}, eventName string, pgIntegration *int
 			}
 		}
 	}
-
-	if err := publishMetrics(pgIntegration, &instanceEntity, args); err != nil {
-		log.Error("Error publishing metrics: %v", err)
-		return
+	if metricCount > 0 {
+		if err := publishMetrics(pgIntegration, &instanceEntity, args); err != nil {
+			log.Error("Error publishing metrics: %v", err)
+			return
+		}
 	}
 }
 
