@@ -18,6 +18,10 @@ import (
 func QueryPerformanceMain(args args.ArgumentList, pgIntegration *integration.Integration, databaseList collection.DatabaseList) {
 	connectionInfo := performancedbconnection.DefaultConnectionInfo(&args)
 	databaseStringList := commonutils.GetDatabaseListInString(databaseList)
+	if len(databaseList) == 0 {
+		log.Debug("No databases found")
+		return
+	}
 	newConnection, err := connectionInfo.NewConnection(connectionInfo.DatabaseName())
 	if err != nil {
 		log.Debug("Error creating connection: ", err)
