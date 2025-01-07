@@ -32,13 +32,9 @@ func PopulateIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnectio
 	return individualQueriesForExecPlan
 }
 
-func ConstructIndividualQuery(slowRunningQueries datamodels.SlowRunningQueryMetrics, conn *performancedbconnection.PGSQLConnection, args args.ArgumentList, databaseNames string) string {
-	versionSpecificIndividualQuery, err := commonutils.FetchVersionSpecificIndividualQuieries(conn)
-	if err != nil {
-		log.Error("Unsupported postgres version: %v", err)
-		return ""
-	}
-	query := fmt.Sprintf(versionSpecificIndividualQuery, *slowRunningQueries.QueryID, databaseNames, args.QueryResponseTimeThreshold, min(args.QueryCountThreshold, commonutils.MAX_INDIVIDUAL_QUERY_THRESHOLD))
+func ConstructIndividualQuery(slowRunningQueries datamodels.SlowRunningQueryMetrics, args args.ArgumentList, databaseNames string, versionSpecificQuery string) string {
+
+	query := fmt.Sprintf(versionSpecificQuery, *slowRunningQueries.QueryID, databaseNames, args.QueryResponseTimeThreshold, min(args.QueryCountThreshold, commonutils.MAX_INDIVIDUAL_QUERY_THRESHOLD))
 	return query
 }
 
@@ -50,20 +46,25 @@ func GetIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, sl
 	var individualQueryMetricsForExecPlanList []datamodels.IndividualQueryMetrics
 	var individualQueryMetricsListInterface []interface{}
 	anonymizedQueriesByDB := processForAnonymizeQueryMap(slowRunningQueries)
+	versionSpecificIndividualQuery, err := commonutils.FetchVersionSpecificIndividualQuieries(conn)
+	if err != nil {
+		log.Error("Unsupported postgres version: %v", err)
+		return nil, nil
+	}
+
 	for _, slowRunningMetric := range slowRunningQueries {
-		getIndividualQueriesByGroupedQuery(conn, slowRunningMetric, args, databaseNames, anonymizedQueriesByDB, &individualQueryMetricsForExecPlanList, &individualQueryMetricsListInterface)
+		getIndividualQueriesByGroupedQuery(conn, slowRunningMetric, args, databaseNames, anonymizedQueriesByDB, &individualQueryMetricsForExecPlanList, &individualQueryMetricsListInterface, versionSpecificIndividualQuery)
 	}
 	return individualQueryMetricsListInterface, individualQueryMetricsForExecPlanList
 }
 
-func getIndividualQueriesByGroupedQuery(conn *performancedbconnection.PGSQLConnection, slowRunningQueries datamodels.SlowRunningQueryMetrics, args args.ArgumentList, databaseNames string, anonymizedQueriesByDB map[string]map[int64]string, individualQueryMetricsForExecPlanList *[]datamodels.IndividualQueryMetrics, individualQueryMetricsListInterface *[]interface{}) {
+func getIndividualQueriesByGroupedQuery(conn *performancedbconnection.PGSQLConnection, slowRunningQueries datamodels.SlowRunningQueryMetrics, args args.ArgumentList, databaseNames string, anonymizedQueriesByDB map[string]map[int64]string, individualQueryMetricsForExecPlanList *[]datamodels.IndividualQueryMetrics, individualQueryMetricsListInterface *[]interface{}, versionSpecificIndividualQuery string) {
 
-	query := ConstructIndividualQuery(slowRunningQueries, conn, args, databaseNames)
+	query := ConstructIndividualQuery(slowRunningQueries, args, databaseNames, versionSpecificIndividualQuery)
 	if query == "" {
 		log.Debug("Error constructing individual query")
 		return
 	}
-
 	rows, err := conn.Queryx(query)
 	if err != nil {
 		log.Debug("Error executing query in individual query: %v", err)
