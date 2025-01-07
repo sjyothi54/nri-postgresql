@@ -71,7 +71,7 @@ func FetchVersionSpecificBlockingQueries(conn *performancedbconnection.PGSQLConn
 	}
 }
 
-func FetchVersionSpecificIndividualQuieries(conn *performancedbconnection.PGSQLConnection) (string, error) {
+func FetchVersionSpecificIndividualQueries(conn *performancedbconnection.PGSQLConnection) (string, error) {
 	version, err := FetchVersion(conn)
 	if err != nil {
 		return "", err

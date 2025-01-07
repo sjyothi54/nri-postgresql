@@ -47,7 +47,7 @@ func GetIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, sl
 	var individualQueryMetricsForExecPlanList []datamodels.IndividualQueryMetrics
 	var individualQueryMetricsListInterface []interface{}
 	anonymizedQueriesByDB := processForAnonymizeQueryMap(slowRunningQueries)
-	versionSpecificIndividualQuery, err := commonutils.FetchVersionSpecificIndividualQuieries(conn)
+	versionSpecificIndividualQuery, err := commonutils.FetchVersionSpecificIndividualQueries(conn)
 	if err != nil {
 		log.Error("Unsupported postgres version: %v", err)
 		return nil, nil
