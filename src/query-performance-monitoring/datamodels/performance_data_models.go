@@ -2,7 +2,7 @@ package datamodels
 
 type SlowRunningQueryMetrics struct {
 	Newrelic            *string  `db:"newrelic"              metric_name:"newrelic"                   source_type:"attribute"  ingest_data:"false"`
-	QueryID             *int64   `db:"query_id"              metric_name:"query_id"                   source_type:"attribute"`
+	QueryID             *string  `db:"query_id"              metric_name:"query_id"                   source_type:"attribute"`
 	QueryText           *string  `db:"query_text"            metric_name:"query_text"                 source_type:"attribute"`
 	DatabaseName        *string  `db:"database_name"         metric_name:"database_name"              source_type:"attribute"`
 	SchemaName          *string  `db:"schema_name"           metric_name:"schema_name"                source_type:"attribute"`
@@ -38,7 +38,7 @@ type BlockingSessionMetrics struct {
 
 type IndividualQueryMetrics struct {
 	QueryText       *string  `json:"query" db:"query" metric_name:"query_text" source_type:"attribute"`
-	QueryID         *int64   `json:"queryid" db:"queryid" metric_name:"query_id" source_type:"attribute"`
+	QueryID         *string  `json:"queryid" db:"queryid" metric_name:"query_id" source_type:"attribute"`
 	DatabaseName    *string  `json:"datname" db:"datname" metric_name:"database_name" source_type:"attribute"`
 	AvgCPUTimeInMS  *float64 `json:"avg_cpu_time_ms" db:"avg_cpu_time_ms" metric_name:"avg_cpu_time_ms" source_type:"gauge"`
 	PlanID          *string  `json:"planid" db:"planid" metric_name:"plan_id" source_type:"attribute"`
@@ -68,7 +68,7 @@ type QueryExecutionPlanMetrics struct {
 	TempWrittenBlocks   int64   `mapstructure:"Temp Written Blocks" json:"Temp Written Blocks" metric_name:"temp_written_blocks"   source_type:"gauge"`
 	DatabaseName        string  `mapstructure:"Database"            json:"Database"            metric_name:"database_name"              source_type:"attribute"`
 	QueryText           string  `mapstructure:"Query"               json:"Query"               metric_name:"query_text"                 source_type:"attribute"`
-	QueryID             int64   `mapstructure:"Query Id"            json:"Query Id"            metric_name:"query_id"              source_type:"attribute"`
+	QueryID             string  `mapstructure:"Query Id"            json:"Query Id"            metric_name:"query_id"              source_type:"attribute"`
 	PlanID              string  `mapstructure:"Plan Id"             json:"Plan Id"             metric_name:"plan_id"               source_type:"attribute"`
 	Level               int     `mapstructure:"Level"               json:"Level"             metric_name:"level_id"               source_type:"gauge"`
 }
