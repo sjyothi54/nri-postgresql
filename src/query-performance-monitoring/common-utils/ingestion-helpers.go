@@ -95,6 +95,9 @@ func processModel(model interface{}, metricSet *metric.Set) {
 		if ingestData == "false" {
 			continue
 		}
+		log.Info("Processing field: %s", metricName)
+		log.Info("Field type: %s", fieldType.Type)
+		log.Info("Field value: %s", field)
 
 		if field.Kind() == reflect.Ptr && !field.IsNil() {
 			SetMetric(metricSet, metricName, field.Elem().Interface(), sourceType)
