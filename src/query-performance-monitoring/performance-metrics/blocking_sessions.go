@@ -38,6 +38,10 @@ func PopulateBlockingMetrics(conn *performancedbconnection.PGSQLConnection, pgIn
 func GetBlockingMetrics(conn *performancedbconnection.PGSQLConnection, args args.ArgumentList, databaseName string) ([]interface{}, error) {
 	var blockingQueriesMetricsList []interface{}
 	versionSpecificBlockingQuery, err := commonutils.FetchVersionSpecificBlockingQueries(conn)
+	if err != nil {
+		log.Error("Unsupported postgres version: %v", err)
+		return nil, err
+	}
 	var query = fmt.Sprintf(versionSpecificBlockingQuery, databaseName, min(args.QueryCountThreshold, commonutils.MAX_QUERY_THRESHOLD))
 	rows, err := conn.Queryx(query)
 	if err != nil {
