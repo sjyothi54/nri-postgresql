@@ -58,7 +58,7 @@ func GetIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, sl
 	return individualQueryMetricsListInterface, individualQueryMetricsForExecPlanList
 }
 
-func getIndividualQueriesByGroupedQuery(conn *performancedbconnection.PGSQLConnection, slowRunningQueries datamodels.SlowRunningQueryMetrics, args args.ArgumentList, databaseNames string, anonymizedQueriesByDB map[string]map[int64]string, individualQueryMetricsForExecPlanList *[]datamodels.IndividualQueryMetrics, individualQueryMetricsListInterface *[]interface{}, versionSpecificIndividualQuery string) {
+func getIndividualQueriesByGroupedQuery(conn *performancedbconnection.PGSQLConnection, slowRunningQueries datamodels.SlowRunningQueryMetrics, args args.ArgumentList, databaseNames string, anonymizedQueriesByDB map[string]map[string]string, individualQueryMetricsForExecPlanList *[]datamodels.IndividualQueryMetrics, individualQueryMetricsListInterface *[]interface{}, versionSpecificIndividualQuery string) {
 
 	query := ConstructIndividualQuery(slowRunningQueries, args, databaseNames, versionSpecificIndividualQuery)
 	if query == "" {
@@ -94,8 +94,8 @@ func getIndividualQueriesByGroupedQuery(conn *performancedbconnection.PGSQLConne
 	}
 }
 
-func processForAnonymizeQueryMap(queryCPUMetricsList []datamodels.SlowRunningQueryMetrics) map[string]map[int64]string {
-	anonymizeQueryMapByDB := make(map[string]map[int64]string)
+func processForAnonymizeQueryMap(queryCPUMetricsList []datamodels.SlowRunningQueryMetrics) map[string]map[string]string {
+	anonymizeQueryMapByDB := make(map[string]map[string]string)
 
 	for _, metric := range queryCPUMetricsList {
 		dbName := *metric.DatabaseName
@@ -103,7 +103,7 @@ func processForAnonymizeQueryMap(queryCPUMetricsList []datamodels.SlowRunningQue
 		anonymizedQuery := *metric.QueryText
 
 		if _, exists := anonymizeQueryMapByDB[dbName]; !exists {
-			anonymizeQueryMapByDB[dbName] = make(map[int64]string)
+			anonymizeQueryMapByDB[dbName] = make(map[string]string)
 		}
 		anonymizeQueryMapByDB[dbName][queryID] = anonymizedQuery
 	}
