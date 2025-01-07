@@ -90,7 +90,7 @@ func processModel(model interface{}, metricSet *metric.Set) {
 		fieldType := modelType.Field(i)
 		metricName := fieldType.Tag.Get("metric_name")
 		sourceType := fieldType.Tag.Get("source_type")
-		ingestData := fieldType.Tag.Get("ingest_data")
+		ingestData := fieldType.Tag.Get("ingestData")
 
 		if ingestData == "false" {
 			log.Info("Skipping metric: %s", metricName)
