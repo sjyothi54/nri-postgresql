@@ -20,5 +20,8 @@ func GetDatabaseListInString(dbList collection.DatabaseList) string {
 	for dbName := range dbList {
 		databaseNames = append(databaseNames, dbName)
 	}
+	if len(databaseNames) == 0 {
+		return ""
+	}
 	return GetQuotedStringFromArray(databaseNames)
 }
