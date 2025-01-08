@@ -144,9 +144,7 @@ const (
       LIMIT %d;
 `
 
-	BlockingQueriesForV12AndV13 = `
-      SELECT 
-          'newrelic' as newrelic,
+	BlockingQueriesForV12AndV13 = `SELECT 'newrelic' as newrelic,
           blocked_activity.pid AS blocked_pid,
           LEFT(blocked_activity.query, 4095) AS blocked_query,
           blocked_activity.query_start AS blocked_query_start,
