@@ -3,14 +3,16 @@ package commonutils
 import (
 	"crypto/rand"
 	"fmt"
+	"math/big"
+	"reflect"
+	"regexp"
+	"time"
+
 	_ "github.com/lib/pq"
 	"github.com/newrelic/infra-integrations-sdk/v3/data/metric"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
-	"math/big"
-	"reflect"
-	"time"
 )
 
 const publishThreshold = 100
@@ -121,4 +123,10 @@ func GenerateRandomIntegerString(queryID int64) *string {
 	currentTime := time.Now().Format("20060102150405")
 	result := fmt.Sprintf("%d-%d-%s", queryID, randomInt.Int64(), currentTime)
 	return &result
+}
+
+func AnonymizeQueryText(query *string) {
+	re := regexp.MustCompile(`'[^']*'|\d+|".*?"`)
+	anonymizedQuery := re.ReplaceAllString(*query, "?")
+	*query = anonymizedQuery
 }
