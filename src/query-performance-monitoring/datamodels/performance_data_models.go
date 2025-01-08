@@ -1,8 +1,8 @@
 package datamodels
 
 type SlowRunningQueryMetrics struct {
-	Newrelic            *string  `db:"newrelic"              metric_name:"newrelic"                   source_type:"attribute"  ingestData:"false"`
-	QueryID             *int64   `db:"query_id"              metric_name:"query_id"                   source_type:"gauge"`
+	Newrelic            *string  `db:"newrelic"              metric_name:"newrelic"                   source_type:"attribute"  ingest_data:"false"`
+	QueryID             *string  `db:"query_id"              metric_name:"query_id"                   source_type:"attribute"`
 	QueryText           *string  `db:"query_text"            metric_name:"query_text"                 source_type:"attribute"`
 	DatabaseName        *string  `db:"database_name"         metric_name:"database_name"              source_type:"attribute"`
 	SchemaName          *string  `db:"schema_name"           metric_name:"schema_name"                source_type:"attribute"`
@@ -24,7 +24,7 @@ type WaitEventMetrics struct {
 	DatabaseName        *string  `db:"database_name"         metric_name:"database_name"              source_type:"attribute"`
 }
 type BlockingSessionMetrics struct {
-	Newrelic           *string `db:"newrelic"              metric_name:"newrelic"            source_type:"attribute"  ingestData:"false"`
+	Newrelic           *string `db:"newrelic"              metric_name:"newrelic"            source_type:"attribute"  ingest_data:"false"`
 	BlockedPid         *int64  `db:"blocked_pid"          metric_name:"blocked_pid"          source_type:"gauge"`
 	BlockedQuery       *string `db:"blocked_query"        metric_name:"blocked_query"        source_type:"attribute"`
 	BlockedQueryID     *string `db:"blocked_query_id"     metric_name:"blocked_query_id"     source_type:"attribute"`
@@ -38,13 +38,13 @@ type BlockingSessionMetrics struct {
 
 type IndividualQueryMetrics struct {
 	QueryText       *string  `json:"query" db:"query" metric_name:"query_text" source_type:"attribute"`
-	QueryID         *int64   `json:"queryid" db:"queryid" metric_name:"query_id" source_type:"gauge"`
+	QueryID         *string  `json:"queryid" db:"queryid" metric_name:"query_id" source_type:"attribute"`
 	DatabaseName    *string  `json:"datname" db:"datname" metric_name:"database_name" source_type:"attribute"`
 	AvgCPUTimeInMS  *float64 `json:"avg_cpu_time_ms" db:"avg_cpu_time_ms" metric_name:"avg_cpu_time_ms" source_type:"gauge"`
 	PlanID          *string  `json:"planid" db:"planid" metric_name:"plan_id" source_type:"attribute"`
-	RealQueryText   *string  `ingestData:"false"`
-	AvgExecTimeInMs *float64 `json:"avg_exec_time_ms" db:"avg_exec_time_ms" ingestData:"false"`
-	Newrelic        *string  `db:"newrelic"              metric_name:"newrelic"            source_type:"attribute"  ingestData:"false"`
+	RealQueryText   *string  `ingest_data:"false"`
+	AvgExecTimeInMs *float64 `json:"avg_exec_time_ms" db:"avg_exec_time_ms" ingest_data:"false"`
+	Newrelic        *string  `db:"newrelic"              metric_name:"newrelic"            source_type:"attribute"  ingest_data:"false"`
 }
 
 type QueryExecutionPlanMetrics struct {
@@ -68,7 +68,7 @@ type QueryExecutionPlanMetrics struct {
 	TempWrittenBlocks   int64   `mapstructure:"Temp Written Blocks" json:"Temp Written Blocks" metric_name:"temp_written_blocks"   source_type:"gauge"`
 	DatabaseName        string  `mapstructure:"Database"            json:"Database"            metric_name:"database_name"              source_type:"attribute"`
 	QueryText           string  `mapstructure:"Query"               json:"Query"               metric_name:"query_text"                 source_type:"attribute"`
-	QueryID             int64   `mapstructure:"Query Id"            json:"Query Id"            metric_name:"query_id"              source_type:"gauge"`
+	QueryID             string  `mapstructure:"Query Id"            json:"Query Id"            metric_name:"query_id"              source_type:"attribute"`
 	PlanID              string  `mapstructure:"Plan Id"             json:"Plan Id"             metric_name:"plan_id"               source_type:"attribute"`
 	Level               int     `mapstructure:"Level"               json:"Level"             metric_name:"level_id"               source_type:"gauge"`
 }

@@ -65,10 +65,11 @@ func IngestMetric(metricList []interface{}, eventName string, pgIntegration *int
 			}
 		}
 	}
-
-	if err := publishMetrics(pgIntegration, &instanceEntity, args); err != nil {
-		log.Error("Error publishing metrics: %v", err)
-		return
+	if metricCount > 0 {
+		if err := publishMetrics(pgIntegration, &instanceEntity, args); err != nil {
+			log.Error("Error publishing metrics: %v", err)
+			return
+		}
 	}
 }
 
@@ -115,13 +116,13 @@ func publishMetrics(pgIntegration *integration.Integration, instanceEntity **int
 	return err
 }
 
-func GenerateRandomIntegerString(queryID int64) *string {
+func GenerateRandomIntegerString(queryID string) *string {
 	randomInt, err := rand.Int(rand.Reader, big.NewInt(randomIntRange))
 	if err != nil {
 		return nil
 	}
 	currentTime := time.Now().Format("20060102150405")
-	result := fmt.Sprintf("%d-%d-%s", queryID, randomInt.Int64(), currentTime)
+	result := fmt.Sprintf("%s-%d-%s", queryID, randomInt.Int64(), currentTime)
 	return &result
 }
 
