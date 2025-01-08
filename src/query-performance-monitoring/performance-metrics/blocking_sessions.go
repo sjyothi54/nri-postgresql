@@ -54,6 +54,8 @@ func GetBlockingMetrics(conn *performancedbconnection.PGSQLConnection, args args
 		if scanError := rows.StructScan(&blockingQueryMetric); scanError != nil {
 			return nil, err
 		}
+		*blockingQueryMetric.BlockedQuery = commonutils.AnonymizeQueryText(*blockingQueryMetric.BlockedQuery)
+		*blockingQueryMetric.BlockingQuery = commonutils.AnonymizeQueryText(*blockingQueryMetric.BlockingQuery)
 		blockingQueriesMetricsList = append(blockingQueriesMetricsList, blockingQueryMetric)
 	}
 

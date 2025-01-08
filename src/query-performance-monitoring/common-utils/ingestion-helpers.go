@@ -3,14 +3,15 @@ package commonutils
 import (
 	"crypto/rand"
 	"fmt"
+	"math/big"
+	"reflect"
+	"time"
+
 	_ "github.com/lib/pq"
 	"github.com/newrelic/infra-integrations-sdk/v3/data/metric"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
-	"math/big"
-	"reflect"
-	"time"
 )
 
 const publishThreshold = 100

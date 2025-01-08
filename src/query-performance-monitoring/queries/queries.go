@@ -140,26 +140,17 @@ const (
           AND blocked_activity.datname IN (%s)
           AND blocked_statements.query NOT LIKE 'EXPLAIN (FORMAT JSON) %%'
           AND blocking_statements.query NOT LIKE 'EXPLAIN (FORMAT JSON) %%'
+      ORDER BY blocked_activity.query_start ASC    
       LIMIT %d;
 `
 
-	BlockingQueriesForV12AndV13 = `CREATE OR REPLACE FUNCTION mask_query(query TEXT) RETURNS TEXT AS $$
-      DECLARE
-          masked_query TEXT := query;
-      BEGIN
-          masked_query := regexp_replace(masked_query, '''[^'']*''', '$s', 'g');
-          masked_query := regexp_replace(masked_query, '\d+', '$n', 'g');
-          RETURN masked_query;
-      END;
-      $$ LANGUAGE plpgsql;
-      SELECT 
-          'newrelic' as newrelic,
+	BlockingQueriesForV12AndV13 = `SELECT 'newrelic' as newrelic,
           blocked_activity.pid AS blocked_pid,
-          LEFT(mask_query(blocked_activity.query), 4095) AS blocked_query,
+          LEFT(blocked_activity.query, 4095) AS blocked_query,
           blocked_activity.query_start AS blocked_query_start,
           blocked_activity.datname AS database_name,
           blocking_activity.pid AS blocking_pid,
-          LEFT(mask_query(blocking_activity.query), 4095) AS blocking_query,
+          LEFT(blocking_activity.query, 4095) AS blocking_query,
           blocking_activity.query_start AS blocking_query_start
       FROM pg_stat_activity AS blocked_activity
       JOIN pg_locks blocked_locks ON blocked_activity.pid = blocked_locks.pid
@@ -178,6 +169,7 @@ const (
 		  AND blocked_activity.datname IN (%s)
           AND blocked_activity.query NOT LIKE 'EXPLAIN (FORMAT JSON) %%'
           AND blocking_activity.query NOT LIKE 'EXPLAIN (FORMAT JSON) %%'
+      ORDER BY blocked_activity.query_start ASC    
       LIMIT %d;`
 
 	IndividualQuerySearchV13AndAbove = `SELECT 'newrelic' as newrelic,

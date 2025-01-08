@@ -22,6 +22,7 @@ func PopulateIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnectio
 		log.Debug("Extension 'pg_stat_monitor' is not enabled.")
 		return nil
 	}
+	log.Debug("Extension 'pg_stat_monitor' enabled.")
 	individualQueryMetricsInterface, individualQueriesForExecPlan := GetIndividualQueryMetrics(conn, slowRunningQueries, args, databaseNames)
 	if len(individualQueryMetricsInterface) == 0 {
 		log.Debug("No individual queries found.")
