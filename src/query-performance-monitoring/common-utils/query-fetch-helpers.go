@@ -45,7 +45,6 @@ func FetchVersion(conn *performancedbconnection.PGSQLConnection) (int, error) {
 
 func FetchVersionSpecificSlowQueries(conn *performancedbconnection.PGSQLConnection) (string, error) {
 	version, err := FetchVersion(conn)
-	log.Info("FetchVersionSpecificSlowQueries", version)
 	if err != nil {
 		return "", err
 	}
@@ -61,7 +60,6 @@ func FetchVersionSpecificSlowQueries(conn *performancedbconnection.PGSQLConnecti
 
 func FetchVersionSpecificBlockingQueries(conn *performancedbconnection.PGSQLConnection) (string, error) {
 	version, err := FetchVersion(conn)
-	log.Info("FetchVersionSpecificBlockingQueries", version)
 	if err != nil {
 		return "", err
 	}
@@ -77,7 +75,6 @@ func FetchVersionSpecificBlockingQueries(conn *performancedbconnection.PGSQLConn
 
 func FetchVersionSpecificIndividualQueries(conn *performancedbconnection.PGSQLConnection) (string, error) {
 	version, err := FetchVersion(conn)
-	log.Info("FetchVersionSpecificIndividualQueries", version)
 	if err != nil {
 		return "", err
 	}
