@@ -24,7 +24,7 @@ const (
     JOIN
         pg_database pd ON pss.dbid = pd.oid
     WHERE 
-		pd.datname in (%s)
+		pd.datname in (?)
         AND pss.query NOT ILIKE 'EXPLAIN (FORMAT JSON) %%' 
 		AND pss.query NOT ILIKE 'SELECT $1 as newrelic%%'
 		AND pss.query NOT ILIKE 'WITH wait_history AS%%'
@@ -34,8 +34,7 @@ const (
         AND pss.query NOT ILIKE 'SELECT table_schema%%'
     ORDER BY
         avg_elapsed_time_ms DESC -- Order by the average elapsed time in descending order
-    LIMIT
-        %d;`
+    LIMIT ?;`
 
 	SlowQueriesForV12 = `SELECT 'newrelic' as newrelic,
         pss.queryid AS query_id,
@@ -59,7 +58,7 @@ const (
     JOIN
         pg_database pd ON pss.dbid = pd.oid
     WHERE 
-		pd.datname in (%s)
+		pd.datname in (?)
         AND pss.query NOT ILIKE 'EXPLAIN (FORMAT JSON) %%' 
         AND pss.query NOT ILIKE 'SELECT $1 as newrelic%%'
         AND pss.query NOT ILIKE 'WITH wait_history AS%%'
@@ -71,7 +70,7 @@ const (
     ORDER BY
         avg_elapsed_time_ms DESC -- Order by the average elapsed time in descending order
     LIMIT
-        %d;`
+        ?;`
 
 	WaitEvents = `WITH wait_history AS (
         SELECT
