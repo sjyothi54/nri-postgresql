@@ -32,6 +32,20 @@ func PopulateBlockingMetrics(conn *performancedbconnection.PGSQLConnection, pgIn
 		log.Debug("No Blocking queries found.")
 		return
 	}
+	for i, metric := range blockingQueriesMetricsList {
+		if blockingMetric, ok := metric.(datamodels.BlockingSessionMetrics); ok {
+			if blockingMetric.BlockedQuery != nil {
+				anonymizedQuery := commonutils.AnonymizeQueryText(blockingMetric.BlockedQuery)
+				blockingMetric.BlockedQuery = &anonymizedQuery
+			}
+			if blockingMetric.BlockingQuery != nil {
+				anonymizedQuery := commonutils.AnonymizeQueryText(blockingMetric.BlockingQuery)
+				blockingMetric.BlockingQuery = &anonymizedQuery
+			}
+			blockingQueriesMetricsList[i] = blockingMetric
+		}
+	}
+	log.Info("Ingesting Blocking queries", blockingQueriesMetricsList)
 	commonutils.IngestMetric(blockingQueriesMetricsList, "PostgresBlockingSessions", pgIntegration, args)
 }
 
