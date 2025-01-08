@@ -56,7 +56,7 @@ func GetBlockingMetrics(conn *performancedbconnection.PGSQLConnection, args args
 	for rows.Next() {
 		var blockingQueryMetric datamodels.BlockingSessionMetrics
 		if scanError := rows.StructScan(&blockingQueryMetric); scanError != nil {
-			return nil, err
+			return nil, scanError
 		}
 		if version == 13 || version == 12 {
 			*blockingQueryMetric.BlockedQuery = commonutils.AnonymizeQueryText(*blockingQueryMetric.BlockedQuery)
