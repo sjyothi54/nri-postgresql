@@ -127,6 +127,6 @@ func GenerateRandomIntegerString(queryID int64) *string {
 
 func AnonymizeQueryText(query *string) string {
 	re := regexp.MustCompile(`'[^']*'|\d+|".*?"`)
-	anonymizedQuery := re.ReplaceAllString(*query, "?")
+	anonymizedQuery := re.ReplaceAllString(*query, "$")
 	return anonymizedQuery
 }
