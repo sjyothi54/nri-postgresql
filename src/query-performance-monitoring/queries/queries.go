@@ -24,7 +24,7 @@ const (
     JOIN
         pg_database pd ON pss.dbid = pd.oid
     WHERE 
-		pd.datname in (?)
+		pd.datname in (%s)
         AND pss.query NOT ILIKE 'EXPLAIN (FORMAT JSON) %%' 
 		AND pss.query NOT ILIKE 'SELECT $1 as newrelic%%'
 		AND pss.query NOT ILIKE 'WITH wait_history AS%%'
@@ -34,7 +34,7 @@ const (
         AND pss.query NOT ILIKE 'SELECT table_schema%%'
     ORDER BY
         avg_elapsed_time_ms DESC -- Order by the average elapsed time in descending order
-    LIMIT ?;`
+    LIMIT %d;`
 
 	SlowQueriesForV12 = `SELECT 'newrelic' as newrelic,
         pss.queryid AS query_id,
