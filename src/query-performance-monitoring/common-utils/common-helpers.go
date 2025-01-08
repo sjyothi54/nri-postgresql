@@ -2,6 +2,7 @@ package commonutils
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/newrelic/nri-postgresql/src/collection"
@@ -24,4 +25,10 @@ func GetDatabaseListInString(dbList collection.DatabaseList) string {
 		return ""
 	}
 	return GetQuotedStringFromArray(databaseNames)
+}
+
+func AnonymizeQueryText(query string) string {
+	re := regexp.MustCompile(`'[^']*'|\d+|".*?"`)
+	anonymizedQuery := re.ReplaceAllString(query, "?")
+	return anonymizedQuery
 }

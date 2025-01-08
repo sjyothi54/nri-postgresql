@@ -140,7 +140,7 @@ const (
           AND blocked_activity.datname IN (%s)
           AND blocked_statements.query NOT LIKE 'EXPLAIN (FORMAT JSON) %%'
           AND blocking_statements.query NOT LIKE 'EXPLAIN (FORMAT JSON) %%'
-      ORDER BY blocking_activity.query_start ASC    
+      ORDER BY blocked_activity.query_start ASC    
       LIMIT %d;
 `
 
@@ -171,7 +171,7 @@ const (
 		  AND blocked_activity.datname IN (%s)
           AND blocked_activity.query NOT LIKE 'EXPLAIN (FORMAT JSON) %%'
           AND blocking_activity.query NOT LIKE 'EXPLAIN (FORMAT JSON) %%'
-      ORDER BY blocking_activity.query_start ASC    
+      ORDER BY blocked_activity.query_start ASC    
       LIMIT %d;`
 
 	IndividualQuerySearchV13AndAbove = `SELECT 'newrelic' as newrelic,

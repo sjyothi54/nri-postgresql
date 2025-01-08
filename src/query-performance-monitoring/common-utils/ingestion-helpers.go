@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"math/big"
 	"reflect"
-	"regexp"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -124,10 +123,4 @@ func GenerateRandomIntegerString(queryID string) *string {
 	currentTime := time.Now().Format("20060102150405")
 	result := fmt.Sprintf("%s-%d-%s", queryID, randomInt.Int64(), currentTime)
 	return &result
-}
-
-func AnonymizeQueryText(query *string) string {
-	re := regexp.MustCompile(`'[^']*'|\d+|".*?"`)
-	anonymizedQuery := re.ReplaceAllString(*query, "$")
-	return anonymizedQuery
 }
