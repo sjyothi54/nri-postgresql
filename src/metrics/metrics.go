@@ -231,7 +231,6 @@ func collectVersion(connection *connection.PGSQLConnection) (*semver.Version, er
 
 	re := regexp.MustCompile(`[0-9]+\.[0-9]+(\.[0-9])?`)
 	version := re.FindString(versionRows[0].Version)
-	log.Info("e-version", version)
 	// special cases for ubuntu/debian parsing
 	//version := versionRows[0].Version
 	//if strings.Contains(version, "Ubuntu") {
@@ -241,8 +240,6 @@ func collectVersion(connection *connection.PGSQLConnection) (*semver.Version, er
 	//}
 
 	v, err := semver.ParseTolerant(version)
-	log.Info("v", v.Major)
-	log.Info("vers", v)
 	if err != nil {
 		return nil, err
 	}
