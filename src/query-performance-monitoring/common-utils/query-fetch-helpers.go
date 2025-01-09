@@ -2,7 +2,6 @@ package commonutils
 
 import (
 	"errors"
-	"fmt"
 	"regexp"
 	"strconv"
 
@@ -31,7 +30,7 @@ func FetchVersion(conn *performancedbconnection.PGSQLConnection) (int, error) {
 	matches := re.FindStringSubmatch(versionStr)
 	if len(matches) < VERSION_INDEX {
 		log.Error("Unable to parse PostgreSQL version from string: %s", versionStr)
-		return 0, ParseVersionError
+		return 0, PARSE_VERSION_ERROR
 	}
 
 	version, err := strconv.Atoi(matches[1])
@@ -54,7 +53,7 @@ func FetchVersionSpecificSlowQueries(conn *performancedbconnection.PGSQLConnecti
 	case version >= POSTGRES_VERSION_13:
 		return queries.SlowQueriesForV13AndAbove, nil
 	default:
-		return "", fmt.Errorf("unsupported PostgreSQL version %d", version)
+		return "", UNSUPPORTED_VERSION
 	}
 }
 
@@ -69,7 +68,7 @@ func FetchVersionSpecificBlockingQueries(conn *performancedbconnection.PGSQLConn
 	case version >= POSTGRES_VERSION_14:
 		return queries.BlockingQueriesForV14AndAbove, nil
 	default:
-		return "", fmt.Errorf("unsupported PostgreSQL version: %d", version)
+		return "", UNSUPPORTED_VERSION
 	}
 }
 
@@ -79,11 +78,11 @@ func FetchVersionSpecificIndividualQueries(conn *performancedbconnection.PGSQLCo
 		return "", err
 	}
 	switch {
-	case version == 12:
+	case version == POSTGRES_VERSION_12:
 		return queries.IndividualQuerySearchV12, nil
-	case version >= 13:
+	case version >= POSTGRES_VERSION_12:
 		return queries.IndividualQuerySearchV13AndAbove, nil
 	default:
-		return "", fmt.Errorf("unsupported PostgreSQL version %d", version)
+		return "", UNSUPPORTED_VERSION
 	}
 }
