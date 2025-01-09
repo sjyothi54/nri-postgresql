@@ -37,7 +37,7 @@ func AnonymizeQueryText(query string) string {
 }
 
 // This function is used to generate a unique plan ID for a query
-func GeneratePlanID(queryID string) *string {
+func GeneratePlanId(queryID string) *string {
 	randomInt, err := rand.Int(rand.Reader, big.NewInt(RANDOM_INT_RANGE))
 	if err != nil {
 		return nil
