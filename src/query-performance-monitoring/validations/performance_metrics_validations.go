@@ -2,10 +2,10 @@ package validations
 
 import (
 	"fmt"
-	commonutils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
 
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	performancedbconnection "github.com/newrelic/nri-postgresql/src/connection"
+	commonutils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
 )
 
 func isExtensionEnabled(conn *performancedbconnection.PGSQLConnection, extensionName string) (bool, error) {
