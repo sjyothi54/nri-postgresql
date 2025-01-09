@@ -29,13 +29,14 @@ func QueryPerformanceMain(args args.ArgumentList, pgIntegration *integration.Int
 		return
 	}
 	version, versionErr := metrics.CollectVersion(newConnection)
+	versionInt := version.Major
 	if versionErr != nil {
 		log.Debug("Error fetching version: ", versionErr)
 		return
 	}
 	start := time.Now()
 	log.Debug("Starting PopulateSlowRunningMetrics at ", start)
-	slowRunningQueries := performancemetrics.PopulateSlowRunningMetrics(newConnection, pgIntegration, args, databaseStringList, version)
+	slowRunningQueries := performancemetrics.PopulateSlowRunningMetrics(newConnection, pgIntegration, args, databaseStringList, versionInt)
 	log.Debug("PopulateSlowRunningMetrics completed in ", time.Since(start))
 
 	start = time.Now()
@@ -45,12 +46,12 @@ func QueryPerformanceMain(args args.ArgumentList, pgIntegration *integration.Int
 
 	start = time.Now()
 	log.Debug("Starting PopulateBlockingMetrics at ", start)
-	performancemetrics.PopulateBlockingMetrics(newConnection, pgIntegration, args, databaseStringList, version)
+	performancemetrics.PopulateBlockingMetrics(newConnection, pgIntegration, args, databaseStringList, versionInt)
 	log.Debug("PopulateBlockingMetrics completed in ", time.Since(start))
 
 	start = time.Now()
 	log.Debug("Starting PopulateIndividualQueryMetrics at ", start)
-	individualQueries := performancemetrics.PopulateIndividualQueryMetrics(newConnection, slowRunningQueries, pgIntegration, args, databaseStringList, version)
+	individualQueries := performancemetrics.PopulateIndividualQueryMetrics(newConnection, slowRunningQueries, pgIntegration, args, databaseStringList, versionInt)
 	log.Debug("PopulateIndividualQueryMetrics completed in ", time.Since(start))
 
 	start = time.Now()
