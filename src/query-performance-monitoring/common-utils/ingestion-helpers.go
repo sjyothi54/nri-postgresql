@@ -1,7 +1,6 @@
 package commonutils
 
 import (
-	"errors"
 	"fmt"
 	"reflect"
 
@@ -84,7 +83,7 @@ func processModel(model interface{}, metricSet *metric.Set) error {
 	}
 	if !modelValue.IsValid() || modelValue.Kind() != reflect.Struct {
 		log.Error("Invalid model type: %v", modelValue.Kind())
-		return errors.New("invalid model type:" + modelValue.Kind().String())
+		return ErrInvalidModelType
 	}
 
 	modelType := reflect.TypeOf(model)

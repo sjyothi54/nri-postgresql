@@ -9,9 +9,10 @@ const RandomIntRange = 1000000
 const TimeFormat = "20060102150405"
 const VersionRegex = "PostgreSQL (\\d+)\\."
 
-var ParseVersionError = errors.New("unable to parse PostgreSQL version from string")
-var UnsupportedVersion = errors.New("unsupported PostgreSQL version")
-var VersionFetchError = errors.New("no rows returned from version query")
+var ErrParseVersion = errors.New("unable to parse PostgreSQL version from string")
+var ErrUnsupportedVersion = errors.New("unsupported PostgreSQL version")
+var ErrVersionFetchError = errors.New("no rows returned from version query")
+var ErrInvalidModelType = errors.New("invalid model type")
 
 const PostgresVersion12 = 12
 const PostgresVersion13 = 13

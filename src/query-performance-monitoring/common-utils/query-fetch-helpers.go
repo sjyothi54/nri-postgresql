@@ -19,7 +19,7 @@ func FetchVersion(conn *performancedbconnection.PGSQLConnection) (int, error) {
 	defer rows.Close()
 
 	if !rows.Next() {
-		return 0, VersionFetchError
+		return 0, ErrVersionFetchError
 	}
 	if scanErr := rows.Scan(&versionStr); scanErr != nil {
 		log.Error("Error scanning version: %v", err)
@@ -29,7 +29,7 @@ func FetchVersion(conn *performancedbconnection.PGSQLConnection) (int, error) {
 	matches := re.FindStringSubmatch(versionStr)
 	if len(matches) < VersionIndex {
 		log.Error("Unable to parse PostgreSQL version from string: %s", versionStr)
-		return 0, ParseVersionError
+		return 0, ErrParseVersion
 	}
 
 	version, err := strconv.Atoi(matches[1])
@@ -52,7 +52,7 @@ func FetchVersionSpecificSlowQueries(conn *performancedbconnection.PGSQLConnecti
 	case version >= PostgresVersion13:
 		return queries.SlowQueriesForV13AndAbove, nil
 	default:
-		return "", UnsupportedVersion
+		return "", ErrUnsupportedVersion
 	}
 }
 
@@ -67,7 +67,7 @@ func FetchVersionSpecificBlockingQueries(conn *performancedbconnection.PGSQLConn
 	case version >= PostgresVersion14:
 		return queries.BlockingQueriesForV14AndAbove, nil
 	default:
-		return "", UnsupportedVersion
+		return "", ErrUnsupportedVersion
 	}
 }
 
@@ -82,6 +82,6 @@ func FetchVersionSpecificIndividualQueries(conn *performancedbconnection.PGSQLCo
 	case version >= PostgresVersion12:
 		return queries.IndividualQuerySearchV13AndAbove, nil
 	default:
-		return "", UnsupportedVersion
+		return "", ErrUnsupportedVersion
 	}
 }
