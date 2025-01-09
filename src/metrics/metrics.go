@@ -241,6 +241,7 @@ func collectVersion(connection *connection.PGSQLConnection) (*semver.Version, er
 	//}
 
 	v, err := semver.ParseTolerant(version)
+	log.Info("v", v.Major)
 	if err != nil {
 		return nil, err
 	}
