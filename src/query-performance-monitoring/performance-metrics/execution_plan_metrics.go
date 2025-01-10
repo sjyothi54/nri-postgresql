@@ -73,8 +73,10 @@ func processExecutionPlanOfQueries(individualQueriesList []datamodels.Individual
 
 func GroupQueriesByDatabase(results []datamodels.IndividualQueryMetrics) map[string][]datamodels.IndividualQueryMetrics {
 	databaseMap := make(map[string][]datamodels.IndividualQueryMetrics)
-
 	for _, query := range results {
+		if query.DatabaseName == nil {
+			continue
+		}
 		dbName := *query.DatabaseName
 		databaseMap[dbName] = append(databaseMap[dbName], query)
 	}
@@ -86,6 +88,10 @@ func fetchNestedExecutionPlanDetails(individualQuery datamodels.IndividualQueryM
 	err := mapstructure.Decode(execPlan, &execPlanMetrics)
 	if err != nil {
 		log.Error("Failed to decode execPlan to execPlanMetrics: %v", err)
+		return
+	}
+	if individualQuery.QueryText == nil || individualQuery.QueryID == nil || individualQuery.DatabaseName == nil {
+		log.Error("QueryText, QueryID or Database Name is nil")
 		return
 	}
 	execPlanMetrics.QueryText = *individualQuery.QueryText

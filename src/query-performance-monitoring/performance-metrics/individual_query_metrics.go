@@ -77,6 +77,10 @@ func getIndividualQueriesByGroupedQuery(conn *performancedbconnection.PGSQLConne
 			log.Error("Could not scan row: ", scanErr)
 			continue
 		}
+		if model.QueryID == nil || model.DatabaseName == nil {
+			log.Error("QueryID or DatabaseName is nil")
+			continue
+		}
 		individualQueryMetric := model
 		anonymizedQueryText := anonymizedQueriesByDB[*model.DatabaseName][*model.QueryID]
 		individualQueryMetric.QueryText = &anonymizedQueryText
