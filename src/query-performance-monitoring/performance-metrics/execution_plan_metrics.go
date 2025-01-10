@@ -46,6 +46,10 @@ func processExecutionPlanOfQueries(individualQueriesList []datamodels.Individual
 			log.Debug("Error executing query: %v", err)
 			continue
 		}
+		if individualQuery.QueryText == nil || individualQuery.QueryID == nil || individualQuery.DatabaseName == nil {
+			log.Error("QueryText, QueryID or Database Name is nil")
+			return
+		}
 		if !rows.Next() {
 			log.Debug("Execution plan not found for queryId", *individualQuery.QueryID)
 			continue
@@ -66,6 +70,7 @@ func processExecutionPlanOfQueries(individualQueriesList []datamodels.Individual
 			log.Error("Failed to unmarshal execution plan: %v", err)
 			continue
 		}
+
 		level := 0
 		fetchNestedExecutionPlanDetails(individualQuery, &level, execPlan[0]["Plan"].(map[string]interface{}), executionPlanMetricsList)
 	}
@@ -90,10 +95,7 @@ func fetchNestedExecutionPlanDetails(individualQuery datamodels.IndividualQueryM
 		log.Error("Failed to decode execPlan to execPlanMetrics: %v", err)
 		return
 	}
-	if individualQuery.QueryText == nil || individualQuery.QueryID == nil || individualQuery.DatabaseName == nil {
-		log.Error("QueryText, QueryID or Database Name is nil")
-		return
-	}
+
 	execPlanMetrics.QueryText = *individualQuery.QueryText
 	execPlanMetrics.QueryID = *individualQuery.QueryID
 	execPlanMetrics.DatabaseName = *individualQuery.DatabaseName
