@@ -63,6 +63,8 @@ func GetIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, sl
 func getIndividualQueriesSamples(conn *performancedbconnection.PGSQLConnection, slowRunningQueries datamodels.SlowRunningQueryMetrics, args args.ArgumentList, databaseNames string, anonymizedQueriesByDB map[string]map[string]string, individualQueryMetricsForExecPlanList *[]datamodels.IndividualQueryMetrics, individualQueryMetricsListInterface *[]interface{}, versionSpecificIndividualQuery string) {
 	query := ConstructIndividualQuery(slowRunningQueries, args, databaseNames, versionSpecificIndividualQuery)
 	log.Info("Query for individual query: ", query)
+	log.Info("Query for individual queryID: ", *slowRunningQueries.QueryID)
+	log.Info("Query for individual queryText: ", *slowRunningQueries.QueryText)
 	if query == "" {
 		log.Debug("Error constructing individual query")
 		return
