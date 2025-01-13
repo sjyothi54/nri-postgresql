@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/newrelic/go-agent/v3/newrelic"
+	queryperformancemonitoring "github.com/newrelic/nri-postgresql/src/query-performance-monitoring"
 	"net/url"
 	"os"
 	"time"
@@ -106,7 +107,7 @@ func (p PGSQLConnection) Query(v interface{}, query string) error {
 func (p PGSQLConnection) Queryx(query string) (*sqlx.Rows, error) {
 	app, err := newrelic.NewApplication(
 		newrelic.ConfigAppName("PostgreSQL App"),
-		newrelic.ConfigLicense(os.Getenv("NEW_RELIC_LICENSE_KEY")),
+		newrelic.ConfigLicense(os.Getenv(queryperformancemonitoring.ArgsGlobal.LiscenceKey)),
 		newrelic.ConfigDebugLogger(os.Stdout),
 		newrelic.ConfigDatastoreRawQuery(true),
 	)

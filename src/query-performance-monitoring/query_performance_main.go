@@ -15,6 +15,8 @@ import (
 	performancemetrics "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-metrics"
 )
 
+var ArgsGlobal = args.ArgumentList{}
+
 func QueryPerformanceMain(args args.ArgumentList, pgIntegration *integration.Integration, databaseList collection.DatabaseList, app *newrelic.Application) {
 	connectionInfo := performancedbconnection.DefaultConnectionInfo(&args)
 	databaseStringList := commonutils.GetDatabaseListInString(databaseList)
