@@ -31,14 +31,6 @@ var (
 
 func main() {
 	var args args.ArgumentList
-	app, err := newrelic.NewApplication(
-		newrelic.ConfigAppName("postgres-go-test"),
-		newrelic.ConfigLicense(args.LicenseKey),
-		newrelic.ConfigAppLogForwardingEnabled(true),
-	)
-	if err != nil {
-		log.Error("error creating app:", err)
-	}
 
 	// Create Integration
 	pgIntegration, err := integration.New(integrationName, integrationVersion, integration.Args(&args))
@@ -100,7 +92,14 @@ func main() {
 	if err = pgIntegration.Publish(); err != nil {
 		log.Error(err.Error())
 	}
-
+	app, err := newrelic.NewApplication(
+		newrelic.ConfigAppName("postgres-go-test"),
+		newrelic.ConfigLicense(args.LicenseKey),
+		newrelic.ConfigAppLogForwardingEnabled(true),
+	)
+	if err != nil {
+		log.Error("error creating app:", err)
+	}
 	if args.EnableQueryMonitoring {
 		txn := app.StartTransaction("transaction_name")
 		defer txn.End()
