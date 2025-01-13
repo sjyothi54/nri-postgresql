@@ -8,6 +8,7 @@ import (
 
 	queryperformancemonitoring "github.com/newrelic/nri-postgresql/src/query-performance-monitoring"
 
+	_ "github.com/newrelic/go-agent/v3/integrations/nrpq"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
