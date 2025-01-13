@@ -106,7 +106,7 @@ func main() {
 	}
 
 	if args.EnableQueryMonitoring {
-		queryperformancemonitoring.QueryPerformanceMain(args, pgIntegration, collectionList)
+		queryperformancemonitoring.QueryPerformanceMain(args, pgIntegration, collectionList, app)
 	}
 
 }
