@@ -11,6 +11,8 @@ import (
 	"github.com/newrelic/nri-postgresql/src/collection"
 )
 
+var re = regexp.MustCompile(`'[^']*'|\d+|".*?"`)
+
 func getQuotedStringFromArray(array []string) string {
 	var quotedNames = make([]string, 0)
 	for _, name := range array {
@@ -31,7 +33,6 @@ func GetDatabaseListInString(dbList collection.DatabaseList) string {
 }
 
 func AnonymizeQueryText(query string) string {
-	re := regexp.MustCompile(`'[^']*'|\d+|".*?"`)
 	anonymizedQuery := re.ReplaceAllString(query, "?")
 	return anonymizedQuery
 }
