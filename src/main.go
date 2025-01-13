@@ -36,10 +36,11 @@ func main() {
 	pgIntegration, err := integration.New(integrationName, integrationVersion, integration.Args(&args))
 	log.Info("Length of liscence key: ", len(args.LiscenceKey))
 	app, err := newrelic.NewApplication(
-		newrelic.ConfigAppName("postgres-dev-v2"),
+		newrelic.ConfigAppName("postgres-v3"),
 		newrelic.ConfigLicense(args.LiscenceKey),
 		newrelic.ConfigAppLogForwardingEnabled(true),
 	)
+
 	if err != nil {
 		log.Error("Error creating new relic application: %s", err.Error())
 	}
