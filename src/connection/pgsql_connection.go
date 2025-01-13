@@ -107,7 +107,7 @@ func (p PGSQLConnection) Query(v interface{}, query string) error {
 func (p PGSQLConnection) Queryx(query string) (*sqlx.Rows, error) {
 	log.Info("len of locec", len(common_package.ArgsGlobal))
 	app, err := newrelic.NewApplication(
-		newrelic.ConfigAppName("PostgreSQL App"),
+		newrelic.ConfigAppName("postgres-v3"),
 		newrelic.ConfigLicense(common_package.ArgsGlobal),
 		newrelic.ConfigDebugLogger(os.Stdout),
 		newrelic.ConfigDatastoreRawQuery(true),
