@@ -35,8 +35,6 @@ func main() {
 	// Create Integration
 	pgIntegration, err := integration.New(integrationName, integrationVersion, integration.Args(&args))
 	common_package.ArgsGlobal = args.LicenceKey
-	log.Info("Length of liscence key: ", len(args.LicenceKey))
-	log.Info("len of locec", len(common_package.ArgsGlobal))
 	app, err := newrelic.NewApplication(
 		newrelic.ConfigAppName("postgres-v3"),
 		newrelic.ConfigLicense(common_package.ArgsGlobal),

@@ -104,9 +104,9 @@ func (p PGSQLConnection) Query(v interface{}, query string) error {
 
 // Queryx runs a query and returns a set of rows
 func (p PGSQLConnection) Queryx(query string) (*sqlx.Rows, error) {
-	log.Info("len of locec", len(common_package.ArgsGlobal))
 	waitErrr := common_package.NewrelicApp.WaitForConnection(5 * time.Second)
 	if waitErrr != nil {
+		log.Error("Error waiting for connection: %s", waitErrr.Error())
 		return nil, waitErrr
 	}
 	txn := common_package.NewrelicApp.StartTransaction("postgresQuery")
