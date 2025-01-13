@@ -31,21 +31,20 @@ var (
 func main() {
 
 	var args args.ArgumentList
-	log.Info("Length of liscence key: ", len(args.LiscenceKey))
-	app, err := newrelic.NewApplication(
-		newrelic.ConfigAppName("postgres-dev-v2"),
-		newrelic.ConfigLicense(args.LiscenceKey),
-		newrelic.ConfigAppLogForwardingEnabled(true),
-	)
-
-	txn := app.StartTransaction("test_performance_monitoring")
-	defer txn.End()
 
 	if err != nil {
 		log.Error("Error creating new relic application: %s", err.Error())
 	}
 	// Create Integration
 	pgIntegration, err := integration.New(integrationName, integrationVersion, integration.Args(&args))
+	log.Info("Length of liscence key: ", len(args.LiscenceKey))
+	app, err := newrelic.NewApplication(
+		newrelic.ConfigAppName("postgres-dev-v2"),
+		newrelic.ConfigLicense(args.LiscenceKey),
+		newrelic.ConfigAppLogForwardingEnabled(true),
+	)
+	txn := app.StartTransaction("test_performance_monitoring")
+	defer txn.End()
 	if err != nil {
 		log.Error(err.Error())
 		os.Exit(1)
