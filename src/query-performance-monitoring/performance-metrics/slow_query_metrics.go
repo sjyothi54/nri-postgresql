@@ -21,6 +21,7 @@ func GetSlowRunningMetrics(conn *performancedbconnection.PGSQLConnection, args a
 		return nil, nil, err
 	}
 	var query = fmt.Sprintf(versionSpecificSlowQuery, databaseNames, min(args.QueryCountThreshold, commonutils.MaxQueryThreshold))
+	log.Info("GetSlowRunningMetrics", query)
 	rows, err := conn.Queryx(query)
 	if err != nil {
 		return nil, nil, err
