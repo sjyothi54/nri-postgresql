@@ -7,6 +7,7 @@ import (
 	"github.com/newrelic/go-agent/v3/newrelic"
 	common_package "github.com/newrelic/nri-postgresql/common-package"
 	"net/url"
+	"os"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -104,12 +105,21 @@ func (p PGSQLConnection) Query(v interface{}, query string) error {
 
 // Queryx runs a query and returns a set of rows
 func (p PGSQLConnection) Queryx(query string) (*sqlx.Rows, error) {
-	waitErrr := common_package.NewrelicApp.WaitForConnection(5 * time.Second)
+	app, err := newrelic.NewApplication(
+		newrelic.ConfigAppName("postgres-v3"),
+		newrelic.ConfigLicense(common_package.ArgsGlobal),
+		newrelic.ConfigDebugLogger(os.Stdout),
+		newrelic.ConfigDatastoreRawQuery(true),
+	)
+	if nil != err {
+		log.Error("Error creating new relic application: %s", err.Error())
+	}
+	waitErrr := app.WaitForConnection(5 * time.Second)
 	if waitErrr != nil {
 		log.Error("Error waiting for connection: %s", waitErrr.Error())
 		return nil, waitErrr
 	}
-	txn := common_package.NewrelicApp.StartTransaction("postgresQuery")
+	txn := app.StartTransaction("postgresQuery")
 	ctx := newrelic.NewContext(context.Background(), txn)
 	return p.connection.QueryxContext(ctx, query)
 }
