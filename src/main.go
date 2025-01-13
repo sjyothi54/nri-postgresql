@@ -32,10 +32,11 @@ func main() {
 
 	var args args.ArgumentList
 	app, err := newrelic.NewApplication(
-		newrelic.ConfigAppName("postgres-dev"),
+		newrelic.ConfigAppName("postgres-dev-v2"),
 		newrelic.ConfigLicense(args.LiscenceKey),
 		newrelic.ConfigAppLogForwardingEnabled(true),
 	)
+
 	txn := app.StartTransaction("test_performance_monitoring")
 	defer txn.End()
 
