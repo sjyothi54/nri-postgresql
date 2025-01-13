@@ -4,6 +4,8 @@ package queryperformancemonitoring
 import (
 	"time"
 
+	_ "github.com/newrelic/go-agent/v3/integrations/nrpgx"
+	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
@@ -14,13 +16,16 @@ import (
 	performancemetrics "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-metrics"
 )
 
-func QueryPerformanceMain(args args.ArgumentList, pgIntegration *integration.Integration, databaseList collection.DatabaseList) {
+func QueryPerformanceMain(args args.ArgumentList, pgIntegration *integration.Integration, databaseList collection.DatabaseList, app *newrelic.Application) {
 	connectionInfo := performancedbconnection.DefaultConnectionInfo(&args)
 	databaseStringList := commonutils.GetDatabaseListInString(databaseList)
 	if len(databaseList) == 0 {
 		log.Debug("No databases found")
 		return
 	}
+
+	txn := app.StartTransaction("query-monitoring-main")
+	defer txn.End()
 
 	newConnection, err := connectionInfo.NewConnection(connectionInfo.DatabaseName())
 	if err != nil {

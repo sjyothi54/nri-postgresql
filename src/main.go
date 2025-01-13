@@ -101,9 +101,9 @@ func main() {
 		log.Error("error creating app:", err)
 	}
 	if args.EnableQueryMonitoring {
-		txn := app.StartTransaction("transaction_name")
+		txn := app.StartTransaction("main")
 		defer txn.End()
-		queryperformancemonitoring.QueryPerformanceMain(args, pgIntegration, collectionList)
+		queryperformancemonitoring.QueryPerformanceMain(args, pgIntegration, collectionList, app)
 	}
 
 }
