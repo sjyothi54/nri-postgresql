@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/newrelic/go-agent/v3/newrelic"
 	"os"
 	"runtime"
 	"strings"
@@ -30,6 +31,17 @@ var (
 func main() {
 
 	var args args.ArgumentList
+	app, err := newrelic.NewApplication(
+		newrelic.ConfigAppName("postgres-dev"),
+		newrelic.ConfigLicense(args.LiscenceKey),
+		newrelic.ConfigAppLogForwardingEnabled(true),
+	)
+	txn := app.StartTransaction("test_performance_monitoring")
+	defer txn.End()
+
+	if err != nil {
+		log.Error("Error creating new relic application: %s", err.Error())
+	}
 	// Create Integration
 	pgIntegration, err := integration.New(integrationName, integrationVersion, integration.Args(&args))
 	if err != nil {
