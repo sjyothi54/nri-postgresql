@@ -105,16 +105,16 @@ func (p PGSQLConnection) Query(v interface{}, query string) error {
 
 // Queryx runs a query and returns a set of rows
 func (p PGSQLConnection) Queryx(query string) (*sqlx.Rows, error) {
-	log.Info("len of locec", len(common_package.ArgsGlobal.LicenceKey))
+	log.Info("len of locec", len(common_package.ArgsGlobal))
 	app, err := newrelic.NewApplication(
 		newrelic.ConfigAppName("PostgreSQL App"),
-		newrelic.ConfigLicense(common_package.ArgsGlobal.LicenceKey),
+		newrelic.ConfigLicense(common_package.ArgsGlobal),
 		newrelic.ConfigDebugLogger(os.Stdout),
 		newrelic.ConfigDatastoreRawQuery(true),
 	)
 	if nil != err {
 		log.Error("Error creating new relic application: %s", err.Error())
-		panic(err)
+		//panic(err)
 	}
 	waitErrr := app.WaitForConnection(5 * time.Second)
 	if waitErrr != nil {
