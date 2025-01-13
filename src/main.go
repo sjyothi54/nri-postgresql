@@ -36,11 +36,18 @@ func main() {
 	pgIntegration, err := integration.New(integrationName, integrationVersion, integration.Args(&args))
 	common_package.ArgsGlobal = args.LicenceKey
 	log.Info("Length of liscence key: ", len(args.LicenceKey))
+	log.Info("len of locec", len(common_package.ArgsGlobal))
 	app, err := newrelic.NewApplication(
 		newrelic.ConfigAppName("postgres-v3"),
-		newrelic.ConfigLicense(args.LicenceKey),
-		newrelic.ConfigAppLogForwardingEnabled(true),
+		newrelic.ConfigLicense(common_package.ArgsGlobal),
+		newrelic.ConfigDebugLogger(os.Stdout),
+		newrelic.ConfigDatastoreRawQuery(true),
 	)
+	if nil != err {
+		log.Error("Error creating new relic application: %s", err.Error())
+		//panic(err)
+	}
+	common_package.NewrelicApp = *app
 
 	if err != nil {
 		log.Error("Error creating new relic application: %s", err.Error())
