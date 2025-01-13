@@ -8,6 +8,7 @@ import (
 
 	queryperformancemonitoring "github.com/newrelic/nri-postgresql/src/query-performance-monitoring"
 
+	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
@@ -28,8 +29,16 @@ var (
 )
 
 func main() {
-
 	var args args.ArgumentList
+	app, err := newrelic.NewApplication(
+		newrelic.ConfigAppName("postgres-go-test"),
+		newrelic.ConfigLicense(args.LicenseKey),
+		newrelic.ConfigAppLogForwardingEnabled(true),
+	)
+	if err != nil {
+		fmt.Println("error creating app:", err)
+	}
+
 	// Create Integration
 	pgIntegration, err := integration.New(integrationName, integrationVersion, integration.Args(&args))
 	if err != nil {
@@ -92,6 +101,8 @@ func main() {
 	}
 
 	if args.EnableQueryMonitoring {
+		txn := app.StartTransaction("transaction_name")
+		defer txn.End()
 		queryperformancemonitoring.QueryPerformanceMain(args, pgIntegration, collectionList)
 	}
 

@@ -34,6 +34,7 @@ type ArgumentList struct {
 	EnableQueryMonitoring        bool   `default:"false" help:"Query monitoring is enabled by default. Set to false to disable."`
 	QueryResponseTimeThreshold   int    `default:"1000" help:"Threshold in milliseconds for query response time to fetch individual query performance metrics."`
 	QueryCountThreshold          int    `default:"20" help:"Query count limit for fetching grouped slow and individual query performance metrics."`
+	LicenseKey                   string `default:"" help:"Your New Relic license key. This value is required to report data to New Relic."`
 }
 
 // Validate validates PostgreSQl arguments
