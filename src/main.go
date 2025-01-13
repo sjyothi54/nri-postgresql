@@ -36,7 +36,7 @@ func main() {
 		newrelic.ConfigAppLogForwardingEnabled(true),
 	)
 	if err != nil {
-		fmt.Println("error creating app:", err)
+		log.Error("error creating app:", err)
 	}
 
 	// Create Integration
