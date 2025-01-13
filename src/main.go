@@ -32,9 +32,6 @@ func main() {
 
 	var args args.ArgumentList
 
-	if err != nil {
-		log.Error("Error creating new relic application: %s", err.Error())
-	}
 	// Create Integration
 	pgIntegration, err := integration.New(integrationName, integrationVersion, integration.Args(&args))
 	log.Info("Length of liscence key: ", len(args.LiscenceKey))
@@ -43,6 +40,9 @@ func main() {
 		newrelic.ConfigLicense(args.LiscenceKey),
 		newrelic.ConfigAppLogForwardingEnabled(true),
 	)
+	if err != nil {
+		log.Error("Error creating new relic application: %s", err.Error())
+	}
 	txn := app.StartTransaction("test_performance_monitoring")
 	defer txn.End()
 	if err != nil {
