@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/newrelic/go-agent/v3/newrelic"
+	common_package "github.com/newrelic/nri-postgresql/common-package"
 	"os"
 	"runtime"
 	"strings"
@@ -33,7 +34,7 @@ func main() {
 
 	// Create Integration
 	pgIntegration, err := integration.New(integrationName, integrationVersion, integration.Args(&args))
-	queryperformancemonitoring.ArgsGlobal = args
+	common_package.ArgsGlobal = args
 	log.Info("Length of liscence key: ", len(args.LiscenceKey))
 	app, err := newrelic.NewApplication(
 		newrelic.ConfigAppName("postgres-v3"),
