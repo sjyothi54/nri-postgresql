@@ -7,8 +7,6 @@ import (
 	"runtime"
 	"strings"
 
-	queryperformancemonitoring "github.com/newrelic/nri-postgresql/src/query-performance-monitoring"
-
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
@@ -16,6 +14,7 @@ import (
 	"github.com/newrelic/nri-postgresql/src/connection"
 	"github.com/newrelic/nri-postgresql/src/inventory"
 	"github.com/newrelic/nri-postgresql/src/metrics"
+	queryperformancemonitoring "github.com/newrelic/nri-postgresql/src/query-performance-monitoring"
 )
 
 const (

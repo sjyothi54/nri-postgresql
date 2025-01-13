@@ -8,11 +8,13 @@ require (
 	github.com/lib/pq v1.10.9
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/newrelic/go-agent/v3 v3.35.1
+	github.com/newrelic/go-agent/v3/integrations/nrpq v1.1.1
 	github.com/newrelic/infra-integrations-sdk/v3 v3.9.1
 	github.com/stretchr/testify v1.10.0
 	github.com/xeipuuv/gojsonschema v1.2.0
 	gopkg.in/DATA-DOG/go-sqlmock.v1 v1.3.0
 	gopkg.in/yaml.v3 v3.0.1
+	"github.com/newrelic/go-agent/v3/integrations/nrpq" v1.1.1
 )
 
 require (

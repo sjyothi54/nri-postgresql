@@ -2,12 +2,17 @@
 package connection
 
 import (
+	"context"
 	"fmt"
+	"github.com/newrelic/go-agent/v3/newrelic"
 	"net/url"
+	"os"
+	"time"
 
 	"github.com/jmoiron/sqlx"
 	// pq is required for postgreSQL driver but isn't used in code
 	_ "github.com/lib/pq"
+	_ "github.com/newrelic/go-agent/v3/integrations/nrpq"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
 )
@@ -66,7 +71,7 @@ func DefaultConnectionInfo(al *args.ArgumentList) Info {
 
 // NewConnection creates a new PGSQLConnection from args
 func (ci *connectionInfo) NewConnection(database string) (*PGSQLConnection, error) {
-	db, err := sqlx.Open("postgres", createConnectionURL(ci, database))
+	db, err := sqlx.Open("nrpostgres", createConnectionURL(ci, database))
 	if err != nil {
 		return nil, err
 	}
@@ -99,7 +104,22 @@ func (p PGSQLConnection) Query(v interface{}, query string) error {
 
 // Queryx runs a query and returns a set of rows
 func (p PGSQLConnection) Queryx(query string) (*sqlx.Rows, error) {
-	return p.connection.Queryx(query)
+	app, err := newrelic.NewApplication(
+		newrelic.ConfigAppName("PostgreSQL App"),
+		newrelic.ConfigLicense(os.Getenv("NEW_RELIC_LICENSE_KEY")),
+		newrelic.ConfigDebugLogger(os.Stdout),
+		newrelic.ConfigDatastoreRawQuery(true),
+	)
+	if nil != err {
+		panic(err)
+	}
+	waitErrr := app.WaitForConnection(5 * time.Second)
+	if waitErrr != nil {
+		return nil, waitErrr
+	}
+	txn := app.StartTransaction("postgresQuery")
+	ctx := newrelic.NewContext(context.Background(), txn)
+	return p.connection.QueryxContext(ctx, query)
 }
 
 type extensions map[string]map[string]bool
