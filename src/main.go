@@ -31,6 +31,7 @@ var (
 func main() {
 
 	var args args.ArgumentList
+	log.Info("Length of liscence key: ", len(args.LiscenceKey))
 	app, err := newrelic.NewApplication(
 		newrelic.ConfigAppName("postgres-dev-v2"),
 		newrelic.ConfigLicense(args.LiscenceKey),
