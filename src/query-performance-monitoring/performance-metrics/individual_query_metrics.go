@@ -2,6 +2,7 @@ package performancemetrics
 
 import (
 	"fmt"
+	"github.com/newrelic/go-agent/v3/newrelic"
 
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
@@ -12,8 +13,8 @@ import (
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
 )
 
-func PopulateIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, slowRunningQueries []datamodels.SlowRunningQueryMetrics, pgIntegration *integration.Integration, args args.ArgumentList, databaseNames string, version uint64) []datamodels.IndividualQueryMetrics {
-	isExtensionEnabled, err := validations.CheckIndividualQueryMetricsFetchEligibility(conn)
+func PopulateIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, slowRunningQueries []datamodels.SlowRunningQueryMetrics, pgIntegration *integration.Integration, args args.ArgumentList, databaseNames string, version uint64, app *newrelic.Application) []datamodels.IndividualQueryMetrics {
+	isExtensionEnabled, err := validations.CheckIndividualQueryMetricsFetchEligibility(conn, app)
 	if err != nil {
 		log.Error("Error executing query: %v", err)
 		return nil
@@ -23,7 +24,7 @@ func PopulateIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnectio
 		return nil
 	}
 	log.Debug("Extension 'pg_stat_monitor' enabled.")
-	individualQueryMetricsInterface, individualQueriesForExecPlan := GetIndividualQueryMetrics(conn, slowRunningQueries, args, databaseNames, version)
+	individualQueryMetricsInterface, individualQueriesForExecPlan := GetIndividualQueryMetrics(conn, slowRunningQueries, args, databaseNames, version, app)
 	if len(individualQueryMetricsInterface) == 0 {
 		log.Debug("No individual queries found.")
 		return nil
@@ -37,7 +38,7 @@ func ConstructIndividualQuery(slowRunningQueries datamodels.SlowRunningQueryMetr
 	return query
 }
 
-func GetIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, slowRunningQueries []datamodels.SlowRunningQueryMetrics, args args.ArgumentList, databaseNames string, version uint64) ([]interface{}, []datamodels.IndividualQueryMetrics) {
+func GetIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, slowRunningQueries []datamodels.SlowRunningQueryMetrics, args args.ArgumentList, databaseNames string, version uint64, app *newrelic.Application) ([]interface{}, []datamodels.IndividualQueryMetrics) {
 	if len(slowRunningQueries) == 0 {
 		log.Debug("No slow running queries found.")
 		return nil, nil
@@ -55,18 +56,18 @@ func GetIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, sl
 		if slowRunningMetric.QueryID == nil {
 			continue
 		}
-		getIndividualQueriesByGroupedQuery(conn, slowRunningMetric, args, databaseNames, anonymizedQueriesByDB, &individualQueryMetricsForExecPlanList, &individualQueryMetricsListInterface, versionSpecificIndividualQuery)
+		getIndividualQueriesByGroupedQuery(conn, slowRunningMetric, args, databaseNames, anonymizedQueriesByDB, &individualQueryMetricsForExecPlanList, &individualQueryMetricsListInterface, versionSpecificIndividualQuery, app)
 	}
 	return individualQueryMetricsListInterface, individualQueryMetricsForExecPlanList
 }
 
-func getIndividualQueriesByGroupedQuery(conn *performancedbconnection.PGSQLConnection, slowRunningQueries datamodels.SlowRunningQueryMetrics, args args.ArgumentList, databaseNames string, anonymizedQueriesByDB map[string]map[string]string, individualQueryMetricsForExecPlanList *[]datamodels.IndividualQueryMetrics, individualQueryMetricsListInterface *[]interface{}, versionSpecificIndividualQuery string) {
+func getIndividualQueriesByGroupedQuery(conn *performancedbconnection.PGSQLConnection, slowRunningQueries datamodels.SlowRunningQueryMetrics, args args.ArgumentList, databaseNames string, anonymizedQueriesByDB map[string]map[string]string, individualQueryMetricsForExecPlanList *[]datamodels.IndividualQueryMetrics, individualQueryMetricsListInterface *[]interface{}, versionSpecificIndividualQuery string, app *newrelic.Application) {
 	query := ConstructIndividualQuery(slowRunningQueries, args, databaseNames, versionSpecificIndividualQuery)
 	if query == "" {
 		log.Debug("Error constructing individual query")
 		return
 	}
-	rows, err := conn.Queryx(query)
+	rows, err := conn.Queryx(query, app)
 	if err != nil {
 		log.Debug("Error executing query in individual query: %v", err)
 		return

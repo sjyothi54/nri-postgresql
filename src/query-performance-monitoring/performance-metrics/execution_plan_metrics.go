@@ -2,6 +2,7 @@ package performancemetrics
 
 import (
 	"encoding/json"
+	"github.com/newrelic/go-agent/v3/newrelic"
 
 	"github.com/mitchellh/mapstructure"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
@@ -12,16 +13,16 @@ import (
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
 )
 
-func PopulateExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, pgIntegration *integration.Integration, args args.ArgumentList) {
+func PopulateExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, pgIntegration *integration.Integration, args args.ArgumentList, app *newrelic.Application) {
 	if len(results) == 0 {
 		log.Debug("No individual queries found.")
 		return
 	}
-	executionDetailsList := GetExecutionPlanMetrics(results, args)
+	executionDetailsList := GetExecutionPlanMetrics(results, args, app)
 	commonutils.IngestMetric(executionDetailsList, "PostgresExecutionPlanMetrics", pgIntegration, args)
 }
 
-func GetExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, args args.ArgumentList) []interface{} {
+func GetExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, args args.ArgumentList, app *newrelic.Application) []interface{} {
 	var executionPlanMetricsList []interface{}
 	var groupIndividualQueriesByDatabase = GroupQueriesByDatabase(results)
 	for dbName, individualQueriesList := range groupIndividualQueriesByDatabase {
@@ -31,17 +32,17 @@ func GetExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, args a
 			log.Error("Error opening database connection: %v", err)
 			continue
 		}
-		processExecutionPlanOfQueries(individualQueriesList, dbConn, &executionPlanMetricsList)
+		processExecutionPlanOfQueries(individualQueriesList, dbConn, &executionPlanMetricsList, app)
 		dbConn.Close()
 	}
 
 	return executionPlanMetricsList
 }
 
-func processExecutionPlanOfQueries(individualQueriesList []datamodels.IndividualQueryMetrics, dbConn *performancedbconnection.PGSQLConnection, executionPlanMetricsList *[]interface{}) {
+func processExecutionPlanOfQueries(individualQueriesList []datamodels.IndividualQueryMetrics, dbConn *performancedbconnection.PGSQLConnection, executionPlanMetricsList *[]interface{}, app *newrelic.Application) {
 	for _, individualQuery := range individualQueriesList {
 		query := "EXPLAIN (FORMAT JSON) " + *individualQuery.RealQueryText
-		rows, err := dbConn.Queryx(query)
+		rows, err := dbConn.Queryx(query, app)
 		if err != nil {
 			log.Debug("Error executing query: %v", err)
 			continue

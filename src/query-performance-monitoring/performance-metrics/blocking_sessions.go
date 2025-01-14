@@ -2,6 +2,7 @@ package performancemetrics
 
 import (
 	"fmt"
+	"github.com/newrelic/go-agent/v3/newrelic"
 
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	commonutils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
@@ -13,8 +14,8 @@ import (
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
 )
 
-func PopulateBlockingMetrics(conn *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, args args.ArgumentList, databaseName string, version uint64) {
-	isPgStatStatementEnabled, enableCheckError := validations.CheckBlockingSessionMetricsFetchEligibility(conn, version)
+func PopulateBlockingMetrics(conn *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, args args.ArgumentList, databaseName string, version uint64, app *newrelic.Application) {
+	isPgStatStatementEnabled, enableCheckError := validations.CheckBlockingSessionMetricsFetchEligibility(conn, version, app)
 	if enableCheckError != nil {
 		log.Debug("Error executing query: %v in PopulateBlockingMetrics", enableCheckError)
 		return
@@ -23,7 +24,7 @@ func PopulateBlockingMetrics(conn *performancedbconnection.PGSQLConnection, pgIn
 		log.Debug("Extension 'pg_stat_statements' is not enabled for the database.")
 		return
 	}
-	blockingQueriesMetricsList, blockQueryFetchErr := GetBlockingMetrics(conn, args, databaseName, version)
+	blockingQueriesMetricsList, blockQueryFetchErr := GetBlockingMetrics(conn, args, databaseName, version, app)
 	if blockQueryFetchErr != nil {
 		log.Error("Error fetching Blocking queries: %v", blockQueryFetchErr)
 		return
@@ -35,7 +36,7 @@ func PopulateBlockingMetrics(conn *performancedbconnection.PGSQLConnection, pgIn
 	commonutils.IngestMetric(blockingQueriesMetricsList, "PostgresBlockingSessions", pgIntegration, args)
 }
 
-func GetBlockingMetrics(conn *performancedbconnection.PGSQLConnection, args args.ArgumentList, databaseName string, version uint64) ([]interface{}, error) {
+func GetBlockingMetrics(conn *performancedbconnection.PGSQLConnection, args args.ArgumentList, databaseName string, version uint64, app *newrelic.Application) ([]interface{}, error) {
 	var blockingQueriesMetricsList []interface{}
 	versionSpecificBlockingQuery, err := commonutils.FetchVersionSpecificBlockingQueries(version)
 	if err != nil {
@@ -43,7 +44,7 @@ func GetBlockingMetrics(conn *performancedbconnection.PGSQLConnection, args args
 		return nil, err
 	}
 	var query = fmt.Sprintf(versionSpecificBlockingQuery, databaseName, min(args.QueryCountThreshold, commonutils.MaxQueryThreshold))
-	rows, err := conn.Queryx(query)
+	rows, err := conn.Queryx(query, app)
 	if err != nil {
 		log.Error("Failed to execute query: %v", err)
 		return nil, err

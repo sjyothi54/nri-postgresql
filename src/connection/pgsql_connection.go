@@ -104,15 +104,16 @@ func (p PGSQLConnection) Query(v interface{}, query string) error {
 }
 
 // Queryx runs a query and returns a set of rows
-func (p PGSQLConnection) Queryx(query string) (*sqlx.Rows, error) {
-	app, err := newrelic.NewApplication(
-		newrelic.ConfigAppName("postgres-v3"),
-		newrelic.ConfigLicense(common_package.ArgsGlobal),
-		newrelic.ConfigDebugLogger(os.Stdout),
-		newrelic.ConfigDatastoreRawQuery(true),
-	)
-	if nil != err {
-		log.Error("Error creating new relic application: %s", err.Error())
+func (p PGSQLConnection) Queryx(query string, app *newrelic.Application) (*sqlx.Rows, error) {
+
+	if app == nil {
+		log.Error("Application is nil")
+		app, _ = newrelic.NewApplication(
+			newrelic.ConfigAppName("postgres-v3"),
+			newrelic.ConfigLicense(common_package.ArgsGlobal),
+			newrelic.ConfigDebugLogger(os.Stdout),
+			newrelic.ConfigDatastoreRawQuery(true),
+		)
 	}
 	waitErrr := app.WaitForConnection(5 * time.Second)
 	if waitErrr != nil {

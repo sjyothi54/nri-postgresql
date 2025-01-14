@@ -2,6 +2,7 @@ package metrics
 
 import (
 	"fmt"
+	"github.com/newrelic/go-agent/v3/newrelic"
 	"io/ioutil"
 	"reflect"
 	"regexp"
@@ -28,7 +29,8 @@ func PopulateMetrics(
 	instance *integration.Entity,
 	i *integration.Integration,
 	collectPgBouncer, collectDbLocks, collectBloat bool,
-	customMetricsQuery string) {
+	customMetricsQuery string,
+	app *newrelic.Application) {
 
 	con, err := ci.NewConnection(ci.DatabaseName())
 	if err != nil {
@@ -51,7 +53,7 @@ func PopulateMetrics(
 	PopulateTableMetrics(databaseList, version, i, ci, collectBloat)
 	PopulateIndexMetrics(databaseList, i, ci)
 	if customMetricsQuery != "" {
-		PopulateCustomMetrics(customMetricsQuery, i, con, ci, instance)
+		PopulateCustomMetrics(customMetricsQuery, i, con, ci, instance, app)
 	}
 
 	if collectPgBouncer {
@@ -66,7 +68,7 @@ func PopulateMetrics(
 }
 
 // PopulateCustomMetricsFromFile collects metrics defined by a custom config file
-func PopulateCustomMetricsFromFile(ci connection.Info, configFile string, psqlIntegration *integration.Integration) {
+func PopulateCustomMetricsFromFile(ci connection.Info, configFile string, psqlIntegration *integration.Integration, app *newrelic.Application) {
 	contents, err := ioutil.ReadFile(configFile)
 	if err != nil {
 		log.Error("Failed to read custom config file: %s", err)
@@ -92,14 +94,14 @@ func PopulateCustomMetricsFromFile(ci connection.Info, configFile string, psqlIn
 				<-sem
 			}()
 
-			CollectCustomConfig(ci, cfg, psqlIntegration)
+			CollectCustomConfig(ci, cfg, psqlIntegration, app)
 		}(config)
 	}
 	wg.Wait()
 }
 
 // CollectCustomConfig collects metrics defined by a custom config
-func CollectCustomConfig(ci connection.Info, cfg customMetricsConfig, pgIntegration *integration.Integration) {
+func CollectCustomConfig(ci connection.Info, cfg customMetricsConfig, pgIntegration *integration.Integration, app *newrelic.Application) {
 	dbName := func() string {
 		if cfg.Database == "" {
 			return ci.DatabaseName()
@@ -114,7 +116,7 @@ func CollectCustomConfig(ci connection.Info, cfg customMetricsConfig, pgIntegrat
 	}
 	defer con.Close()
 
-	rows, err := con.Queryx(cfg.Query)
+	rows, err := con.Queryx(cfg.Query, app)
 	if err != nil {
 		log.Error("Could not execute database query: %s", err.Error())
 		return
@@ -534,8 +536,8 @@ func PopulatePgBouncerMetrics(pgIntegration *integration.Integration, con *conne
 }
 
 // PopulateCustomMetrics collects metrics from a custom query
-func PopulateCustomMetrics(customMetricsQuery string, pgIntegration *integration.Integration, con *connection.PGSQLConnection, ci connection.Info, instance *integration.Entity) {
-	rows, err := con.Queryx(customMetricsQuery)
+func PopulateCustomMetrics(customMetricsQuery string, pgIntegration *integration.Integration, con *connection.PGSQLConnection, ci connection.Info, instance *integration.Entity, app *newrelic.Application) {
+	rows, err := con.Queryx(customMetricsQuery, app)
 	if err != nil {
 		log.Error("Could not execute database query: %s", err.Error())
 		return

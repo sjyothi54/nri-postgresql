@@ -729,7 +729,7 @@ func TestPopulateMetrics(t *testing.T) {
 
 	instance, _ := testIntegration.Entity("testInstance", "instance")
 
-	PopulateMetrics(ci, dbList, instance, testIntegration, true, true, true, "")
+	PopulateMetrics(ci, dbList, instance, testIntegration, true, true, true, "", nil)
 }
 
 func TestPopulateCustomMetricsFromFile(t *testing.T) {
@@ -760,7 +760,7 @@ queries:
 `)
 	assert.NoError(t, os.WriteFile(filepath.Join(dir, "customQueryConfig.yaml"), customQueryCfg, 0600))
 
-	PopulateCustomMetricsFromFile(ci, filepath.Join(dir, "customQueryConfig.yaml"), testIntegration)
+	PopulateCustomMetricsFromFile(ci, filepath.Join(dir, "customQueryConfig.yaml"), testIntegration, nil)
 
 	assert.Len(t, testIntegration.Entities, 1)
 	assert.Len(t, testIntegration.Entities[0].Metrics, 1)

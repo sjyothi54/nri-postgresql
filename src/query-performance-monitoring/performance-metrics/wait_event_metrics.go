@@ -2,6 +2,7 @@ package performancemetrics
 
 import (
 	"fmt"
+	"github.com/newrelic/go-agent/v3/newrelic"
 
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
@@ -13,8 +14,8 @@ import (
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
 )
 
-func PopulateWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, args args.ArgumentList, databaseNames string) {
-	isExtensionEnabled, err := validations.CheckWaitEventMetricsFetchEligibility(conn)
+func PopulateWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, args args.ArgumentList, databaseNames string, app *newrelic.Application) {
+	isExtensionEnabled, err := validations.CheckWaitEventMetricsFetchEligibility(conn, app)
 	if err != nil {
 		log.Error("Error executing query: %v", err)
 		return
@@ -23,7 +24,7 @@ func PopulateWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, pgI
 		log.Debug("Extension 'pg_wait_sampling' or 'pg_stat_statement' is not enabled.")
 		return
 	}
-	waitEventMetricsList, err := GetWaitEventMetrics(conn, args, databaseNames)
+	waitEventMetricsList, err := GetWaitEventMetrics(conn, args, databaseNames, app)
 	if err != nil {
 		log.Error("Error fetching wait event queries: %v", err)
 		return
@@ -36,10 +37,10 @@ func PopulateWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, pgI
 	commonutils.IngestMetric(waitEventMetricsList, "PostgresWaitEvents", pgIntegration, args)
 }
 
-func GetWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, args args.ArgumentList, databaseNames string) ([]interface{}, error) {
+func GetWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, args args.ArgumentList, databaseNames string, app *newrelic.Application) ([]interface{}, error) {
 	var waitEventMetricsList []interface{}
 	var query = fmt.Sprintf(queries.WaitEvents, databaseNames, min(args.QueryCountThreshold, commonutils.MaxQueryThreshold))
-	rows, err := conn.Queryx(query)
+	rows, err := conn.Queryx(query, app)
 	if err != nil {
 		return nil, err
 	}

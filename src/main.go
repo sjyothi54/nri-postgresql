@@ -91,9 +91,9 @@ func main() {
 	}
 
 	if args.HasMetrics() {
-		metrics.PopulateMetrics(connectionInfo, collectionList, instance, pgIntegration, args.Pgbouncer, args.CollectDbLockMetrics, args.CollectBloatMetrics, args.CustomMetricsQuery)
+		metrics.PopulateMetrics(connectionInfo, collectionList, instance, pgIntegration, args.Pgbouncer, args.CollectDbLockMetrics, args.CollectBloatMetrics, args.CustomMetricsQuery, app)
 		if args.CustomMetricsConfig != "" {
-			metrics.PopulateCustomMetricsFromFile(connectionInfo, args.CustomMetricsConfig, pgIntegration)
+			metrics.PopulateCustomMetricsFromFile(connectionInfo, args.CustomMetricsConfig, pgIntegration, app)
 		}
 	}
 

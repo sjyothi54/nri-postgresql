@@ -2,6 +2,7 @@ package performancemetrics
 
 import (
 	"fmt"
+	"github.com/newrelic/go-agent/v3/newrelic"
 
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
@@ -12,7 +13,7 @@ import (
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
 )
 
-func GetSlowRunningMetrics(conn *performancedbconnection.PGSQLConnection, args args.ArgumentList, databaseNames string, version uint64) ([]datamodels.SlowRunningQueryMetrics, []interface{}, error) {
+func GetSlowRunningMetrics(conn *performancedbconnection.PGSQLConnection, args args.ArgumentList, databaseNames string, version uint64, app *newrelic.Application) ([]datamodels.SlowRunningQueryMetrics, []interface{}, error) {
 	var slowQueryMetricsList []datamodels.SlowRunningQueryMetrics
 	var slowQueryMetricsListInterface []interface{}
 	versionSpecificSlowQuery, err := commonutils.FetchVersionSpecificSlowQueries(version)
@@ -21,7 +22,7 @@ func GetSlowRunningMetrics(conn *performancedbconnection.PGSQLConnection, args a
 		return nil, nil, err
 	}
 	var query = fmt.Sprintf(versionSpecificSlowQuery, databaseNames, min(args.QueryCountThreshold, commonutils.MaxQueryThreshold))
-	rows, err := conn.Queryx(query)
+	rows, err := conn.Queryx(query, app)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -40,8 +41,8 @@ func GetSlowRunningMetrics(conn *performancedbconnection.PGSQLConnection, args a
 	return slowQueryMetricsList, slowQueryMetricsListInterface, nil
 }
 
-func PopulateSlowRunningMetrics(conn *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, args args.ArgumentList, databaseNames string, version uint64) []datamodels.SlowRunningQueryMetrics {
-	isExtensionEnabled, err := validations.CheckSlowQueryMetricsFetchEligibility(conn)
+func PopulateSlowRunningMetrics(conn *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, args args.ArgumentList, databaseNames string, version uint64, app *newrelic.Application) []datamodels.SlowRunningQueryMetrics {
+	isExtensionEnabled, err := validations.CheckSlowQueryMetricsFetchEligibility(conn, app)
 	if err != nil {
 		log.Error("Error executing query: %v", err)
 		return nil
@@ -51,7 +52,7 @@ func PopulateSlowRunningMetrics(conn *performancedbconnection.PGSQLConnection, p
 		return nil
 	}
 
-	slowQueryMetricsList, slowQueryMetricsListInterface, err := GetSlowRunningMetrics(conn, args, databaseNames, version)
+	slowQueryMetricsList, slowQueryMetricsListInterface, err := GetSlowRunningMetrics(conn, args, databaseNames, version, app)
 	if err != nil {
 		log.Error("Error fetching slow-running queries: %v", err)
 		return nil
