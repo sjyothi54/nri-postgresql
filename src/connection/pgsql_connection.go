@@ -7,7 +7,6 @@ import (
 	"github.com/newrelic/go-agent/v3/newrelic"
 	common_package "github.com/newrelic/nri-postgresql/common-package"
 	"net/url"
-	"os"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -108,7 +107,6 @@ func (p PGSQLConnection) Queryx(query string) (*sqlx.Rows, error) {
 	app, err := newrelic.NewApplication(
 		newrelic.ConfigAppName("postgres-v3"),
 		newrelic.ConfigLicense(common_package.ArgsGlobal),
-		newrelic.ConfigDebugLogger(os.Stdout),
 		newrelic.ConfigDatastoreRawQuery(true),
 	)
 	if nil != err {

@@ -38,7 +38,6 @@ func main() {
 	app, err := newrelic.NewApplication(
 		newrelic.ConfigAppName("postgres-v3"),
 		newrelic.ConfigLicense(common_package.ArgsGlobal),
-		newrelic.ConfigDebugLogger(os.Stdout),
 		newrelic.ConfigDatastoreRawQuery(true),
 	)
 	if nil != err {
