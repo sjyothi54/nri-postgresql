@@ -15,6 +15,7 @@ var ErrVersionFetchError = errors.New("no rows returned from version query")
 var ErrInvalidModelType = errors.New("invalid model type")
 
 const PostgresVersion12 = 12
+const PostgresVersion11 = 11
 const PostgresVersion13 = 13
 const PostgresVersion14 = 14
 const VersionIndex = 2

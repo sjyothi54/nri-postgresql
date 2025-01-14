@@ -1,0 +1,61 @@
+package performancemetrics_test
+
+import (
+	"fmt"
+	commonutils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
+	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
+	"gopkg.in/DATA-DOG/go-sqlmock.v1"
+	"regexp"
+	"testing"
+
+	"github.com/newrelic/infra-integrations-sdk/v3/integration"
+	"github.com/newrelic/nri-postgresql/src/args"
+	"github.com/newrelic/nri-postgresql/src/connection"
+	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-metrics"
+	"github.com/stretchr/testify/assert"
+)
+
+func TestPopulateBlockingMetrics(t *testing.T) {
+
+	conn, mock := connection.CreateMockSQL(t)
+	pgIntegration, _ := integration.New("test", "1.0.0")
+	args := args.ArgumentList{QueryCountThreshold: 10}
+	databaseName := "testdb"
+	version := uint64(13)
+	expectedQuery := queries.BlockingQueriesForV12AndV13
+	query := fmt.Sprintf(expectedQuery, databaseName, min(args.QueryCountThreshold, commonutils.MaxQueryThreshold))
+	mock.ExpectQuery(regexp.QuoteMeta(query)).WillReturnRows(sqlmock.NewRows([]string{
+		"newrelic", "blocked_pid", "blocked_query", "blocked_query_id", "blocked_query_start", "database_name",
+		"blocking_pid", "blocking_query", "blocking_query_id", "blocking_query_start",
+	}).AddRow(
+		"newrelic_value", 123, "SELECT 1", 1233444, "2023-01-01 00:00:00", "testdb",
+		456, "SELECT 2", 4566, "2023-01-01 00:00:00",
+	))
+
+	performancemetrics.PopulateBlockingMetrics(conn, pgIntegration, args, databaseName, version)
+
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestGetBlockingMetrics(t *testing.T) {
+
+	conn, mock := connection.CreateMockSQL(t)
+	args := args.ArgumentList{QueryCountThreshold: 10}
+	databaseName := "testdb"
+	version := uint64(13)
+
+	expectedQuery := queries.BlockingQueriesForV12AndV13
+	query := fmt.Sprintf(expectedQuery, databaseName, min(args.QueryCountThreshold, commonutils.MaxQueryThreshold))
+	mock.ExpectQuery(regexp.QuoteMeta(query)).WillReturnRows(sqlmock.NewRows([]string{
+		"newrelic", "blocked_pid", "blocked_query", "blocked_query_id", "blocked_query_start", "database_name",
+		"blocking_pid", "blocking_query", "blocking_query_id", "blocking_query_start",
+	}).AddRow(
+		"newrelic_value", 123, "SELECT 1", 1233444, "2023-01-01 00:00:00", "testdb",
+		456, "SELECT 2", 4566, "2023-01-01 00:00:00",
+	))
+	blockingQueriesMetricsList, err := performancemetrics.GetBlockingMetrics(conn, args, databaseName, version)
+
+	assert.NoError(t, err)
+	assert.Len(t, blockingQueriesMetricsList, 1)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
