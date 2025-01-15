@@ -6,7 +6,7 @@ import (
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/nri-postgresql/src/args"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
-	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-metrics"
+	performancemetrics "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-metrics"
 	"github.com/stretchr/testify/assert"
 )
 

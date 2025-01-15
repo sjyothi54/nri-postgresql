@@ -99,14 +99,11 @@ func TestGetSlowRunningEmptyMetrics(t *testing.T) {
 }
 
 func TestGetSlowRunningMetricsUnsupportedVersion(t *testing.T) {
-
 	conn, mock := connection.CreateMockSQL(t)
 	args := args.ArgumentList{QueryCountThreshold: 10}
 	databaseName := "testdb"
 	version := uint64(11)
-
 	slowQueryList, _, err := performancemetrics.GetSlowRunningMetrics(conn, args, databaseName, version)
-
 	assert.EqualError(t, err, commonutils.ErrUnsupportedVersion.Error())
 	assert.Len(t, slowQueryList, 0)
 	assert.NoError(t, mock.ExpectationsWereMet())
