@@ -1,8 +1,9 @@
 package commonutils_test
 
 import (
-	commonutils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
 	"testing"
+
+	commonutils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
 
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
 	"github.com/stretchr/testify/assert"

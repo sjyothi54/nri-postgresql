@@ -83,12 +83,10 @@ func TestPopulateBlockingMetricsExtensionsNotEnabled(t *testing.T) {
 }
 
 func TestGetBlockingMetrics(t *testing.T) {
-
 	conn, mock := connection.CreateMockSQL(t)
 	args := args.ArgumentList{QueryCountThreshold: 10}
 	databaseName := "testdb"
 	version := uint64(13)
-
 	expectedQuery := queries.BlockingQueriesForV12AndV13
 	query := fmt.Sprintf(expectedQuery, databaseName, min(args.QueryCountThreshold, commonutils.MaxQueryThreshold))
 	mock.ExpectQuery(regexp.QuoteMeta(query)).WillReturnRows(sqlmock.NewRows([]string{

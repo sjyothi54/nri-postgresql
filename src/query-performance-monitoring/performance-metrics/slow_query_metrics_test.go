@@ -16,7 +16,6 @@ import (
 )
 
 func TestPopulateSlowMetrics(t *testing.T) {
-
 	conn, mock := connection.CreateMockSQL(t)
 	pgIntegration, _ := integration.New("test", "1.0.0")
 	args := args.ArgumentList{QueryCountThreshold: 10}
@@ -24,7 +23,6 @@ func TestPopulateSlowMetrics(t *testing.T) {
 	version := uint64(13)
 	validationQuery := fmt.Sprintf("SELECT count(*) FROM pg_extension WHERE extname = '%s'", "pg_stat_statements")
 	mock.ExpectQuery(regexp.QuoteMeta(validationQuery)).WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
-
 	expectedQuery := queries.SlowQueriesForV13AndAbove
 	query := fmt.Sprintf(expectedQuery, "testdb", min(args.QueryCountThreshold, commonutils.MaxQueryThreshold))
 	mock.ExpectQuery(regexp.QuoteMeta(query)).WillReturnRows(sqlmock.NewRows([]string{
@@ -41,7 +39,6 @@ func TestPopulateSlowMetrics(t *testing.T) {
 }
 
 func TestPopulateSlowMetricsInEligibility(t *testing.T) {
-
 	conn, mock := connection.CreateMockSQL(t)
 	pgIntegration, _ := integration.New("test", "1.0.0")
 	args := args.ArgumentList{QueryCountThreshold: 10}
@@ -49,7 +46,6 @@ func TestPopulateSlowMetricsInEligibility(t *testing.T) {
 	version := uint64(13)
 	validationQuery := fmt.Sprintf("SELECT count(*) FROM pg_extension WHERE extname = '%s'", "pg_stat_statements")
 	mock.ExpectQuery(regexp.QuoteMeta(validationQuery)).WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(0))
-
 	slowqueryList := performancemetrics.PopulateSlowRunningMetrics(conn, pgIntegration, args, databaseName, version)
 
 	assert.Len(t, slowqueryList, 0)

@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/newrelic/nri-postgresql/src/collection"
-	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
+	commonutils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
 	"github.com/stretchr/testify/assert"
 )
 
