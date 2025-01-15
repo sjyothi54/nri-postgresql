@@ -2,6 +2,7 @@ package performancemetrics_test
 
 import (
 	"fmt"
+	global_variables "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/global-variables"
 	"regexp"
 	"testing"
 
@@ -19,13 +20,14 @@ import (
 func TestPopulateBlockingMetrics(t *testing.T) {
 	conn, mock := connection.CreateMockSQL(t)
 	pgIntegration, _ := integration.New("test", "1.0.0")
-	args := args.ArgumentList{QueryCountThreshold: 10}
-	databaseName := "testdb"
-	version := uint64(14)
+	global_variables.DatabaseString = "testdb"
+	global_variables.Version = uint64(14)
+	global_variables.Args = args.ArgumentList{QueryCountThreshold: 10}
 	validationQueryStatStatements := fmt.Sprintf("SELECT count(*) FROM pg_extension WHERE extname = '%s'", "pg_stat_statements")
 	mock.ExpectQuery(regexp.QuoteMeta(validationQueryStatStatements)).WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
 	expectedQuery := queries.BlockingQueriesForV14AndAbove
-	query := fmt.Sprintf(expectedQuery, databaseName, min(args.QueryCountThreshold, commonutils.MaxQueryThreshold))
+	global_variables.BlockingQuery = expectedQuery
+	query := fmt.Sprintf(expectedQuery, global_variables.DatabaseString, min(global_variables.Args.QueryCountThreshold, commonutils.MaxQueryThreshold))
 	mock.ExpectQuery(regexp.QuoteMeta(query)).WillReturnRows(sqlmock.NewRows([]string{
 		"newrelic", "blocked_pid", "blocked_query", "blocked_query_id", "blocked_query_start", "database_name",
 		"blocking_pid", "blocking_query", "blocking_query_id", "blocking_query_start",
@@ -34,7 +36,7 @@ func TestPopulateBlockingMetrics(t *testing.T) {
 		456, "SELECT 2", 4566, "2023-01-01 00:00:00",
 	))
 
-	err := performancemetrics.PopulateBlockingMetrics(conn, pgIntegration, args, databaseName, version)
+	err := performancemetrics.PopulateBlockingMetrics(conn, pgIntegration)
 	assert.NoError(t, err)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
@@ -42,11 +44,13 @@ func TestPopulateBlockingMetrics(t *testing.T) {
 func TestPopulateBlockingMetricsSupportedVersionExtensionNotRequired(t *testing.T) {
 	conn, mock := connection.CreateMockSQL(t)
 	pgIntegration, _ := integration.New("test", "1.0.0")
-	args := args.ArgumentList{QueryCountThreshold: 10}
-	databaseName := "testdb"
-	version := uint64(12)
+
+	global_variables.DatabaseString = "testdb"
+	global_variables.Version = uint64(12)
+	global_variables.Args = args.ArgumentList{QueryCountThreshold: 10}
 	expectedQuery := queries.BlockingQueriesForV12AndV13
-	query := fmt.Sprintf(expectedQuery, databaseName, min(args.QueryCountThreshold, commonutils.MaxQueryThreshold))
+	global_variables.BlockingQuery = expectedQuery
+	query := fmt.Sprintf(expectedQuery, global_variables.DatabaseString, min(global_variables.Args.QueryCountThreshold, commonutils.MaxQueryThreshold))
 	mock.ExpectQuery(regexp.QuoteMeta(query)).WillReturnRows(sqlmock.NewRows([]string{
 		"newrelic", "blocked_pid", "blocked_query", "blocked_query_id", "blocked_query_start", "database_name",
 		"blocking_pid", "blocking_query", "blocking_query_id", "blocking_query_start",
@@ -54,7 +58,7 @@ func TestPopulateBlockingMetricsSupportedVersionExtensionNotRequired(t *testing.
 		"newrelic_value", 123, "SELECT 1", 1233444, "2023-01-01 00:00:00", "testdb",
 		456, "SELECT 2", 4566, "2023-01-01 00:00:00",
 	))
-	err := performancemetrics.PopulateBlockingMetrics(conn, pgIntegration, args, databaseName, version)
+	err := performancemetrics.PopulateBlockingMetrics(conn, pgIntegration)
 	assert.NoError(t, err)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
@@ -62,10 +66,10 @@ func TestPopulateBlockingMetricsSupportedVersionExtensionNotRequired(t *testing.
 func TestPopulateBlockingMetricsUnSupportedVersion(t *testing.T) {
 	conn, mock := connection.CreateMockSQL(t)
 	pgIntegration, _ := integration.New("test", "1.0.0")
-	args := args.ArgumentList{QueryCountThreshold: 10}
-	databaseName := "testdb"
-	version := uint64(11)
-	err := performancemetrics.PopulateBlockingMetrics(conn, pgIntegration, args, databaseName, version)
+	global_variables.DatabaseString = "testdb"
+	global_variables.Version = uint64(11)
+	global_variables.Args = args.ArgumentList{QueryCountThreshold: 10}
+	err := performancemetrics.PopulateBlockingMetrics(conn, pgIntegration)
 	assert.EqualError(t, err, commonutils.ErrNotEligible.Error())
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
@@ -74,11 +78,12 @@ func TestPopulateBlockingMetricsExtensionsNotEnabled(t *testing.T) {
 	conn, mock := connection.CreateMockSQL(t)
 	pgIntegration, _ := integration.New("test", "1.0.0")
 	args := args.ArgumentList{QueryCountThreshold: 10}
-	databaseName := "testdb"
-	version := uint64(14)
+	global_variables.DatabaseString = "testdb"
+	global_variables.Version = uint64(14)
+	global_variables.Args = args
 	validationQueryStatStatements := fmt.Sprintf("SELECT count(*) FROM pg_extension WHERE extname = '%s'", "pg_stat_statements")
 	mock.ExpectQuery(regexp.QuoteMeta(validationQueryStatStatements)).WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(0))
-	err := performancemetrics.PopulateBlockingMetrics(conn, pgIntegration, args, databaseName, version)
+	err := performancemetrics.PopulateBlockingMetrics(conn, pgIntegration)
 	assert.EqualError(t, err, commonutils.ErrNotEligible.Error())
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
@@ -86,10 +91,12 @@ func TestPopulateBlockingMetricsExtensionsNotEnabled(t *testing.T) {
 func TestGetBlockingMetrics(t *testing.T) {
 	conn, mock := connection.CreateMockSQL(t)
 	args := args.ArgumentList{QueryCountThreshold: 10}
-	databaseName := "testdb"
-	version := uint64(13)
+	global_variables.DatabaseString = "testdb"
+	global_variables.Version = uint64(13)
+	global_variables.Args = args
 	expectedQuery := queries.BlockingQueriesForV12AndV13
-	query := fmt.Sprintf(expectedQuery, databaseName, min(args.QueryCountThreshold, commonutils.MaxQueryThreshold))
+	global_variables.BlockingQuery = expectedQuery
+	query := fmt.Sprintf(expectedQuery, global_variables.DatabaseString, min(args.QueryCountThreshold, commonutils.MaxQueryThreshold))
 	mock.ExpectQuery(regexp.QuoteMeta(query)).WillReturnRows(sqlmock.NewRows([]string{
 		"newrelic", "blocked_pid", "blocked_query", "blocked_query_id", "blocked_query_start", "database_name",
 		"blocking_pid", "blocking_query", "blocking_query_id", "blocking_query_start",
@@ -97,7 +104,7 @@ func TestGetBlockingMetrics(t *testing.T) {
 		"newrelic_value", 123, "SELECT 1", 1233444, "2023-01-01 00:00:00", "testdb",
 		456, "SELECT 2", 4566, "2023-01-01 00:00:00",
 	))
-	blockingQueriesMetricsList, err := performancemetrics.GetBlockingMetrics(conn, args, databaseName, version)
+	blockingQueriesMetricsList, err := performancemetrics.GetBlockingMetrics(conn)
 
 	assert.NoError(t, err)
 	assert.Len(t, blockingQueriesMetricsList, 1)

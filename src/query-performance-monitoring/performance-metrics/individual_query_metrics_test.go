@@ -2,6 +2,7 @@ package performancemetrics_test
 
 import (
 	"fmt"
+	global_variables "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/global-variables"
 	"regexp"
 	"testing"
 
@@ -20,15 +21,18 @@ import (
 func TestPopulateIndividualQueryMetrics(t *testing.T) {
 	conn, mock := connection.CreateMockSQL(t)
 	pgIntegration, _ := integration.New("test", "1.0.0")
-	args := args.ArgumentList{QueryCountThreshold: 10}
-	databaseName := "testdb"
-	version := uint64(13)
+
+	global_variables.DatabaseString = "testdb"
+	global_variables.Version = uint64(13)
+	global_variables.Args = args.ArgumentList{QueryCountThreshold: 10}
+	global_variables.IndividualQuery = queries.IndividualQuerySearchV13AndAbove
 	// Mock the extension check
 	mock.ExpectQuery(regexp.QuoteMeta("SELECT count(*) FROM pg_extension WHERE extname = 'pg_stat_monitor'")).WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
 	mockQueryID := "-123"
 	mockQueryText := "SELECT 1"
+	databaseName := "testdb"
 	// Mock the individual query
-	query := fmt.Sprintf(queries.IndividualQuerySearchV13AndAbove, mockQueryID, databaseName, args.QueryResponseTimeThreshold, min(args.QueryCountThreshold, commonutils.MaxIndividualQueryThreshold))
+	query := fmt.Sprintf(global_variables.IndividualQuery, mockQueryID, global_variables.DatabaseString, global_variables.Args.QueryResponseTimeThreshold, min(global_variables.Args.QueryCountThreshold, commonutils.MaxIndividualQueryThreshold))
 	mock.ExpectQuery(regexp.QuoteMeta(query)).WillReturnRows(sqlmock.NewRows([]string{
 		"newrelic", "query", "queryid", "datname", "planid", "avg_cpu_time_ms", "avg_exec_time_ms",
 	}).AddRow(
@@ -43,37 +47,25 @@ func TestPopulateIndividualQueryMetrics(t *testing.T) {
 		},
 	}
 
-	individualQueryMetrics := performancemetrics.PopulateIndividualQueryMetrics(conn, slowRunningQueries, pgIntegration, args, databaseName, version)
+	individualQueryMetrics := performancemetrics.PopulateIndividualQueryMetrics(conn, slowRunningQueries, pgIntegration)
 
 	assert.Len(t, individualQueryMetrics, 1)
 	assert.NoError(t, mock.ExpectationsWereMet())
-}
-
-func TestConstructIndividualQuery(t *testing.T) {
-	mockQueryID := "-123"
-	slowRunningQuery := datamodels.SlowRunningQueryMetrics{
-		QueryID: &mockQueryID,
-	}
-	args := args.ArgumentList{QueryResponseTimeThreshold: 100}
-	databaseName := "testdb"
-	versionSpecificQuery := queries.IndividualQuerySearchV13AndAbove
-
-	actual := performancemetrics.ConstructIndividualQuery(slowRunningQuery, args, databaseName, versionSpecificQuery)
-	expected := fmt.Sprintf(versionSpecificQuery, *slowRunningQuery.QueryID, databaseName, args.QueryResponseTimeThreshold, min(args.QueryCountThreshold, commonutils.MaxIndividualQueryThreshold))
-
-	assert.Equal(t, actual, expected)
 }
 
 func TestGetIndividualQueryMetrics(t *testing.T) {
 	conn, mock := connection.CreateMockSQL(t)
 	args := args.ArgumentList{QueryCountThreshold: 10}
 	databaseName := "testdb"
-	version := uint64(13)
+	global_variables.DatabaseString = "testdb"
+	global_variables.Version = uint64(13)
+	global_variables.Args = args
+	global_variables.IndividualQuery = queries.IndividualQuerySearchV13AndAbove
 	mockQueryID := "-123"
 	mockQueryText := "SELECT 1"
 
 	// Mock the individual query
-	query := fmt.Sprintf(queries.IndividualQuerySearchV13AndAbove, mockQueryID, databaseName, args.QueryResponseTimeThreshold, min(args.QueryCountThreshold, commonutils.MaxIndividualQueryThreshold))
+	query := fmt.Sprintf(global_variables.IndividualQuery, mockQueryID, databaseName, args.QueryResponseTimeThreshold, min(args.QueryCountThreshold, commonutils.MaxIndividualQueryThreshold))
 	mock.ExpectQuery(regexp.QuoteMeta(query)).WillReturnRows(sqlmock.NewRows([]string{
 		"newrelic", "query", "queryid", "datname", "planid", "avg_cpu_time_ms", "avg_exec_time_ms",
 	}).AddRow(
@@ -88,7 +80,7 @@ func TestGetIndividualQueryMetrics(t *testing.T) {
 		},
 	}
 
-	individualQueryMetricsInterface, individualQueryMetrics := performancemetrics.GetIndividualQueryMetrics(conn, slowRunningQueries, args, databaseName, version)
+	individualQueryMetricsInterface, individualQueryMetrics := performancemetrics.GetIndividualQueryMetrics(conn, slowRunningQueries)
 
 	assert.Len(t, individualQueryMetricsInterface, 1)
 	assert.Len(t, individualQueryMetrics, 1)
