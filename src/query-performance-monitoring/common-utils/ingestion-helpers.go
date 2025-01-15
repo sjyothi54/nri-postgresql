@@ -113,6 +113,6 @@ func PublishMetrics(pgIntegration *integration.Integration, instanceEntity **int
 		return err
 	}
 	var err error
-	*instanceEntity, err = pgIntegration.Entity(fmt.Sprintf("%s:%s", global_variables.Args.Hostname, global_variables.Args.Port), "pg-instance")
+	*instanceEntity, err = CreateEntity(pgIntegration)
 	return err
 }
