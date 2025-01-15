@@ -124,7 +124,7 @@ func (p PGSQLConnection) Queryx(query string, app *newrelic.Application) (*sqlx.
 
 	s := newrelic.DatastoreSegment{
 		StartTime:          common_package.Txn.StartSegmentNow(),
-		Product:            newrelic.DatastoreMySQL,
+		Product:            newrelic.DatastorePostgres,
 		Operation:          "SELECT",
 		ParameterizedQuery: query,
 	}
