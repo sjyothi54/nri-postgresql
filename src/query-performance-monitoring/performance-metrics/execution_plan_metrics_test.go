@@ -14,8 +14,6 @@ func TestPopulateExecutionPlanMetrics(t *testing.T) {
 	pgIntegration, _ := integration.New("test", "1.0.0")
 	args := args.ArgumentList{}
 	results := []datamodels.IndividualQueryMetrics{}
-
-	// Test with no results
 	performancemetrics.PopulateExecutionPlanMetrics(results, pgIntegration, args)
 	assert.Empty(t, pgIntegration.Entities)
 }
