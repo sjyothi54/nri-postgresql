@@ -120,8 +120,15 @@ func (p PGSQLConnection) Queryx(query string, app *newrelic.Application) (*sqlx.
 		log.Error("Error waiting for connection: %s", waitErrr.Error())
 		return nil, waitErrr
 	}
-	txn := app.StartTransaction("postgresQuery")
-	ctx := newrelic.NewContext(context.Background(), txn)
+	ctx := newrelic.NewContext(context.Background(), common_package.Txn)
+
+	s := newrelic.DatastoreSegment{
+		StartTime:          common_package.Txn.StartSegmentNow(),
+		Product:            newrelic.DatastoreMySQL,
+		Operation:          "SELECT",
+		ParameterizedQuery: query,
+	}
+	defer s.End()
 	return p.connection.QueryxContext(ctx, query)
 }
 
