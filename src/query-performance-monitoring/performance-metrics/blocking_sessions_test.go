@@ -16,13 +16,14 @@ import (
 )
 
 func TestPopulateBlockingMetrics(t *testing.T) {
-
 	conn, mock := connection.CreateMockSQL(t)
 	pgIntegration, _ := integration.New("test", "1.0.0")
 	args := args.ArgumentList{QueryCountThreshold: 10}
 	databaseName := "testdb"
-	version := uint64(13)
-	expectedQuery := queries.BlockingQueriesForV12AndV13
+	version := uint64(14)
+	validationQueryStatStatements := fmt.Sprintf("SELECT count(*) FROM pg_extension WHERE extname = '%s'", "pg_stat_statements")
+	mock.ExpectQuery(regexp.QuoteMeta(validationQueryStatStatements)).WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
+	expectedQuery := queries.BlockingQueriesForV14AndAbove
 	query := fmt.Sprintf(expectedQuery, databaseName, min(args.QueryCountThreshold, commonutils.MaxQueryThreshold))
 	mock.ExpectQuery(regexp.QuoteMeta(query)).WillReturnRows(sqlmock.NewRows([]string{
 		"newrelic", "blocked_pid", "blocked_query", "blocked_query_id", "blocked_query_start", "database_name",
@@ -34,17 +35,6 @@ func TestPopulateBlockingMetrics(t *testing.T) {
 
 	err := performancemetrics.PopulateBlockingMetrics(conn, pgIntegration, args, databaseName, version)
 	assert.NoError(t, err)
-	assert.NoError(t, mock.ExpectationsWereMet())
-}
-
-func TestPopulateBlockingMetricsUnSupportedVersion(t *testing.T) {
-	conn, mock := connection.CreateMockSQL(t)
-	pgIntegration, _ := integration.New("test", "1.0.0")
-	args := args.ArgumentList{QueryCountThreshold: 10}
-	databaseName := "testdb"
-	version := uint64(11)
-	err := performancemetrics.PopulateBlockingMetrics(conn, pgIntegration, args, databaseName, version)
-	assert.EqualError(t, err, commonutils.ErrNotEligible.Error())
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
@@ -65,6 +55,17 @@ func TestPopulateBlockingMetricsSupportedVersionExtensionNotRequired(t *testing.
 	))
 	err := performancemetrics.PopulateBlockingMetrics(conn, pgIntegration, args, databaseName, version)
 	assert.NoError(t, err)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestPopulateBlockingMetricsUnSupportedVersion(t *testing.T) {
+	conn, mock := connection.CreateMockSQL(t)
+	pgIntegration, _ := integration.New("test", "1.0.0")
+	args := args.ArgumentList{QueryCountThreshold: 10}
+	databaseName := "testdb"
+	version := uint64(11)
+	err := performancemetrics.PopulateBlockingMetrics(conn, pgIntegration, args, databaseName, version)
+	assert.EqualError(t, err, commonutils.ErrNotEligible.Error())
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 

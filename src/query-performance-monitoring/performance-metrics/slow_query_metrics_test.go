@@ -56,15 +56,12 @@ func TestPopulateSlowMetricsInEligibility(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
-func TestGetSlowRunningMetrics(t *testing.T) {
-
+func runSlowQueryTest(t *testing.T, query string, version uint64, expectedLength int) {
 	conn, mock := connection.CreateMockSQL(t)
 	args := args.ArgumentList{QueryCountThreshold: 10}
 	databaseName := "testdb"
-	version := uint64(13)
 
-	expectedQuery := queries.SlowQueriesForV13AndAbove
-	query := fmt.Sprintf(expectedQuery, "testdb", min(args.QueryCountThreshold, commonutils.MaxQueryThreshold))
+	query = fmt.Sprintf(query, "testdb", min(args.QueryCountThreshold, commonutils.MaxQueryThreshold))
 	mock.ExpectQuery(regexp.QuoteMeta(query)).WillReturnRows(sqlmock.NewRows([]string{
 		"newrelic", "query_id", "query_text", "database_name", "schema_name", "execution_count",
 		"avg_elapsed_time_ms", "avg_disk_reads", "avg_disk_writes", "statement_type", "collection_timestamp",
@@ -75,17 +72,23 @@ func TestGetSlowRunningMetrics(t *testing.T) {
 	slowQueryList, _, err := performancemetrics.GetSlowRunningMetrics(conn, args, databaseName, version)
 
 	assert.NoError(t, err)
-	assert.Len(t, slowQueryList, 1)
+	assert.Len(t, slowQueryList, expectedLength)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
-func TestGetSlowRunningEmptyMetrics(t *testing.T) {
+func TestGetSlowRunningMetrics(t *testing.T) {
+	runSlowQueryTest(t, queries.SlowQueriesForV13AndAbove, 13, 1)
+}
 
+func TestGetSlowRunningMetricsV12(t *testing.T) {
+	runSlowQueryTest(t, queries.SlowQueriesForV12, 12, 1)
+}
+
+func TestGetSlowRunningEmptyMetrics(t *testing.T) {
 	conn, mock := connection.CreateMockSQL(t)
 	args := args.ArgumentList{QueryCountThreshold: 10}
 	databaseName := "testdb"
 	version := uint64(13)
-
 	expectedQuery := queries.SlowQueriesForV13AndAbove
 	query := fmt.Sprintf(expectedQuery, "testdb", min(args.QueryCountThreshold, commonutils.MaxQueryThreshold))
 	mock.ExpectQuery(regexp.QuoteMeta(query)).WillReturnRows(sqlmock.NewRows([]string{
@@ -96,29 +99,6 @@ func TestGetSlowRunningEmptyMetrics(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Len(t, slowQueryList, 0)
-	assert.NoError(t, mock.ExpectationsWereMet())
-}
-
-func TestGetSlowRunningMetricsV12(t *testing.T) {
-
-	conn, mock := connection.CreateMockSQL(t)
-	args := args.ArgumentList{QueryCountThreshold: 10}
-	databaseName := "testdb"
-	version := uint64(12)
-
-	expectedQuery := queries.SlowQueriesForV12
-	query := fmt.Sprintf(expectedQuery, "testdb", min(args.QueryCountThreshold, commonutils.MaxQueryThreshold))
-	mock.ExpectQuery(regexp.QuoteMeta(query)).WillReturnRows(sqlmock.NewRows([]string{
-		"newrelic", "query_id", "query_text", "database_name", "schema_name", "execution_count",
-		"avg_elapsed_time_ms", "avg_disk_reads", "avg_disk_writes", "statement_type", "collection_timestamp",
-	}).AddRow(
-		"newrelic", "queryid1", "SELECT 1", "testdb", "public", 10,
-		15.0, 5.0, 2.0, "SELECT", "2023-01-01T00:00:00Z",
-	))
-	slowQueryList, _, err := performancemetrics.GetSlowRunningMetrics(conn, args, databaseName, version)
-
-	assert.NoError(t, err)
-	assert.Len(t, slowQueryList, 1)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
