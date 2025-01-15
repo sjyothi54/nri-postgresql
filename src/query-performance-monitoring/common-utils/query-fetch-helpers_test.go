@@ -8,6 +8,22 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func runTestCases(t *testing.T, tests []struct {
+	version   uint64
+	expected  string
+	expectErr bool
+}, fetchFunc func(uint64) (string, error)) {
+	for _, test := range tests {
+		result, err := fetchFunc(test.version)
+		if test.expectErr {
+			assert.Error(t, err)
+		} else {
+			assert.NoError(t, err)
+			assert.Equal(t, test.expected, result)
+		}
+	}
+}
+
 func TestFetchVersionSpecificSlowQueries(t *testing.T) {
 	tests := []struct {
 		version   uint64
@@ -19,15 +35,7 @@ func TestFetchVersionSpecificSlowQueries(t *testing.T) {
 		{commonutils.PostgresVersion11, "", true},
 	}
 
-	for _, test := range tests {
-		result, err := commonutils.FetchVersionSpecificSlowQueries(test.version)
-		if test.expectErr {
-			assert.Error(t, err)
-		} else {
-			assert.NoError(t, err)
-			assert.Equal(t, test.expected, result)
-		}
-	}
+	runTestCases(t, tests, commonutils.FetchVersionSpecificSlowQueries)
 }
 
 func TestFetchVersionSpecificBlockingQueries(t *testing.T) {
@@ -42,15 +50,7 @@ func TestFetchVersionSpecificBlockingQueries(t *testing.T) {
 		{commonutils.PostgresVersion11, "", true},
 	}
 
-	for _, test := range tests {
-		result, err := commonutils.FetchVersionSpecificBlockingQueries(test.version)
-		if test.expectErr {
-			assert.Error(t, err)
-		} else {
-			assert.NoError(t, err)
-			assert.Equal(t, test.expected, result)
-		}
-	}
+	runTestCases(t, tests, commonutils.FetchVersionSpecificBlockingQueries)
 }
 
 func TestFetchVersionSpecificIndividualQueries(t *testing.T) {
@@ -65,13 +65,5 @@ func TestFetchVersionSpecificIndividualQueries(t *testing.T) {
 		{commonutils.PostgresVersion11, "", true},
 	}
 
-	for _, test := range tests {
-		result, err := commonutils.FetchVersionSpecificIndividualQueries(test.version)
-		if test.expectErr {
-			assert.Error(t, err)
-		} else {
-			assert.NoError(t, err)
-			assert.Equal(t, test.expected, result)
-		}
-	}
+	runTestCases(t, tests, commonutils.FetchVersionSpecificIndividualQueries)
 }
