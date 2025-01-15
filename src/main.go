@@ -7,6 +7,7 @@ import (
 	"os"
 	"runtime"
 	"strings"
+	"time"
 
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
@@ -40,6 +41,11 @@ func main() {
 		newrelic.ConfigLicense(common_package.ArgsGlobal),
 		newrelic.ConfigDatastoreRawQuery(true),
 	)
+	defer app.Shutdown(15 * time.Second)
+	if err := app.WaitForConnection(10 * time.Second); err != nil {
+		fmt.Println("New Relic Application did not connect:", err)
+		return
+	}
 	if nil != err {
 		log.Error("Error creating new relic application: %s", err.Error())
 		//panic(err)
