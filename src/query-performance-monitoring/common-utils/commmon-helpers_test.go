@@ -1,6 +1,7 @@
 package commonutils_test
 
 import (
+	"sort"
 	"testing"
 	"time"
 
@@ -17,9 +18,11 @@ func TestGetQuotedStringFromArray(t *testing.T) {
 }
 
 func TestGetDatabaseListInString(t *testing.T) {
-	dbList := collection.DatabaseList{
-		"db1": {},
-		"db2": {},
+	dbListKeys := []string{"db1", "db2"}
+	sort.Strings(dbListKeys) // Sort the keys to ensure consistent order
+	dbList := collection.DatabaseList{}
+	for _, key := range dbListKeys {
+		dbList[key] = collection.SchemaList{}
 	}
 	expected := "'db1','db2'"
 	result := commonutils.GetDatabaseListInString(dbList)
