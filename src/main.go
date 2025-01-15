@@ -41,14 +41,14 @@ func main() {
 		newrelic.ConfigLicense(common_package.ArgsGlobal),
 		newrelic.ConfigDatastoreRawQuery(true),
 	)
+	if err != nil {
+		log.Error("Error creating new relic application: %s", err.Error())
+		//panic(err)
+	}
 	defer app.Shutdown(15 * time.Second)
 	if err := app.WaitForConnection(10 * time.Second); err != nil {
 		fmt.Println("New Relic Application did not connect:", err)
 		return
-	}
-	if nil != err {
-		log.Error("Error creating new relic application: %s", err.Error())
-		//panic(err)
 	}
 	common_package.NewrelicApp = *app
 
