@@ -2,16 +2,17 @@ package performancemetrics_test
 
 import (
 	"fmt"
+	"regexp"
+	"testing"
+
 	commonutils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
 	"gopkg.in/DATA-DOG/go-sqlmock.v1"
-	"regexp"
-	"testing"
 
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/nri-postgresql/src/args"
 	"github.com/newrelic/nri-postgresql/src/connection"
-	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-metrics"
+	performancemetrics "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-metrics"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -49,7 +50,6 @@ func TestPopulateWaitEventMetricsInEligibility(t *testing.T) {
 }
 
 func TestPopulateWaitEventMetricsExtensionsNotEnable(t *testing.T) {
-
 	conn, mock := connection.CreateMockSQL(t)
 	pgIntegration, _ := integration.New("test", "1.0.0")
 	args := args.ArgumentList{QueryCountThreshold: 10}
@@ -66,7 +66,6 @@ func TestPopulateWaitEventMetricsExtensionsNotEnable(t *testing.T) {
 }
 
 func TestGetWaitEventMetrics(t *testing.T) {
-
 	conn, mock := connection.CreateMockSQL(t)
 	args := args.ArgumentList{QueryCountThreshold: 10}
 	databaseName := "testdb"

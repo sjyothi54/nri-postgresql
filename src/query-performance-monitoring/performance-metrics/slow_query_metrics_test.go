@@ -2,16 +2,17 @@ package performancemetrics_test
 
 import (
 	"fmt"
+	"regexp"
+	"testing"
+
 	commonutils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
 	"gopkg.in/DATA-DOG/go-sqlmock.v1"
-	"regexp"
-	"testing"
 
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/nri-postgresql/src/args"
 	"github.com/newrelic/nri-postgresql/src/connection"
-	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-metrics"
+	performancemetrics "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-metrics"
 	"github.com/stretchr/testify/assert"
 )
 
