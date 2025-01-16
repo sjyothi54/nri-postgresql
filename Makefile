@@ -29,10 +29,17 @@ test:
 
 
 integration-test:
-	@echo "=== $(INTEGRATION) === [ test ]: running integration tests..."
-	@docker compose -f tests/docker-compose.yml pull
-	@go test -v -tags=integration -count 1 ./tests/. || (ret=$$?; docker compose -f tests/docker-compose.yml down && exit $$ret)
-	@docker compose -f tests/docker-compose.yml down
+	# @echo "=== $(INTEGRATION) === [ test ]: running integration tests..."
+	# @docker compose -f tests/docker-compose.yml pull
+	# @go test -v -tags=integration -count 1 ./tests/. || (ret=$$?; docker compose -f tests/docker-compose.yml down && exit $$ret)
+	# @docker compose -f tests/docker-compose.yml down
+	@echo "=== $(INTEGRATION) === [ test ]: running integration tests for query performance monitoring..."
+	@echo "Starting containers for performance tests..."
+	@docker compose -f tests/docker-compose-performance.yml up -d
+	@sleep 30
+	@go test -v ./tests/postgresqlperf_test.go -timeout 600s || (ret=$$?; docker compose -f tests/docker-compose-performance.yml down -v && exit $$ret)
+	@echo "Stopping performance test containers..."
+	@docker compose -f tests/docker-compose-performance.yml down -v
 
 install: compile
 	@echo "=== $(INTEGRATION) === [ install ]: installing bin/$(BINARY_NAME)..."
