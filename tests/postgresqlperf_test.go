@@ -1,3 +1,5 @@
+//go:build integration
+
 package tests
 
 import (
@@ -24,27 +26,27 @@ import (
 )
 
 var (
-	oldest_supported_perf = "postgresql-perf-oldest"
-	latest_supported_perf = "postgresql-perf-latest"
-	unsupported_perf      = "postgresql-noext"
-	perf_containers       = []string{oldest_supported_perf, latest_supported_perf}
-	non_perf_containers   = []string{unsupported_perf}
-	integration_container = "nri_postgresql"
+	oldestSupportedPerf  = "postgresql-perf-oldest"
+	latestSupportedPerf  = "postgresql-perf-latest"
+	unsupportedPerf      = "postgresql-noext"
+	perfContainers       = []string{oldestSupportedPerf, latestSupportedPerf}
+	nonPerfContainers    = []string{unsupportedPerf}
+	integrationContainer = "nri_postgresql"
 
-	default_bin_path = "/nri-postgresql"
-	default_user     = "dbuser"
-	default_pass     = "dbpassword"
-	default_port     = 5432
-	default_db       = "demo"
-	test_db          = "titanic"
+	defaultBinPath = "/nri-postgresql"
+	defaultUser    = "dbuser"
+	defaultPass    = "dbpassword"
+	defaultPort    = 5432
+	defaultDB      = "demo"
+	testDB         = "titanic"
 
 	// cli flags
-	container   = flag.String("container", integration_container, "container where the integration is installed")
-	binary_path = flag.String("bin", default_bin_path, "Integration binary path")
-	user        = flag.String("user", default_user, "Postgresql user name")
-	psw         = flag.String("psw", default_pass, "Postgresql user password")
-	port        = flag.Int("port", default_port, "Postgresql port")
-	database    = flag.String("database", default_db, "Postgresql database")
+	container  = flag.String("container", integrationContainer, "container where the integration is installed")
+	binaryPath = flag.String("bin", defaultBinPath, "Integration binary path")
+	user       = flag.String("user", defaultUser, "Postgresql user name")
+	psw        = flag.String("psw", defaultPass, "Postgresql user password")
+	port       = flag.Int("port", defaultPort, "Postgresql port")
+	database   = flag.String("database", defaultDB, "Postgresql database")
 )
 
 func TestMain(m *testing.M) {
@@ -70,7 +72,7 @@ func TestIntegrationWithDatabaseLoadPerfEnabled(t *testing.T) {
 				"PostgresIndividualQueries",
 				"PostgresExecutionPlanMetrics",
 			},
-			containers: perf_containers,
+			containers: perfContainers,
 			args:       []string{`-collection_list=all`, `-enable_query_monitoring=true`},
 		},
 		{
@@ -78,7 +80,7 @@ func TestIntegrationWithDatabaseLoadPerfEnabled(t *testing.T) {
 			expectedOrder: []string{
 				"PostgresqlInstanceSample",
 			},
-			containers: perf_containers,
+			containers: perfContainers,
 			args:       []string{`-enable_query_monitoring=true`},
 		},
 		{
@@ -86,7 +88,7 @@ func TestIntegrationWithDatabaseLoadPerfEnabled(t *testing.T) {
 			expectedOrder: []string{
 				"PostgresqlInstanceSample",
 			},
-			containers: perf_containers,
+			containers: perfContainers,
 			args:       []string{`-collection_list=all`},
 		},
 	}
@@ -151,12 +153,12 @@ func TestIntegrationUnsupportedDatabase(t *testing.T) {
 	}{
 		{
 			name:       "Performance metrics collection with unsupported database - perf enabled",
-			containers: non_perf_containers,
+			containers: nonPerfContainers,
 			args:       []string{`-collection_list=all`, `-enable_query_monitoring=true`},
 		},
 		{
 			name:       "Performance metrics collection with unsupported database - perf disabled",
-			containers: non_perf_containers,
+			containers: nonPerfContainers,
 			args:       []string{`-collection_list=all`, `-enable_query_monitoring=false`},
 		},
 	}
@@ -187,15 +189,15 @@ func TestIntegrationUnsupportedDatabase(t *testing.T) {
 
 // ---------------- HELPER FUNCTIONS ----------------
 
-func openDB(target_container string) (*sqlx.DB, error) {
+func openDB(targetContainer string) (*sqlx.DB, error) {
 	// Use the container-specific port for database connections
-	dbPort := getPortForContainer(target_container)
+	dbPort := getPortForContainer(targetContainer)
 
 	connectionURL := &url.URL{
 		Scheme: "postgres",
 		User:   url.UserPassword(*user, *psw),
 		Host:   fmt.Sprintf("%s:%d", "localhost", dbPort),
-		Path:   test_db,
+		Path:   testDB,
 	}
 
 	query := url.Values{}
@@ -206,7 +208,7 @@ func openDB(target_container string) (*sqlx.DB, error) {
 	dsn := connectionURL.String()
 	db, err := sqlx.Open("postgres", dsn)
 	if err != nil {
-		return nil, fmt.Errorf("Cannot connect to db: %s", err)
+		return nil, fmt.Errorf("Cannot connect to db: %s", err) //nolint:all
 	}
 	return db, nil
 }
@@ -256,11 +258,11 @@ func ExecInContainer(container string, command []string, envVars ...string) (str
 	return stdout, stderr, nil
 }
 
-func runIntegration(t *testing.T, target_container string, integration_args ...string) string {
+func runIntegration(t *testing.T, targetContainer string, integration_args ...string) string {
 	t.Helper()
 
 	command := make([]string, 0)
-	command = append(command, *binary_path)
+	command = append(command, *binaryPath)
 
 	if user != nil {
 		command = append(command, "-username", *user)
@@ -275,12 +277,12 @@ func runIntegration(t *testing.T, target_container string, integration_args ...s
 	if database != nil {
 		command = append(command, "-database", *database)
 	}
-	if target_container != "" {
-		command = append(command, "-hostname", target_container)
+	if targetContainer != "" {
+		command = append(command, "-hostname", targetContainer)
 	}
 
 	for _, arg := range integration_args {
-		command = append(command, arg)
+		command = append(command, arg) //nolint:all
 	}
 
 	stdout, stderr, err := ExecInContainer(*container, command)
@@ -306,7 +308,7 @@ func validateJSONSchema(fileName string, input string) error {
 
 	result, err := gojsonschema.Validate(schemaLoader, documentLoader)
 	if err != nil {
-		return fmt.Errorf("Error loading JSON schema, error: %v", err)
+		return fmt.Errorf("Error loading JSON schema, error: %v", err) //nolint:all
 	}
 
 	if result.Valid() {
@@ -317,7 +319,7 @@ func validateJSONSchema(fileName string, input string) error {
 		fmt.Printf("\t- %s\n", desc)
 	}
 	fmt.Printf("\n")
-	return fmt.Errorf("The output of the integration doesn't have expected JSON format")
+	return fmt.Errorf("The output of the integration doesn't have expected JSON format") //nolint:all
 }
 
 func getSchemaFileName(sampleType string) string {
@@ -393,9 +395,9 @@ func (sc *SimulationController) StartAllSimulations(t *testing.T) chan struct{} 
 	return done
 }
 
-func ExecuteQuery(t *testing.T, query string, target_container string, delay int) {
+func ExecuteQuery(t *testing.T, query string, targetContainer string, delay int) {
 
-	db, err := openDB(target_container)
+	db, err := openDB(targetContainer)
 	require.NoError(t, err)
 	defer db.Close()
 
@@ -405,52 +407,52 @@ func ExecuteQuery(t *testing.T, query string, target_container string, delay int
 	time.Sleep(time.Duration(delay) * time.Millisecond)
 }
 
-func SimulateQueries(t *testing.T, target_container string) {
+func SimulateQueries(t *testing.T, targetContainer string) {
 	t.Helper()
 	for _, query := range simulation.SimpleQueries() {
-		ExecuteQuery(t, query, target_container, 100)
+		ExecuteQuery(t, query, targetContainer, 100)
 	}
 }
 
-func SimulateSlowQueries(t *testing.T, target_container string) {
+func SimulateSlowQueries(t *testing.T, targetContainer string) {
 	t.Helper()
 	for _, query := range simulation.SlowQueries() {
-		ExecuteQuery(t, query, target_container, 500)
+		ExecuteQuery(t, query, targetContainer, 500)
 	}
 }
 
-func SimulateWaitEvents(t *testing.T, target_container string, pclass int) {
+func SimulateWaitEvents(t *testing.T, targetContainer string, pclass int) {
 	t.Helper()
 
 	queries := simulation.WaitEventQueries(pclass)
 
 	// Start the locking transaction in a goroutine
 	go func() {
-		ExecuteQuery(t, queries.LockingQuery, target_container, 100)
+		ExecuteQuery(t, queries.LockingQuery, targetContainer, 100)
 	}()
 
 	// Wait for first transaction started
 	time.Sleep(2 * time.Second)
 
 	// Run the blocked transaction
-	ExecuteQuery(t, queries.BlockedQuery, target_container, 100)
+	ExecuteQuery(t, queries.BlockedQuery, targetContainer, 100)
 
 	time.Sleep(30 * time.Second)
 }
 
-func SimulateBlockingSessions(t *testing.T, target_container string) {
+func SimulateBlockingSessions(t *testing.T, targetContainer string) {
 	t.Helper()
 
 	queries := simulation.BlockingQueries()
 
-	db, err := openDB(target_container)
+	db, err := openDB(targetContainer)
 	require.NoError(t, err)
 	defer db.Close()
 
 	// Start the first transaction that will hold the lock
 	tx1, err := db.Begin()
 	require.NoError(t, err)
-	defer tx1.Rollback()
+	defer tx1.Rollback() //nolint:all
 
 	// Execute the locking query
 	_, err = tx1.Exec(queries.HoldLockQuery)
@@ -465,14 +467,14 @@ func SimulateBlockingSessions(t *testing.T, target_container string) {
 			t.Error(err)
 			return
 		}
-		defer tx2.Rollback()
+		defer tx2.Rollback() //nolint:all
 
 		// This query will block waiting for tx1's lock
-		tx2.Exec(queries.BlockedQuery)
+		tx2.Exec(queries.BlockedQuery) //nolint:all
 		// We don't check for errors here since this might timeout
 	}()
 
 	// Hold the lock for a few seconds, then release it
 	time.Sleep(5 * time.Second)
-	tx1.Commit()
+	tx1.Commit() //nolint:all
 }
