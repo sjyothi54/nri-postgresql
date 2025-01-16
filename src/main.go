@@ -37,9 +37,9 @@ func main() {
 	// Create Integration
 	pgIntegration, err := integration.New(integrationName, integrationVersion, integration.Args(&args))
 	common_package.ArgsGlobal = args.LicenseKey
-	log.Info("license-key", len(common_package.ArgsGlobal))
+	//log.Info("license-key", len(common_package.ArgsGlobal))
 	common_package.ArgsApplication = args.AppName
-	log.Info("app-name %s", common_package.ArgsApplication)
+	log.Info("app-name", common_package.ArgsApplication)
 	app, err := newrelic.NewApplication(
 		newrelic.ConfigAppName(args.AppName),
 		newrelic.ConfigLicense(common_package.ArgsGlobal),
