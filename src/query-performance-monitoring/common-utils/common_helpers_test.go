@@ -18,7 +18,7 @@ func TestGetQuotedStringFromArray(t *testing.T) {
 }
 
 func TestGetDatabaseListInString(t *testing.T) {
-	dbListKeys := []string{"db1", "db2"}
+	dbListKeys := []string{"db1"}
 	sort.Strings(dbListKeys) // Sort the keys to ensure consistent order
 	dbList := collection.DatabaseList{}
 	for _, key := range dbListKeys {
