@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/newrelic/go-agent/v3/newrelic"
-	common_package "github.com/newrelic/nri-postgresql/common-package"
 	"os"
 	"runtime"
 	"strings"
 	"time"
+
+	"github.com/newrelic/go-agent/v3/newrelic"
+	common_package "github.com/newrelic/nri-postgresql/common-package"
 
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
@@ -36,6 +37,7 @@ func main() {
 	// Create Integration
 	pgIntegration, err := integration.New(integrationName, integrationVersion, integration.Args(&args))
 	common_package.ArgsGlobal = args.LicenceKey
+	common_package.ArgsApplication = args.AppName
 	app, err := newrelic.NewApplication(
 		newrelic.ConfigAppName("postgres-v3"),
 		newrelic.ConfigLicense(common_package.ArgsGlobal),

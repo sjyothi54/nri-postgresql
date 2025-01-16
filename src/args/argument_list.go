@@ -35,6 +35,7 @@ type ArgumentList struct {
 	QueryResponseTimeThreshold   int    `default:"0" help:"Threshold in milliseconds for query response time to fetch individual query performance metrics."`
 	QueryCountThreshold          int    `default:"20" help:"Query count limit for fetching grouped slow and individual query performance metrics."`
 	LicenceKey                   string `default:"" help:"New Relic license key"`
+	AppName                      string `default:"" help:"New Relic application name"`
 }
 
 // Validate validates PostgreSQl arguments
