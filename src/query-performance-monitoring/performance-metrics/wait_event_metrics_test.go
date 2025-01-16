@@ -5,15 +5,15 @@ import (
 	"regexp"
 	"testing"
 
-	global_variables "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/global-variables"
-	commonutils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
-	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
-	"gopkg.in/DATA-DOG/go-sqlmock.v1"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/nri-postgresql/src/args"
 	"github.com/newrelic/nri-postgresql/src/connection"
+	commonutils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
+	global_variables "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/global-variables"
 	performancemetrics "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-metrics"
+	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
 	"github.com/stretchr/testify/assert"
+	"gopkg.in/DATA-DOG/go-sqlmock.v1"
 )
 
 func TestPopulateWaitEventMetrics(t *testing.T) {
