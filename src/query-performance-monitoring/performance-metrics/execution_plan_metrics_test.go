@@ -1,8 +1,9 @@
 package performancemetrics_test
 
 import (
-	global_variables "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/global-variables"
 	"testing"
+
+	global_variables "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/global-variables"
 
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/nri-postgresql/src/args"
