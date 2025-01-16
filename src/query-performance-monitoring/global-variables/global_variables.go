@@ -1,4 +1,4 @@
-package global_variables
+package globalvariables
 
 import (
 	"github.com/newrelic/nri-postgresql/src/args"

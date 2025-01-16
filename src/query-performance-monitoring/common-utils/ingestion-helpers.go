@@ -2,7 +2,7 @@ package commonutils
 
 import (
 	"fmt"
-	global_variables "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/global-variables"
+	globalvariables "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/global-variables"
 	"reflect"
 
 	"github.com/newrelic/infra-integrations-sdk/v3/data/metric"
@@ -33,7 +33,7 @@ func SetMetric(metricSet *metric.Set, name string, value interface{}, sourceType
 	}
 }
 
-func IngestMetric(metricList []interface{}, eventName string, pgIntegration *integration.Integration, gv *global_variables.GlobalVariables) {
+func IngestMetric(metricList []interface{}, eventName string, pgIntegration *integration.Integration, gv *globalvariables.GlobalVariables) {
 	instanceEntity, err := CreateEntity(pgIntegration, gv)
 	if err != nil {
 		log.Error("Error creating entity: %v", err)
@@ -72,7 +72,7 @@ func IngestMetric(metricList []interface{}, eventName string, pgIntegration *int
 	}
 }
 
-func CreateEntity(pgIntegration *integration.Integration, gv *global_variables.GlobalVariables) (*integration.Entity, error) {
+func CreateEntity(pgIntegration *integration.Integration, gv *globalvariables.GlobalVariables) (*integration.Entity, error) {
 	return pgIntegration.Entity(fmt.Sprintf("%s:%s", gv.Hostname, gv.Port), "pg-instance")
 }
 
@@ -108,7 +108,7 @@ func ProcessModel(model interface{}, metricSet *metric.Set) error {
 	return nil
 }
 
-func PublishMetrics(pgIntegration *integration.Integration, instanceEntity **integration.Entity, gv *global_variables.GlobalVariables) error {
+func PublishMetrics(pgIntegration *integration.Integration, instanceEntity **integration.Entity, gv *globalvariables.GlobalVariables) error {
 	if err := pgIntegration.Publish(); err != nil {
 		return err
 	}
