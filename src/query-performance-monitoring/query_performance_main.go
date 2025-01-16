@@ -30,7 +30,7 @@ func QueryPerformanceMain(args args.ArgumentList, pgIntegration *integration.Int
 		log.Debug("Error fetching version: ", versionErr)
 		return
 	}
-	loadGlobalVariables(args, versionInt)
+	loadGlobalVariables(args, versionInt, databaseList)
 
 	start := time.Now()
 	log.Debug("Starting PopulateSlowRunningMetrics at ", start)
@@ -60,10 +60,10 @@ func QueryPerformanceMain(args args.ArgumentList, pgIntegration *integration.Int
 	log.Debug("Query analysis completed.")
 }
 
-func loadGlobalVariables(args args.ArgumentList, version uint64) {
+func loadGlobalVariables(args args.ArgumentList, version uint64, databaseList collection.DatabaseList) {
 	global_variables.Args = args
 	global_variables.Version = version
-	global_variables.DatabaseString = commonutils.GetDatabaseListInString(collection.DatabaseList{})
+	global_variables.DatabaseString = commonutils.GetDatabaseListInString(databaseList)
 
 	slowQuery, slowQueryErr := commonutils.FetchVersionSpecificSlowQueries(version)
 	if slowQueryErr != nil {
