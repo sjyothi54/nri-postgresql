@@ -53,32 +53,6 @@ func TestMain(m *testing.M) {
 	os.Exit(result)
 }
 
-func testOutputIsValidJSON(t *testing.T, container string) {
-	args := []string{`-collection_list=all`, `-enable_query_monitoring=true`}
-	stdout := runIntegration(t, container, args...)
-	fmt.Println(stdout)
-	samples := strings.Split(stdout, "\n")
-	count := 0
-
-	for idx, sample := range samples {
-		sample = strings.TrimSpace(sample)
-		if sample == "" {
-			continue
-		}
-		var j map[string]interface{}
-		err := json.Unmarshal([]byte(sample), &j)
-		assert.NoError(t, err, "Sample %d - Integration Output Is An Invalid JSONs", idx)
-		count += 1
-	}
-	fmt.Println(count)
-}
-
-// func TestOutputIsValidJSON(t *testing.T) {
-// 	for _, container := range perf_containers {
-// 		testOutputIsValidJSON(t, container)
-// 	}
-// }
-
 func TestIntegrationWithDatabaseLoadPerfEnabled(t *testing.T) {
 	tests := []struct {
 		name          string
@@ -163,6 +137,48 @@ func TestIntegrationWithDatabaseLoadPerfEnabled(t *testing.T) {
 
 					// Wait for all simulations to complete
 					<-done
+				})
+			}
+		})
+	}
+}
+
+func TestIntegrationUnsupportedDatabase(t *testing.T) {
+	tests := []struct {
+		name       string
+		containers []string
+		args       []string
+	}{
+		{
+			name:       "Performance metrics collection with unsupported database - perf enabled",
+			containers: non_perf_containers,
+			args:       []string{`-collection_list=all`, `-enable_query_monitoring=true`},
+		},
+		{
+			name:       "Performance metrics collection with unsupported database - perf disabled",
+			containers: non_perf_containers,
+			args:       []string{`-collection_list=all`, `-enable_query_monitoring=false`},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			for _, container := range tt.containers {
+				t.Run(container, func(t *testing.T) {
+					stdout := runIntegration(t, container, tt.args...)
+
+					// Validate JSON format
+					var j map[string]interface{}
+					err := json.Unmarshal([]byte(stdout), &j)
+					assert.NoError(t, err, "Integration Output Is An Invalid JSON")
+
+					// Verify it's a PostgresqlInstanceSample
+					assert.Contains(t, stdout, "PostgresqlInstanceSample",
+						"Integration output does not contain PostgresqlInstanceSample")
+
+					// Validate against schema
+					err = validateJSONSchema("jsonschema-latest.json", stdout)
+					assert.NoError(t, err, "Output failed schema validation")
 				})
 			}
 		})

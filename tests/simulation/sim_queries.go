@@ -2,7 +2,6 @@ package simulation
 
 import "fmt"
 
-// SimpleQueries returns a slice of basic queries for normal workload simulation
 func SimpleQueries() []string {
 	return []string{
 		// Basic queries that will generate typical workload
@@ -14,7 +13,6 @@ func SimpleQueries() []string {
 	}
 }
 
-// SlowQueries returns a slice of complex queries designed to be resource-intensive
 func SlowQueries() []string {
 	return []string{
 		// Age-based survival analysis
