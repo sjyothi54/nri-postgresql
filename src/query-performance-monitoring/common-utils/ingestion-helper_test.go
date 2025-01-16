@@ -1,6 +1,7 @@
 package commonutils_test
 
 import (
+	global_variables "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/global-variables"
 	"testing"
 
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
@@ -31,13 +32,15 @@ func TestIngestMetric(t *testing.T) {
 		Hostname: "localhost",
 		Port:     "5432",
 	}
+	gv := global_variables.SetGlobalVariables(args, uint64(14), "testdc")
+
 	metricList := []interface{}{
 		struct {
 			TestField int `metric_name:"testField" source_type:"gauge"`
 		}{TestField: 123},
 	}
 
-	commonutils.IngestMetric(metricList, "testEvent", pgIntegration, args)
+	commonutils.IngestMetric(metricList, "testEvent", pgIntegration, gv)
 	assert.NotEmpty(t, pgIntegration.Entities)
 }
 
@@ -47,8 +50,9 @@ func TestCreateEntity(t *testing.T) {
 		Hostname: "localhost",
 		Port:     "5432",
 	}
+	gv := global_variables.SetGlobalVariables(args, uint64(14), "testdc")
 
-	entity, err := commonutils.CreateEntity(pgIntegration, args)
+	entity, err := commonutils.CreateEntity(pgIntegration, gv)
 	assert.NoError(t, err)
 	assert.NotNil(t, entity)
 	assert.Equal(t, "localhost:5432", entity.Metadata.Name)
@@ -75,9 +79,10 @@ func TestPublishMetrics(t *testing.T) {
 		Hostname: "localhost",
 		Port:     "5432",
 	}
-	entity, _ := commonutils.CreateEntity(pgIntegration, args)
+	gv := global_variables.SetGlobalVariables(args, uint64(14), "testdc")
+	entity, _ := commonutils.CreateEntity(pgIntegration, gv)
 
-	err := commonutils.PublishMetrics(pgIntegration, &entity, args)
+	err := commonutils.PublishMetrics(pgIntegration, &entity, gv)
 	assert.NoError(t, err)
 	assert.NotNil(t, entity)
 }
