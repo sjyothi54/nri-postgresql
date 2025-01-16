@@ -36,7 +36,7 @@ func main() {
 
 	// Create Integration
 	pgIntegration, err := integration.New(integrationName, integrationVersion, integration.Args(&args))
-	common_package.ArgsGlobal = args.LicenceKey
+	common_package.ArgsGlobal = args.LicenseKey
 	common_package.ArgsApplication = args.AppName
 	app, err := newrelic.NewApplication(
 		newrelic.ConfigAppName("postgres-v3"),

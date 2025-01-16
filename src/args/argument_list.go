@@ -34,7 +34,7 @@ type ArgumentList struct {
 	EnableQueryMonitoring        bool   `default:"true" help:"Query monitoring is enabled by default. Set to false to disable."`
 	QueryResponseTimeThreshold   int    `default:"0" help:"Threshold in milliseconds for query response time to fetch individual query performance metrics."`
 	QueryCountThreshold          int    `default:"20" help:"Query count limit for fetching grouped slow and individual query performance metrics."`
-	LicenceKey                   string `default:"" help:"New Relic license key"`
+	LicenseKey                   string `default:"" help:"New Relic license key"`
 	AppName                      string `default:"" help:"New Relic application name"`
 }
 
