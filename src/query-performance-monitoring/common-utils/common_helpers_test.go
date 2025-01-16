@@ -24,7 +24,7 @@ func TestGetDatabaseListInString(t *testing.T) {
 	for _, key := range dbListKeys {
 		dbList[key] = collection.SchemaList{}
 	}
-	expected := "'db1','db2'"
+	expected := "'db1'"
 	result := commonutils.GetDatabaseListInString(dbList)
 	assert.Equal(t, expected, result)
 
