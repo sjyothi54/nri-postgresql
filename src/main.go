@@ -39,7 +39,7 @@ func main() {
 	common_package.ArgsGlobal = args.LicenseKey
 	common_package.ArgsApplication = args.AppName
 	app, err := newrelic.NewApplication(
-		newrelic.ConfigAppName("postgres-v3"),
+		newrelic.ConfigAppName(args.AppName),
 		newrelic.ConfigLicense(common_package.ArgsGlobal),
 		newrelic.ConfigDatastoreRawQuery(true),
 	)

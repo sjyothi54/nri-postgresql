@@ -4,11 +4,12 @@ package connection
 import (
 	"context"
 	"fmt"
-	"github.com/newrelic/go-agent/v3/newrelic"
-	common_package "github.com/newrelic/nri-postgresql/common-package"
 	"net/url"
 	"os"
 	"time"
+
+	"github.com/newrelic/go-agent/v3/newrelic"
+	common_package "github.com/newrelic/nri-postgresql/common-package"
 
 	"github.com/jmoiron/sqlx"
 	// pq is required for postgreSQL driver but isn't used in code
@@ -109,7 +110,7 @@ func (p PGSQLConnection) Queryx(query string, app *newrelic.Application) (*sqlx.
 	if app == nil {
 		log.Error("Application is nil")
 		app, _ = newrelic.NewApplication(
-			newrelic.ConfigAppName("postgres-v3"),
+			newrelic.ConfigAppName(common_package.ArgsApplication),
 			newrelic.ConfigLicense(common_package.ArgsGlobal),
 			newrelic.ConfigDebugLogger(os.Stdout),
 			newrelic.ConfigDatastoreRawQuery(true),
