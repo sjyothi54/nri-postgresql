@@ -2,12 +2,14 @@ package commonutils
 
 import (
 	"fmt"
+	"github.com/newrelic/go-agent/v3/newrelic"
 	"reflect"
+
+	globalvariables "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/global-variables"
 
 	"github.com/newrelic/infra-integrations-sdk/v3/data/metric"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
-	"github.com/newrelic/nri-postgresql/src/args"
 )
 
 func SetMetric(metricSet *metric.Set, name string, value interface{}, sourceType string) {
@@ -33,8 +35,9 @@ func SetMetric(metricSet *metric.Set, name string, value interface{}, sourceType
 	}
 }
 
-func IngestMetric(metricList []interface{}, eventName string, pgIntegration *integration.Integration, args args.ArgumentList) {
-	instanceEntity, err := createEntity(pgIntegration, args)
+// IngestMetric is a util by which we publish data in batches .Reason for this is to avoid publishing large data in one go and its a limitation for NewRelic.
+func IngestMetric(metricList []interface{}, eventName string, pgIntegration *integration.Integration, gv *globalvariables.GlobalVariables, app *newrelic.Application) {
+	instanceEntity, err := CreateEntity(pgIntegration, gv)
 	if err != nil {
 		log.Error("Error creating entity: %v", err)
 		return
@@ -50,7 +53,7 @@ func IngestMetric(metricList []interface{}, eventName string, pgIntegration *int
 		metricCount += 1
 		metricSet := instanceEntity.NewMetricSet(eventName)
 
-		processErr := processModel(model, metricSet)
+		processErr := ProcessModel(model, metricSet)
 		if processErr != nil {
 			log.Error("Error processing model: %v", processErr)
 			continue
@@ -58,25 +61,25 @@ func IngestMetric(metricList []interface{}, eventName string, pgIntegration *int
 
 		if metricCount == PublishThreshold || metricCount == lenOfMetricList {
 			metricCount = 0
-			if err := publishMetrics(pgIntegration, &instanceEntity, args); err != nil {
+			if err := PublishMetrics(pgIntegration, &instanceEntity, gv); err != nil {
 				log.Error("Error publishing metrics: %v", err)
 				return
 			}
 		}
 	}
 	if metricCount > 0 {
-		if err := publishMetrics(pgIntegration, &instanceEntity, args); err != nil {
+		if err := PublishMetrics(pgIntegration, &instanceEntity, gv); err != nil {
 			log.Error("Error publishing metrics: %v", err)
 			return
 		}
 	}
 }
 
-func createEntity(pgIntegration *integration.Integration, args args.ArgumentList) (*integration.Entity, error) {
-	return pgIntegration.Entity(fmt.Sprintf("%s:%s", args.Hostname, args.Port), "pg-instance")
+func CreateEntity(pgIntegration *integration.Integration, gv *globalvariables.GlobalVariables) (*integration.Entity, error) {
+	return pgIntegration.Entity(fmt.Sprintf("%s:%s", gv.Hostname, gv.Port), "pg-instance")
 }
 
-func processModel(model interface{}, metricSet *metric.Set) error {
+func ProcessModel(model interface{}, metricSet *metric.Set) error {
 	modelValue := reflect.ValueOf(model)
 	if modelValue.Kind() == reflect.Ptr {
 		modelValue = modelValue.Elem()
@@ -108,11 +111,11 @@ func processModel(model interface{}, metricSet *metric.Set) error {
 	return nil
 }
 
-func publishMetrics(pgIntegration *integration.Integration, instanceEntity **integration.Entity, args args.ArgumentList) error {
+func PublishMetrics(pgIntegration *integration.Integration, instanceEntity **integration.Entity, gv *globalvariables.GlobalVariables) error {
 	if err := pgIntegration.Publish(); err != nil {
 		return err
 	}
 	var err error
-	*instanceEntity, err = pgIntegration.Entity(fmt.Sprintf("%s:%s", args.Hostname, args.Port), "pg-instance")
+	*instanceEntity, err = CreateEntity(pgIntegration, gv)
 	return err
 }

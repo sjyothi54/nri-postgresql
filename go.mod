@@ -4,9 +4,9 @@ go 1.23.4
 
 require (
 	github.com/blang/semver/v4 v4.0.0
+	github.com/go-viper/mapstructure/v2 v2.2.1
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/lib/pq v1.10.9
-	github.com/mitchellh/mapstructure v1.5.0
 	github.com/newrelic/go-agent/v3 v3.35.1
 	github.com/newrelic/go-agent/v3/integrations/nrpq v1.1.1
 	github.com/newrelic/infra-integrations-sdk/v3 v3.9.1
@@ -14,7 +14,6 @@ require (
 	github.com/xeipuuv/gojsonschema v1.2.0
 	gopkg.in/DATA-DOG/go-sqlmock.v1 v1.3.0
 	gopkg.in/yaml.v3 v3.0.1
-	"github.com/newrelic/go-agent/v3/integrations/nrpq" v1.1.1
 )
 
 require (

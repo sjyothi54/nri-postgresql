@@ -6,40 +6,41 @@ import (
 
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
-	"github.com/newrelic/nri-postgresql/src/args"
 	performancedbconnection "github.com/newrelic/nri-postgresql/src/connection"
 	commonutils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
+	globalvariables "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/global-variables"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
 )
 
-func PopulateWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, args args.ArgumentList, databaseNames string, app *newrelic.Application) {
-	isExtensionEnabled, err := validations.CheckWaitEventMetricsFetchEligibility(conn, app)
+func PopulateWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, gv *globalvariables.GlobalVariables, app *newrelic.Application) error {
+	isEligible, err := validations.CheckWaitEventMetricsFetchEligibility(conn, gv.Version, app)
 	if err != nil {
 		log.Error("Error executing query: %v", err)
-		return
+		return commonutils.ErrUnExpectedError
 	}
-	if !isExtensionEnabled {
-		log.Debug("Extension 'pg_wait_sampling' or 'pg_stat_statement' is not enabled.")
-		return
+	if !isEligible {
+		log.Debug("Extension 'pg_wait_sampling' or 'pg_stat_statement' is not enabled or unsupported version.")
+		return commonutils.ErrNotEligible
 	}
-	waitEventMetricsList, err := GetWaitEventMetrics(conn, args, databaseNames, app)
-	if err != nil {
+	waitEventMetricsList, waitEventErr := GetWaitEventMetrics(conn, gv, app)
+	if waitEventErr != nil {
 		log.Error("Error fetching wait event queries: %v", err)
-		return
+		return commonutils.ErrUnExpectedError
 	}
 
 	if len(waitEventMetricsList) == 0 {
 		log.Debug("No wait event queries found.")
-		return
+		return nil
 	}
-	commonutils.IngestMetric(waitEventMetricsList, "PostgresWaitEvents", pgIntegration, args)
+	commonutils.IngestMetric(waitEventMetricsList, "PostgresWaitEvents", pgIntegration, gv, app)
+	return nil
 }
 
-func GetWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, args args.ArgumentList, databaseNames string, app *newrelic.Application) ([]interface{}, error) {
+func GetWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, gv *globalvariables.GlobalVariables, app *newrelic.Application) ([]interface{}, error) {
 	var waitEventMetricsList []interface{}
-	var query = fmt.Sprintf(queries.WaitEvents, databaseNames, min(args.QueryCountThreshold, commonutils.MaxQueryThreshold))
+	var query = fmt.Sprintf(queries.WaitEvents, gv.DatabaseString, min(gv.QueryCountThreshold, commonutils.MaxQueryThreshold))
 	rows, err := conn.Queryx(query, app)
 	if err != nil {
 		return nil, err
