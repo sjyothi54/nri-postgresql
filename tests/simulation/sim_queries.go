@@ -44,7 +44,7 @@ func openDB(targetContainer string) (*sqlx.DB, error) {
 	return db, nil
 }
 
-//nolint:gomnd
+//nolint:all
 func getPortForContainer(container string) int {
 	switch container {
 	case "postgresql-perf-latest":
