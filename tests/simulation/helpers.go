@@ -99,7 +99,7 @@ func ValidateJSONSchema(fileName string, input string) error {
 	}
 	fmt.Printf("Errors for JSON schema: '%s'\n", schemaURI)
 	for _, desc := range result.Errors() {
-		fmt.Printf("\t- %s\n", desc)
+		fmt.Printf("\t- %s\n", desc) //nolint:all
 	}
 	fmt.Printf("\n")
 	return fmt.Errorf("The output of the integration doesn't have expected JSON format") //nolint:all
