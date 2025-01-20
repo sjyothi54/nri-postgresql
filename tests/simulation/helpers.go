@@ -91,7 +91,7 @@ func ValidateJSONSchema(fileName string, input string) error {
 
 	result, err := gojsonschema.Validate(schemaLoader, documentLoader)
 	if err != nil {
-		return fmt.Errorf("Error loading JSON schema, error: %v", err)
+		return fmt.Errorf("Error loading JSON schema, error: %v", err) //nolint:all
 	}
 
 	if result.Valid() {
@@ -102,7 +102,7 @@ func ValidateJSONSchema(fileName string, input string) error {
 		fmt.Printf("\t- %s\n", desc)
 	}
 	fmt.Printf("\n")
-	return fmt.Errorf("The output of the integration doesn't have expected JSON format")
+	return fmt.Errorf("The output of the integration doesn't have expected JSON format") //nolint:all
 }
 
 // GetSchemaFileName returns the appropriate schema filename for a given sample type
