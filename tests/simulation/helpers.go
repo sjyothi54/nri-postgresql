@@ -45,7 +45,6 @@ func ExecInContainer(container string, command []string, envVars ...string) (str
 
 // RunIntegration executes the integration binary with the provided arguments
 func RunIntegration(targetContainer, integrationContainer, binaryPath string, username, password *string, database *string, args ...string) (string, string, error) {
-
 	command := []string{binaryPath}
 
 	if username != nil {
@@ -66,7 +65,7 @@ func RunIntegration(targetContainer, integrationContainer, binaryPath string, us
 	}
 
 	for _, arg := range args {
-		command = append(command, arg) //nolint:all
+		command = append(command, arg)
 	}
 
 	stdout, stderr, err := ExecInContainer(integrationContainer, command)
@@ -84,25 +83,29 @@ func ValidateJSONSchema(fileName string, input string) error {
 		log.Error(err.Error())
 		return err
 	}
+
 	schemaURI := fmt.Sprintf("file://%s", filepath.Join(pwd, "testdata", fileName))
 	log.Info("loading schema from %s", schemaURI)
+
 	schemaLoader := gojsonschema.NewReferenceLoader(schemaURI)
 	documentLoader := gojsonschema.NewStringLoader(input)
 
 	result, err := gojsonschema.Validate(schemaLoader, documentLoader)
 	if err != nil {
-		return fmt.Errorf("Error loading JSON schema, error: %v", err) //nolint:all
+		return fmt.Errorf("error loading JSON schema: %v", err)
 	}
 
 	if result.Valid() {
 		return nil
 	}
+
 	fmt.Printf("Errors for JSON schema: '%s'\n", schemaURI)
 	for _, desc := range result.Errors() {
-		fmt.Printf("\t- %s\n", desc) //nolint:all
+		fmt.Printf("\t- %s\n", desc)
 	}
-	fmt.Printf("\n")
-	return fmt.Errorf("The output of the integration doesn't have expected JSON format") //nolint:all
+	fmt.Println()
+
+	return fmt.Errorf("the output of the integration doesn't have expected JSON format")
 }
 
 // GetSchemaFileName returns the appropriate schema filename for a given sample type
