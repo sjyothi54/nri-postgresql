@@ -1,4 +1,4 @@
-//nolint:gomnd
+//nolint:all
 package simulation
 
 import (
