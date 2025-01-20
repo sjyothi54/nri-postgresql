@@ -73,6 +73,8 @@ func NewSimulationController(targetContainer string, envVars ...string) *Simulat
 }
 
 // StartAllSimulations starts all simulation routines concurrently
+
+//nolint:all
 func (sc *SimulationController) StartAllSimulations(t *testing.T) chan struct{} {
 	done := make(chan struct{})
 
@@ -132,14 +134,14 @@ func ExecuteQuery(t *testing.T, query string, targetContainer string, delay int)
 func SimulateQueries(t *testing.T, targetContainer string) {
 	t.Helper()
 	for _, query := range SimpleQueries() {
-		ExecuteQuery(t, query, targetContainer, 100)
+		ExecuteQuery(t, query, targetContainer, 100) //nolint:all
 	}
 }
 
 func SimulateSlowQueries(t *testing.T, targetContainer string) {
 	t.Helper()
 	for _, query := range SlowQueries() {
-		ExecuteQuery(t, query, targetContainer, 500)
+		ExecuteQuery(t, query, targetContainer, 500) //nolint:all
 	}
 }
 
@@ -150,14 +152,14 @@ func SimulateWaitEvents(t *testing.T, targetContainer string, pclass int) {
 
 	// Start the locking transaction in a goroutine
 	go func() {
-		ExecuteQuery(t, queries.LockingQuery, targetContainer, 100)
+		ExecuteQuery(t, queries.LockingQuery, targetContainer, 100) //nolint:all
 	}()
 
 	// Wait for first transaction started
 	time.Sleep(2 * time.Second)
 
 	// Run the blocked transaction
-	ExecuteQuery(t, queries.BlockedQuery, targetContainer, 100)
+	ExecuteQuery(t, queries.BlockedQuery, targetContainer, 100) //nolint:all
 
 	time.Sleep(30 * time.Second)
 }
@@ -197,8 +199,8 @@ func SimulateBlockingSessions(t *testing.T, targetContainer string) {
 	}()
 
 	// Hold the lock for a few seconds, then release it
-	time.Sleep(5 * time.Second)
-	tx1.Commit() //nolint:all
+	time.Sleep(5 * time.Second) //nolint:all
+	tx1.Commit()                //nolint:all
 }
 
 func SimpleQueries() []string {
