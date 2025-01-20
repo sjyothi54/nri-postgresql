@@ -20,8 +20,6 @@ const (
 )
 
 func openDB(targetContainer string) (*sqlx.DB, error) {
-
-	// Use the container-specific port for database connections
 	dbPort := getPortForContainer(targetContainer)
 
 	connectionURL := &url.URL{
@@ -39,12 +37,11 @@ func openDB(targetContainer string) (*sqlx.DB, error) {
 	dsn := connectionURL.String()
 	db, err := sqlx.Open("postgres", dsn)
 	if err != nil {
-		return nil, fmt.Errorf("Cannot connect to db: %s", err) //nolint:all
+		return nil, fmt.Errorf("cannot connect to db: %s", err)
 	}
 	return db, nil
 }
 
-//nolint:all
 func getPortForContainer(container string) int {
 	switch container {
 	case "postgresql-perf-latest":
@@ -73,8 +70,6 @@ func NewSimulationController(targetContainer string, envVars ...string) *Simulat
 }
 
 // StartAllSimulations starts all simulation routines concurrently
-
-//nolint:all
 func (sc *SimulationController) StartAllSimulations(t *testing.T) chan struct{} {
 	done := make(chan struct{})
 
@@ -120,13 +115,11 @@ func (sc *SimulationController) StartAllSimulations(t *testing.T) chan struct{} 
 }
 
 func ExecuteQuery(t *testing.T, query string, targetContainer string, delay int) {
-
 	db, err := openDB(targetContainer)
 	require.NoError(t, err)
 	defer db.Close()
 
 	_, err = db.Exec(query)
-	// fmt.Println(stderr)
 	require.NoError(t, err)
 	time.Sleep(time.Duration(delay) * time.Millisecond)
 }
@@ -134,14 +127,14 @@ func ExecuteQuery(t *testing.T, query string, targetContainer string, delay int)
 func SimulateQueries(t *testing.T, targetContainer string) {
 	t.Helper()
 	for _, query := range SimpleQueries() {
-		ExecuteQuery(t, query, targetContainer, 100) //nolint:all
+		ExecuteQuery(t, query, targetContainer, 100)
 	}
 }
 
 func SimulateSlowQueries(t *testing.T, targetContainer string) {
 	t.Helper()
 	for _, query := range SlowQueries() {
-		ExecuteQuery(t, query, targetContainer, 500) //nolint:all
+		ExecuteQuery(t, query, targetContainer, 500)
 	}
 }
 
@@ -152,14 +145,14 @@ func SimulateWaitEvents(t *testing.T, targetContainer string, pclass int) {
 
 	// Start the locking transaction in a goroutine
 	go func() {
-		ExecuteQuery(t, queries.LockingQuery, targetContainer, 100) //nolint:all
+		ExecuteQuery(t, queries.LockingQuery, targetContainer, 100)
 	}()
 
 	// Wait for first transaction started
 	time.Sleep(2 * time.Second)
 
 	// Run the blocked transaction
-	ExecuteQuery(t, queries.BlockedQuery, targetContainer, 100) //nolint:all
+	ExecuteQuery(t, queries.BlockedQuery, targetContainer, 100)
 
 	time.Sleep(30 * time.Second)
 }
@@ -176,7 +169,7 @@ func SimulateBlockingSessions(t *testing.T, targetContainer string) {
 	// Start the first transaction that will hold the lock
 	tx1, err := db.Begin()
 	require.NoError(t, err)
-	defer tx1.Rollback() //nolint:all
+	defer tx1.Rollback()
 
 	// Execute the locking query
 	_, err = tx1.Exec(queries.HoldLockQuery)
@@ -191,16 +184,16 @@ func SimulateBlockingSessions(t *testing.T, targetContainer string) {
 			t.Error(err)
 			return
 		}
-		defer tx2.Rollback() //nolint:all
+		defer tx2.Rollback()
 
 		// This query will block waiting for tx1's lock
-		tx2.Exec(queries.BlockedQuery) //nolint:all
+		tx2.Exec(queries.BlockedQuery)
 		// We don't check for errors here since this might timeout
 	}()
 
 	// Hold the lock for a few seconds, then release it
-	time.Sleep(5 * time.Second) //nolint:all
-	tx1.Commit()                //nolint:all
+	time.Sleep(5 * time.Second)
+	tx1.Commit()
 }
 
 func SimpleQueries() []string {
