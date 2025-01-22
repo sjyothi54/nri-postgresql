@@ -34,7 +34,6 @@ func PopulateBlockingMetrics(conn *performancedbconnection.PGSQLConnection, pgIn
 		return
 	}
 	commonutils.IngestMetric(blockingQueriesMetricsList, "PostgresBlockingSessions", pgIntegration, gv)
-	return
 }
 
 func GetBlockingMetrics(conn *performancedbconnection.PGSQLConnection, gv *globalvariables.GlobalVariables) ([]interface{}, error) {
