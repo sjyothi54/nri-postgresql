@@ -15,27 +15,26 @@ import (
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
 )
 
-func PopulateBlockingMetrics(conn *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, gv *globalvariables.GlobalVariables, app *newrelic.Application) error {
+func PopulateBlockingMetrics(conn *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, gv *globalvariables.GlobalVariables, app *newrelic.Application) {
 	isEligible, enableCheckError := validations.CheckBlockingSessionMetricsFetchEligibility(conn, gv.Version, app)
 	if enableCheckError != nil {
 		log.Error("Error executing query: %v in PopulateBlockingMetrics", enableCheckError)
-		return commonutils.ErrUnExpectedError
+		return
 	}
 	if !isEligible {
 		log.Debug("Extension 'pg_stat_statements' is not enabled or unsupported version.")
-		return commonutils.ErrNotEligible
+		return
 	}
 	blockingQueriesMetricsList, blockQueryFetchErr := GetBlockingMetrics(conn, gv, app)
 	if blockQueryFetchErr != nil {
 		log.Error("Error fetching Blocking queries: %v", blockQueryFetchErr)
-		return commonutils.ErrUnExpectedError
+		return
 	}
 	if len(blockingQueriesMetricsList) == 0 {
 		log.Debug("No Blocking queries found.")
-		return nil
+		return
 	}
 	commonutils.IngestMetric(blockingQueriesMetricsList, "PostgresBlockingSessions", pgIntegration, gv, nil)
-	return nil
 }
 
 func GetBlockingMetrics(conn *performancedbconnection.PGSQLConnection, gv *globalvariables.GlobalVariables, app *newrelic.Application) ([]interface{}, error) {

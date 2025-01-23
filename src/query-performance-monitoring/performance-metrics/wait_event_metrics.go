@@ -14,10 +14,12 @@ import (
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
 )
 
-func PopulateWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, gv *globalvariables.GlobalVariables, app *newrelic.Application) error {
-	isEligible, err := validations.CheckWaitEventMetricsFetchEligibility(conn, gv.Version, app)
-	if err != nil {
-		log.Error("Error executing query: %v", err)
+func PopulateWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, gv *globalvariables.GlobalVariables,app *newrelic.Application) error {
+	var isEligible bool
+	var eligibleCheckErr error
+	isEligible, eligibleCheckErr = validations.CheckWaitEventMetricsFetchEligibility(conn, gv.Version, app)
+	if eligibleCheckErr != nil {
+		log.Error("Error executing query: %v", eligibleCheckErr)
 		return commonutils.ErrUnExpectedError
 	}
 	if !isEligible {
@@ -26,10 +28,9 @@ func PopulateWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, pgI
 	}
 	waitEventMetricsList, waitEventErr := GetWaitEventMetrics(conn, gv, app)
 	if waitEventErr != nil {
-		log.Error("Error fetching wait event queries: %v", err)
+		log.Error("Error fetching wait event queries: %v", waitEventErr)
 		return commonutils.ErrUnExpectedError
 	}
-
 	if len(waitEventMetricsList) == 0 {
 		log.Debug("No wait event queries found.")
 		return nil

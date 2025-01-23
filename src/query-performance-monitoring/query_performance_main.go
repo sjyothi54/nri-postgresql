@@ -27,14 +27,15 @@ func QueryPerformanceMain(args args.ArgumentList, pgIntegration *integration.Int
 
 	newConnection, err := connectionInfo.NewConnection(connectionInfo.DatabaseName())
 	if err != nil {
-		log.Debug("Error creating connection: ", err)
+		log.Error("Error creating connection: ", err)
 		return
 	}
+	defer newConnection.Close()
 
 	version, versionErr := metrics.CollectVersion(newConnection)
 	versionInt := version.Major
 	if versionErr != nil {
-		log.Debug("Error fetching version: ", versionErr)
+		log.Error("Error fetching version: ", versionErr)
 		return
 	}
 	gv := global_variables.SetGlobalVariables(args, versionInt, commonutils.GetDatabaseListInString(databaseList))
@@ -59,7 +60,7 @@ func QueryPerformanceMain(args args.ArgumentList, pgIntegration *integration.Int
 	common_package.Txn = blockingEventsTxn
 	start = time.Now()
 	log.Debug("Starting PopulateBlockingMetrics at ", start)
-	_ = performancemetrics.PopulateBlockingMetrics(newConnection, pgIntegration, gv, app)
+	performancemetrics.PopulateBlockingMetrics(newConnection, pgIntegration, gv, nil)
 	log.Debug("PopulateBlockingMetrics completed in ", time.Since(start))
 
 	individualTxn := app.StartTransaction("individual_txns_go")
