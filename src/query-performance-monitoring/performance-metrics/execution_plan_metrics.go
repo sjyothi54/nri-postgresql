@@ -46,6 +46,7 @@ func processExecutionPlanOfQueries(individualQueriesList []datamodels.Individual
 			log.Debug("Error executing query: %v", err)
 			continue
 		}
+		defer rows.Close()
 		if individualQuery.QueryText == nil || individualQuery.QueryID == nil || individualQuery.DatabaseName == nil {
 			log.Error("QueryText, QueryID or Database Name is nil")
 			continue
@@ -59,7 +60,6 @@ func processExecutionPlanOfQueries(individualQueriesList []datamodels.Individual
 			log.Error("Error scanning row: ", scanErr.Error())
 			continue
 		}
-		defer rows.Close()
 
 		var execPlan []map[string]interface{}
 		err = json.Unmarshal([]byte(execPlanJSON), &execPlan)

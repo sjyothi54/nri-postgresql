@@ -49,6 +49,7 @@ func GetBlockingMetrics(conn *performancedbconnection.PGSQLConnection, gv *globa
 		log.Error("Failed to execute query: %v", err)
 		return nil, err
 	}
+	defer rows.Close()
 	for rows.Next() {
 		var blockingQueryMetric datamodels.BlockingSessionMetrics
 		if scanError := rows.StructScan(&blockingQueryMetric); scanError != nil {
@@ -61,6 +62,5 @@ func GetBlockingMetrics(conn *performancedbconnection.PGSQLConnection, gv *globa
 		blockingQueriesMetricsList = append(blockingQueriesMetricsList, blockingQueryMetric)
 	}
 
-	defer rows.Close()
 	return blockingQueriesMetricsList, nil
 }

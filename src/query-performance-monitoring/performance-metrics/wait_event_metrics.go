@@ -45,6 +45,7 @@ func GetWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, gv *glob
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 	for rows.Next() {
 		var waitEvent datamodels.WaitEventMetrics
 		if waitScanErr := rows.StructScan(&waitEvent); waitScanErr != nil {
@@ -52,6 +53,5 @@ func GetWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, gv *glob
 		}
 		waitEventMetricsList = append(waitEventMetricsList, waitEvent)
 	}
-	defer rows.Close()
 	return waitEventMetricsList, nil
 }
