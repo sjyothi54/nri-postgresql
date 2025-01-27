@@ -88,7 +88,10 @@ func getIndividualQueriesSamples(conn *performancedbconnection.PGSQLConnection, 
 		*individualQueryMetricsForExecPlanList = append(*individualQueryMetricsForExecPlanList, model)
 		*individualQueryMetricsListInterface = append(*individualQueryMetricsListInterface, individualQueryMetric)
 	}
-	defer rows.Close()
+	if closeErr := rows.Close(); closeErr != nil {
+		log.Error("Error closing rows: %v", closeErr)
+		return
+	}
 		
 }
 
