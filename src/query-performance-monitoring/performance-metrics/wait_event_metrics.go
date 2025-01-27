@@ -52,9 +52,6 @@ func GetWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, gv *glob
 		}
 		waitEventMetricsList = append(waitEventMetricsList, waitEvent)
 	}
-	if closeErr := rows.Close(); closeErr != nil {
-		log.Error("Error closing rows: %v", closeErr)
-		return nil, closeErr
-	}
+	defer rows.Close()
 	return waitEventMetricsList, nil
 }

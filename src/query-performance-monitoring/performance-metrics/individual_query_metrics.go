@@ -88,10 +88,8 @@ func getIndividualQueriesSamples(conn *performancedbconnection.PGSQLConnection, 
 		*individualQueryMetricsForExecPlanList = append(*individualQueryMetricsForExecPlanList, model)
 		*individualQueryMetricsListInterface = append(*individualQueryMetricsListInterface, individualQueryMetric)
 	}
-	if closeErr := rows.Close(); closeErr != nil {
-		log.Error("Error closing rows: %v", closeErr)
-		return
-	}
+	defer rows.Close()
+		
 }
 
 func processForAnonymizeQueryMap(slowRunningMetricList []datamodels.SlowRunningQueryMetrics) map[string]map[string]string {

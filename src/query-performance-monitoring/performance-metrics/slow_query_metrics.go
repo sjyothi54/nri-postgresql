@@ -33,10 +33,7 @@ func GetSlowRunningMetrics(conn *performancedbconnection.PGSQLConnection, gv *gl
 		slowQueryMetricsList = append(slowQueryMetricsList, slowQuery)
 		slowQueryMetricsListInterface = append(slowQueryMetricsListInterface, slowQuery)
 	}
-	if closeErr := rows.Close(); closeErr != nil {
-		log.Error("Error closing rows: %v", closeErr)
-		return nil, nil, closeErr
-	}
+	defer rows.Close()
 	return slowQueryMetricsList, slowQueryMetricsListInterface, nil
 }
 

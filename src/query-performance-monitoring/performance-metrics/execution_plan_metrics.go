@@ -59,10 +59,7 @@ func processExecutionPlanOfQueries(individualQueriesList []datamodels.Individual
 			log.Error("Error scanning row: ", scanErr.Error())
 			continue
 		}
-		if closeErr := rows.Close(); closeErr != nil {
-			log.Error("Error closing rows: %v", closeErr)
-			continue
-		}
+		defer rows.Close()
 
 		var execPlan []map[string]interface{}
 		err = json.Unmarshal([]byte(execPlanJSON), &execPlan)
