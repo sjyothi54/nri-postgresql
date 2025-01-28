@@ -37,6 +37,7 @@ func QueryPerformanceMain(args args.ArgumentList, pgIntegration *integration.Int
 		return
 	}
 	gv := global_variables.SetGlobalVariables(args, versionInt, commonutils.GetDatabaseListInString(databaseMap))
+	log.Debug("Global variables set", gv.DatabaseString)
 	start := time.Now()
 	log.Debug("Starting PopulateSlowRunningMetrics at ", start)
 	slowRunningQueries := performancemetrics.PopulateSlowRunningMetrics(newConnection, pgIntegration, gv)
