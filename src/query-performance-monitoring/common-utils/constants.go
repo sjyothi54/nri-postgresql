@@ -3,10 +3,10 @@ package commonutils
 import "errors"
 
 // The maximum number records that can be fetched in a single metrics
-const MaxQueryCountThreshold = 30
+const MaxQueryCountThreshold = 300
 
 // The maximum number of individual queries that can be fetched in a single metrics
-const MaxIndividualQueryCountThreshold = 10
+const MaxIndividualQueryCountThreshold = 300
 
 // The maximum number of metrics to be published in a single batch
 const PublishThreshold = 100
