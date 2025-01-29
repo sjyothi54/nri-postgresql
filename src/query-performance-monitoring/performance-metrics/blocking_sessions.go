@@ -44,17 +44,19 @@ func GetBlockingMetrics(conn *performancedbconnection.PGSQLConnection, gv *globa
 		log.Error("Unsupported postgres version: %v", err)
 		return nil, err
 	}
-	var query = fmt.Sprintf(versionSpecificBlockingQuery, gv.DatabaseString, min(gv.QueryCountThreshold, commonutils.MaxQueryThreshold))
-	rows, err := conn.Queryx(query, app)
+	var query = fmt.Sprintf(versionSpecificBlockingQuery, gv.DatabaseString, min(gv.Arguments.QueryCountThreshold, commonutils.MaxQueryCountThreshold))
+	rows, err := conn.Queryx(query)
 	if err != nil {
 		log.Error("Failed to execute query: %v", err)
 		return nil, err
 	}
+	defer rows.Close()
 	for rows.Next() {
 		var blockingQueryMetric datamodels.BlockingSessionMetrics
 		if scanError := rows.StructScan(&blockingQueryMetric); scanError != nil {
 			return nil, scanError
 		}
+		// For PostgreSQL versions 13 and 12, anonymization of queries does not occur for blocking sessions, so it's necessary to explicitly anonymize them.
 		if gv.Version == commonutils.PostgresVersion13 || gv.Version == commonutils.PostgresVersion12 {
 			*blockingQueryMetric.BlockedQuery = commonutils.AnonymizeQueryText(*blockingQueryMetric.BlockedQuery)
 			*blockingQueryMetric.BlockingQuery = commonutils.AnonymizeQueryText(*blockingQueryMetric.BlockingQuery)
@@ -62,9 +64,5 @@ func GetBlockingMetrics(conn *performancedbconnection.PGSQLConnection, gv *globa
 		blockingQueriesMetricsList = append(blockingQueriesMetricsList, blockingQueryMetric)
 	}
 
-	if closeErr := rows.Close(); closeErr != nil {
-		log.Error("Error closing rows: %v", closeErr)
-		return nil, closeErr
-	}
 	return blockingQueriesMetricsList, nil
 }

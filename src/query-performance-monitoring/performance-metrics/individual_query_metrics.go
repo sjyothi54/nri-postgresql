@@ -13,8 +13,11 @@ import (
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
 )
 
-func PopulateIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, slowRunningQueries []datamodels.SlowRunningQueryMetrics, pgIntegration *integration.Integration, gv *globalvariables.GlobalVariables, app *newrelic.Application) []datamodels.IndividualQueryMetrics {
-	isEligible, err := validations.CheckIndividualQueryMetricsFetchEligibility(conn, gv.Version, app)
+type queryInfoMap map[string]string
+type databaseQueryInfoMap map[string]queryInfoMap
+
+func PopulateIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, slowRunningQueries []datamodels.SlowRunningQueryMetrics, pgIntegration *integration.Integration, gv *globalvariables.GlobalVariables) []datamodels.IndividualQueryMetrics {
+	isEligible, err := validations.CheckIndividualQueryMetricsFetchEligibility(conn, gv.Version)
 	if err != nil {
 		log.Error("Error executing query: %v", err)
 		return nil
@@ -56,8 +59,8 @@ func GetIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, sl
 	return individualQueryMetricsListInterface, individualQueryMetricsForExecPlanList
 }
 
-func getIndividualQueriesSamples(conn *performancedbconnection.PGSQLConnection, slowRunningQueries datamodels.SlowRunningQueryMetrics, gv *globalvariables.GlobalVariables, anonymizedQueriesByDB map[string]map[string]string, individualQueryMetricsForExecPlanList *[]datamodels.IndividualQueryMetrics, individualQueryMetricsListInterface *[]interface{}, versionSpecificIndividualQuery string, app *newrelic.Application) {
-	query := fmt.Sprintf(versionSpecificIndividualQuery, *slowRunningQueries.QueryID, gv.DatabaseString, gv.QueryResponseTimeThreshold, min(gv.QueryCountThreshold, commonutils.MaxIndividualQueryThreshold))
+func getIndividualQueriesSamples(conn *performancedbconnection.PGSQLConnection, slowRunningQueries datamodels.SlowRunningQueryMetrics, gv *globalvariables.GlobalVariables, anonymizedQueriesByDB databaseQueryInfoMap, individualQueryMetricsForExecPlanList *[]datamodels.IndividualQueryMetrics, individualQueryMetricsListInterface *[]interface{}, versionSpecificIndividualQuery string) {
+	query := fmt.Sprintf(versionSpecificIndividualQuery, *slowRunningQueries.QueryID, gv.DatabaseString, gv.Arguments.QueryResponseTimeThreshold, min(gv.Arguments.QueryCountThreshold, commonutils.MaxIndividualQueryCountThreshold))
 	if query == "" {
 		log.Debug("Error constructing individual query")
 		return
@@ -67,6 +70,7 @@ func getIndividualQueriesSamples(conn *performancedbconnection.PGSQLConnection, 
 		log.Debug("Error executing query in individual query: %v", err)
 		return
 	}
+	defer rows.Close()
 	for rows.Next() {
 		var model datamodels.IndividualQueryMetrics
 		if scanErr := rows.StructScan(&model); scanErr != nil {
@@ -89,14 +93,10 @@ func getIndividualQueriesSamples(conn *performancedbconnection.PGSQLConnection, 
 		*individualQueryMetricsForExecPlanList = append(*individualQueryMetricsForExecPlanList, model)
 		*individualQueryMetricsListInterface = append(*individualQueryMetricsListInterface, individualQueryMetric)
 	}
-	if closeErr := rows.Close(); closeErr != nil {
-		log.Error("Error closing rows: %v", closeErr)
-		return
-	}
 }
 
-func processForAnonymizeQueryMap(slowRunningMetricList []datamodels.SlowRunningQueryMetrics) map[string]map[string]string {
-	anonymizeQueryMapByDB := make(map[string]map[string]string)
+func processForAnonymizeQueryMap(slowRunningMetricList []datamodels.SlowRunningQueryMetrics) databaseQueryInfoMap {
+	anonymizeQueryMapByDB := make(databaseQueryInfoMap)
 
 	for _, metric := range slowRunningMetricList {
 		if metric.DatabaseName == nil || metric.QueryID == nil || metric.QueryText == nil {

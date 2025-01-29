@@ -44,7 +44,6 @@ func IngestMetric(metricList []interface{}, eventName string, pgIntegration *int
 	}
 
 	metricCount := 0
-	lenOfMetricList := len(metricList)
 
 	for _, model := range metricList {
 		if model == nil {
@@ -59,7 +58,7 @@ func IngestMetric(metricList []interface{}, eventName string, pgIntegration *int
 			continue
 		}
 
-		if metricCount == PublishThreshold || metricCount == lenOfMetricList {
+		if metricCount == PublishThreshold {
 			metricCount = 0
 			if err := PublishMetrics(pgIntegration, &instanceEntity, gv); err != nil {
 				log.Error("Error publishing metrics: %v", err)
@@ -76,7 +75,7 @@ func IngestMetric(metricList []interface{}, eventName string, pgIntegration *int
 }
 
 func CreateEntity(pgIntegration *integration.Integration, gv *globalvariables.GlobalVariables) (*integration.Entity, error) {
-	return pgIntegration.Entity(fmt.Sprintf("%s:%s", gv.Hostname, gv.Port), "pg-instance")
+	return pgIntegration.Entity(fmt.Sprintf("%s:%s", gv.Arguments.Hostname, gv.Arguments.Port), "pg-instance")
 }
 
 func ProcessModel(model interface{}, metricSet *metric.Set) error {

@@ -47,6 +47,7 @@ func processExecutionPlanOfQueries(individualQueriesList []datamodels.Individual
 			log.Debug("Error executing query: %v", err)
 			continue
 		}
+		defer rows.Close()
 		if individualQuery.QueryText == nil || individualQuery.QueryID == nil || individualQuery.DatabaseName == nil {
 			log.Error("QueryText, QueryID or Database Name is nil")
 			continue
@@ -60,10 +61,6 @@ func processExecutionPlanOfQueries(individualQueriesList []datamodels.Individual
 			log.Error("Error scanning row: ", scanErr.Error())
 			continue
 		}
-		if closeErr := rows.Close(); closeErr != nil {
-			log.Error("Error closing rows: %v", closeErr)
-			continue
-		}
 
 		var execPlan []map[string]interface{}
 		err = json.Unmarshal([]byte(execPlanJSON), &execPlan)
@@ -71,9 +68,20 @@ func processExecutionPlanOfQueries(individualQueriesList []datamodels.Individual
 			log.Error("Failed to unmarshal execution plan: %v", err)
 			continue
 		}
+		validateAndFetchNestedExecPlan(execPlan, individualQuery, executionPlanMetricsList)
+	}
+}
 
-		level := 0
-		FetchNestedExecutionPlanDetails(individualQuery, &level, execPlan[0]["Plan"].(map[string]interface{}), executionPlanMetricsList)
+func validateAndFetchNestedExecPlan(execPlan []map[string]interface{}, individualQuery datamodels.IndividualQueryMetrics, executionPlanMetricsList *[]interface{}) {
+	level := 0
+	if len(execPlan) > 0 {
+		if plan, ok := execPlan[0]["Plan"].(map[string]interface{}); ok {
+			FetchNestedExecutionPlanDetails(individualQuery, &level, plan, executionPlanMetricsList)
+		} else {
+			log.Debug("execPlan is not in correct datatype")
+		}
+	} else {
+		log.Debug("execPlan is empty")
 	}
 }
 

@@ -21,11 +21,12 @@ func GetSlowRunningMetrics(conn *performancedbconnection.PGSQLConnection, gv *gl
 		log.Error("Unsupported postgres version: %v", err)
 		return nil, nil, err
 	}
-	var query = fmt.Sprintf(versionSpecificSlowQuery, gv.DatabaseString, min(gv.QueryCountThreshold, commonutils.MaxQueryThreshold))
-	rows, err := conn.Queryx(query, app)
+	var query = fmt.Sprintf(versionSpecificSlowQuery, gv.DatabaseString, min(gv.Arguments.QueryCountThreshold, commonutils.MaxQueryCountThreshold))
+	rows, err := conn.Queryx(query)
 	if err != nil {
 		return nil, nil, err
 	}
+	defer rows.Close()
 	for rows.Next() {
 		var slowQuery datamodels.SlowRunningQueryMetrics
 		if scanErr := rows.StructScan(&slowQuery); scanErr != nil {
@@ -33,10 +34,6 @@ func GetSlowRunningMetrics(conn *performancedbconnection.PGSQLConnection, gv *gl
 		}
 		slowQueryMetricsList = append(slowQueryMetricsList, slowQuery)
 		slowQueryMetricsListInterface = append(slowQueryMetricsListInterface, slowQuery)
-	}
-	if closeErr := rows.Close(); closeErr != nil {
-		log.Error("Error closing rows: %v", closeErr)
-		return nil, nil, closeErr
 	}
 	return slowQueryMetricsList, slowQueryMetricsListInterface, nil
 }

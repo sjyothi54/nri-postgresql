@@ -20,11 +20,10 @@ import (
 
 func QueryPerformanceMain(args args.ArgumentList, pgIntegration *integration.Integration, databaseList collection.DatabaseList, app *newrelic.Application) {
 	connectionInfo := performancedbconnection.DefaultConnectionInfo(&args)
-	if len(databaseList) == 0 {
+	if len(databaseMap) == 0 {
 		log.Debug("No databases found")
 		return
 	}
-
 	newConnection, err := connectionInfo.NewConnection(connectionInfo.DatabaseName())
 	if err != nil {
 		log.Error("Error creating connection: ", err)
@@ -38,7 +37,11 @@ func QueryPerformanceMain(args args.ArgumentList, pgIntegration *integration.Int
 		log.Error("Error fetching version: ", versionErr)
 		return
 	}
-	gv := global_variables.SetGlobalVariables(args, versionInt, commonutils.GetDatabaseListInString(databaseList))
+	gv := global_variables.SetGlobalVariables(args, versionInt, commonutils.GetDatabaseListInString(databaseMap))
+	populateQueryPerformanceMetrics(newConnection, pgIntegration, gv)
+}
+
+func populateQueryPerformanceMetrics(newConnection *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, gv *global_variables.GlobalVariables) {
 	start := time.Now()
 	txn := app.StartTransaction("slow_queries_metrics_go")
 	defer txn.End()
