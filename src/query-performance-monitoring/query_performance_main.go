@@ -18,7 +18,7 @@ import (
 	performancemetrics "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-metrics"
 )
 
-func QueryPerformanceMain(args args.ArgumentList, pgIntegration *integration.Integration, databaseList collection.DatabaseList, app *newrelic.Application) {
+func QueryPerformanceMain(args args.ArgumentList, pgIntegration *integration.Integration, databaseMap collection.DatabaseList, app *newrelic.Application) {
 	connectionInfo := performancedbconnection.DefaultConnectionInfo(&args)
 	if len(databaseMap) == 0 {
 		log.Debug("No databases found")
@@ -38,10 +38,10 @@ func QueryPerformanceMain(args args.ArgumentList, pgIntegration *integration.Int
 		return
 	}
 	gv := global_variables.SetGlobalVariables(args, versionInt, commonutils.GetDatabaseListInString(databaseMap))
-	populateQueryPerformanceMetrics(newConnection, pgIntegration, gv)
+	populateQueryPerformanceMetrics(newConnection, pgIntegration, gv, app)
 }
 
-func populateQueryPerformanceMetrics(newConnection *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, gv *global_variables.GlobalVariables) {
+func populateQueryPerformanceMetrics(newConnection *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, gv *global_variables.GlobalVariables, app *newrelic.Application) {
 	start := time.Now()
 	txn := app.StartTransaction("slow_queries_metrics_go")
 	defer txn.End()

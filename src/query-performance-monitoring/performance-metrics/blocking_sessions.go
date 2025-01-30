@@ -45,7 +45,7 @@ func GetBlockingMetrics(conn *performancedbconnection.PGSQLConnection, gv *globa
 		return nil, err
 	}
 	var query = fmt.Sprintf(versionSpecificBlockingQuery, gv.DatabaseString, min(gv.Arguments.QueryCountThreshold, commonutils.MaxQueryCountThreshold))
-	rows, err := conn.Queryx(query)
+	rows, err := conn.Queryx(query, app)
 	if err != nil {
 		log.Error("Failed to execute query: %v", err)
 		return nil, err

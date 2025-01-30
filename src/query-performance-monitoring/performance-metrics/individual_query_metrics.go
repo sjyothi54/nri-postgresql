@@ -16,8 +16,8 @@ import (
 type queryInfoMap map[string]string
 type databaseQueryInfoMap map[string]queryInfoMap
 
-func PopulateIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, slowRunningQueries []datamodels.SlowRunningQueryMetrics, pgIntegration *integration.Integration, gv *globalvariables.GlobalVariables) []datamodels.IndividualQueryMetrics {
-	isEligible, err := validations.CheckIndividualQueryMetricsFetchEligibility(conn, gv.Version)
+func PopulateIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, slowRunningQueries []datamodels.SlowRunningQueryMetrics, pgIntegration *integration.Integration, gv *globalvariables.GlobalVariables, app *newrelic.Application) []datamodels.IndividualQueryMetrics {
+	isEligible, err := validations.CheckIndividualQueryMetricsFetchEligibility(conn, gv.Version, app)
 	if err != nil {
 		log.Error("Error executing query: %v", err)
 		return nil
@@ -59,7 +59,7 @@ func GetIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, sl
 	return individualQueryMetricsListInterface, individualQueryMetricsForExecPlanList
 }
 
-func getIndividualQueriesSamples(conn *performancedbconnection.PGSQLConnection, slowRunningQueries datamodels.SlowRunningQueryMetrics, gv *globalvariables.GlobalVariables, anonymizedQueriesByDB databaseQueryInfoMap, individualQueryMetricsForExecPlanList *[]datamodels.IndividualQueryMetrics, individualQueryMetricsListInterface *[]interface{}, versionSpecificIndividualQuery string) {
+func getIndividualQueriesSamples(conn *performancedbconnection.PGSQLConnection, slowRunningQueries datamodels.SlowRunningQueryMetrics, gv *globalvariables.GlobalVariables, anonymizedQueriesByDB databaseQueryInfoMap, individualQueryMetricsForExecPlanList *[]datamodels.IndividualQueryMetrics, individualQueryMetricsListInterface *[]interface{}, versionSpecificIndividualQuery string, app *newrelic.Application) {
 	query := fmt.Sprintf(versionSpecificIndividualQuery, *slowRunningQueries.QueryID, gv.DatabaseString, gv.Arguments.QueryResponseTimeThreshold, min(gv.Arguments.QueryCountThreshold, commonutils.MaxIndividualQueryCountThreshold))
 	if query == "" {
 		log.Debug("Error constructing individual query")

@@ -14,7 +14,7 @@ import (
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
 )
 
-func PopulateWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, gv *globalvariables.GlobalVariables,app *newrelic.Application) error {
+func PopulateWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, gv *globalvariables.GlobalVariables, app *newrelic.Application) error {
 	var isEligible bool
 	var eligibleCheckErr error
 	isEligible, eligibleCheckErr = validations.CheckWaitEventMetricsFetchEligibility(conn, gv.Version, app)
@@ -42,7 +42,7 @@ func PopulateWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, pgI
 func GetWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, gv *globalvariables.GlobalVariables, app *newrelic.Application) ([]interface{}, error) {
 	var waitEventMetricsList []interface{}
 	var query = fmt.Sprintf(queries.WaitEvents, gv.DatabaseString, min(gv.Arguments.QueryCountThreshold, commonutils.MaxQueryCountThreshold))
-	rows, err := conn.Queryx(query)
+	rows, err := conn.Queryx(query, app)
 	if err != nil {
 		return nil, err
 	}
