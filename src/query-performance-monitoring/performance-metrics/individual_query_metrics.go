@@ -48,55 +48,48 @@ func GetIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, sl
 		log.Error("Unsupported postgres version: %v", err)
 		return nil, nil
 	}
-
 	for _, slowRunningMetric := range slowRunningQueries {
 		if slowRunningMetric.QueryID == nil {
 			continue
 		}
-		getIndividualQueriesSamples(conn, slowRunningMetric, gv, anonymizedQueriesByDB, &individualQueryMetricsForExecPlanList, &individualQueryMetricsListInterface, versionSpecificIndividualQuery)
+		query := fmt.Sprintf(versionSpecificIndividualQuery, *slowRunningMetric.QueryID, gv.DatabaseString, gv.Arguments.QueryResponseTimeThreshold, min(gv.Arguments.QueryCountThreshold, commonutils.MaxIndividualQueryCountThreshold))
+		rows, err := conn.Queryx(query)
+		if err != nil {
+			log.Debug("Error executing query in individual query: %v", err)
+			return nil, nil
+		}
+		defer rows.Close()
+		for rows.Next() {
+			var model datamodels.IndividualQueryMetrics
+			if scanErr := rows.StructScan(&model); scanErr != nil {
+				log.Error("Could not scan row: ", scanErr)
+				continue
+			}
+			if model.QueryID == nil || model.DatabaseName == nil {
+				log.Error("QueryID or DatabaseName is nil")
+				continue
+			}
+			individualQueryMetric := model
+			anonymizedQueryText := anonymizedQueriesByDB[*model.DatabaseName][*model.QueryID]
+			individualQueryMetric.QueryText = &anonymizedQueryText
+			generatedPlanID, err := commonutils.GeneratePlanID()
+			if err != nil {
+				log.Error("Error generating plan ID: %v", err)
+				continue
+			}
+			individualQueryMetric.PlanID = &generatedPlanID
+			model.PlanID = &generatedPlanID
+			model.RealQueryText = model.QueryText
+			model.QueryText = &anonymizedQueryText
+			individualQueryMetricsForExecPlanList = append(individualQueryMetricsForExecPlanList, model)
+			individualQueryMetricsListInterface = append(individualQueryMetricsListInterface, individualQueryMetric)
+		}
 	}
 	return individualQueryMetricsListInterface, individualQueryMetricsForExecPlanList
 }
 
-func getIndividualQueriesSamples(conn *performancedbconnection.PGSQLConnection, slowRunningQueries datamodels.SlowRunningQueryMetrics, gv *globalvariables.GlobalVariables, anonymizedQueriesByDB databaseQueryInfoMap, individualQueryMetricsForExecPlanList *[]datamodels.IndividualQueryMetrics, individualQueryMetricsListInterface *[]interface{}, versionSpecificIndividualQuery string) {
-	query := fmt.Sprintf(versionSpecificIndividualQuery, *slowRunningQueries.QueryID, gv.DatabaseString, gv.Arguments.QueryResponseTimeThreshold, min(gv.Arguments.QueryCountThreshold, commonutils.MaxIndividualQueryCountThreshold))
-	if query == "" {
-		log.Debug("Error constructing individual query")
-		return
-	}
-	rows, err := conn.Queryx(query)
-	if err != nil {
-		log.Debug("Error executing query in individual query: %v", err)
-		return
-	}
-	defer rows.Close()
-	for rows.Next() {
-		var model datamodels.IndividualQueryMetrics
-		if scanErr := rows.StructScan(&model); scanErr != nil {
-			log.Error("Could not scan row: ", scanErr)
-			continue
-		}
-		if model.QueryID == nil || model.DatabaseName == nil {
-			log.Error("QueryID or DatabaseName is nil")
-			continue
-		}
-		individualQueryMetric := model
-		anonymizedQueryText := anonymizedQueriesByDB[*model.DatabaseName][*model.QueryID]
-		individualQueryMetric.QueryText = &anonymizedQueryText
-		generatedPlanID := commonutils.GeneratePlanID(*model.QueryID)
-		individualQueryMetric.PlanID = generatedPlanID
-		model.PlanID = generatedPlanID
-		model.RealQueryText = model.QueryText
-		model.QueryText = &anonymizedQueryText
-
-		*individualQueryMetricsForExecPlanList = append(*individualQueryMetricsForExecPlanList, model)
-		*individualQueryMetricsListInterface = append(*individualQueryMetricsListInterface, individualQueryMetric)
-	}
-}
-
 func processForAnonymizeQueryMap(slowRunningMetricList []datamodels.SlowRunningQueryMetrics) databaseQueryInfoMap {
 	anonymizeQueryMapByDB := make(databaseQueryInfoMap)
-
 	for _, metric := range slowRunningMetricList {
 		if metric.DatabaseName == nil || metric.QueryID == nil || metric.QueryText == nil {
 			continue

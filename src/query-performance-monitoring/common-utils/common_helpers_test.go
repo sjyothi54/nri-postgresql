@@ -1,13 +1,11 @@
 package commonutils_test
 
 import (
-	"sort"
-	"testing"
-	"time"
-
 	"github.com/newrelic/nri-postgresql/src/collection"
 	commonutils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
 	"github.com/stretchr/testify/assert"
+	"sort"
+	"testing"
 )
 
 func TestGetDatabaseListInString(t *testing.T) {
@@ -37,13 +35,4 @@ func TestAnonymizeQueryText(t *testing.T) {
 	expected = "SELECT * FROM employees WHERE id = ? OR name <> ?   OR name != ?   OR age < ? OR age <= ?   OR salary > ?OR salary >= ?  OR department LIKE ? OR department ILIKE ?OR join_date BETWEEN ? AND ? OR department IN (?, ?, ?) OR department IS NOT NULL OR department IS NULL;"
 	result = commonutils.AnonymizeQueryText(query)
 	assert.Equal(t, expected, result)
-}
-
-func TestGeneratePlanID(t *testing.T) {
-	queryID := "query123"
-	result := commonutils.GeneratePlanID(queryID)
-	assert.NotNil(t, result)
-	assert.Contains(t, *result, queryID)
-	assert.Contains(t, *result, "-")
-	assert.Contains(t, *result, time.Now().Format(commonutils.TimeFormat)[:8]) // Check date part
 }
