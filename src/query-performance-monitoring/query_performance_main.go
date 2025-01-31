@@ -37,7 +37,7 @@ func QueryPerformanceMain(args args.ArgumentList, pgIntegration *integration.Int
 		return
 	}
 	versionInt := version.Major
-	if validations.CheckPostgresVersionSupportForQueryMonitoring(versionInt) {
+	if !validations.CheckPostgresVersionSupportForQueryMonitoring(versionInt) {
 		log.Debug("Postgres version is not supported for query monitoring")
 		return
 	}
