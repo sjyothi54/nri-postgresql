@@ -16,7 +16,7 @@ type queryInfoMap map[string]string
 type databaseQueryInfoMap map[string]queryInfoMap
 
 func PopulateIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, slowRunningQueries []datamodels.SlowRunningQueryMetrics, pgIntegration *integration.Integration, gv *globalvariables.GlobalVariables) []datamodels.IndividualQueryMetrics {
-	isEligible, err := validations.CheckIndividualQueryMetricsFetchEligibility(conn, gv.Version)
+	isEligible, err := validations.CheckIndividualQueryMetricsFetchEligibility(conn)
 	if err != nil {
 		log.Error("Error executing query: %v", err)
 		return nil

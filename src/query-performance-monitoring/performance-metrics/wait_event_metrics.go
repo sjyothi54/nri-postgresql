@@ -16,7 +16,7 @@ import (
 func PopulateWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, gv *globalvariables.GlobalVariables) error {
 	var isEligible bool
 	var eligibleCheckErr error
-	isEligible, eligibleCheckErr = validations.CheckWaitEventMetricsFetchEligibility(conn, gv.Version)
+	isEligible, eligibleCheckErr = validations.CheckWaitEventMetricsFetchEligibility(conn)
 	if eligibleCheckErr != nil {
 		log.Error("Error executing query: %v", eligibleCheckErr)
 		return commonutils.ErrUnExpectedError
