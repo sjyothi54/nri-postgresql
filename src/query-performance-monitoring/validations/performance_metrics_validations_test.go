@@ -2,9 +2,10 @@ package validations_test
 
 import (
 	"fmt"
-	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
 	"regexp"
 	"testing"
+
+	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
 
 	"github.com/newrelic/nri-postgresql/src/connection"
 	"github.com/stretchr/testify/assert"
@@ -23,7 +24,7 @@ func TestCheckBlockingSessionMetricsFetchEligibilityExtensionNotRequired(t *test
 func TestCheckBlockingSessionMetricsFetchEligibilitySupportedVersionSuccess(t *testing.T) {
 	conn, mock := connection.CreateMockSQL(t)
 	version := uint64(14)
-	validationQueryStatStatements := fmt.Sprintf("SELECT extname FROM pg_extension")
+	validationQueryStatStatements := "SELECT extname FROM pg_extension"
 	mock.ExpectQuery(regexp.QuoteMeta(validationQueryStatStatements)).WillReturnRows(sqlmock.NewRows([]string{"extname"}).AddRow("pg_stat_statements"))
 	isExtensionEnabledTest, _ := validations.CheckBlockingSessionMetricsFetchEligibility(conn, version)
 	assert.Equal(t, isExtensionEnabledTest, true)
@@ -34,7 +35,7 @@ func TestCheckBlockingSessionMetricsFetchEligibilitySupportedVersionSuccess(t *t
 func TestCheckBlockingSessionMetricsFetchEligibilitySupportedVersionFail(t *testing.T) {
 	conn, mock := connection.CreateMockSQL(t)
 	version := uint64(14)
-	validationQueryStatStatements := fmt.Sprintf("SELECT extname FROM pg_extension")
+	validationQueryStatStatements := "SELECT extname FROM pg_extension"
 	mock.ExpectQuery(regexp.QuoteMeta(validationQueryStatStatements)).WillReturnRows(sqlmock.NewRows([]string{"extname"}).AddRow("pg_stat_statements"))
 	isExtensionEnabledTest, _ := validations.CheckBlockingSessionMetricsFetchEligibility(conn, version)
 	assert.Equal(t, isExtensionEnabledTest, true)
@@ -45,7 +46,7 @@ func TestCheckBlockingSessionMetricsFetchEligibilitySupportedVersionFail(t *test
 func TestIndividualQueryMetricsFetchEligibilitySupportedVersionSuccess(t *testing.T) {
 	conn, mock := connection.CreateMockSQL(t)
 	version := uint64(14)
-	validationQueryStatStatements := fmt.Sprintf("SELECT extname FROM pg_extension")
+	validationQueryStatStatements := "SELECT extname FROM pg_extension"
 	mock.ExpectQuery(regexp.QuoteMeta(validationQueryStatStatements)).WillReturnRows(sqlmock.NewRows([]string{"extname"}).AddRow("pg_stat_monitor"))
 	isExtensionEnabledTest, _ := validations.CheckIndividualQueryMetricsFetchEligibility(conn, version)
 	assert.Equal(t, isExtensionEnabledTest, true)
@@ -56,7 +57,7 @@ func TestIndividualQueryMetricsFetchEligibilitySupportedVersionSuccess(t *testin
 func TestIndividualQueryMetricsFetchEligibilitySupportedVersionFail(t *testing.T) {
 	conn, mock := connection.CreateMockSQL(t)
 	version := uint64(14)
-	validationQueryStatStatements := fmt.Sprintf("SELECT extname FROM pg_extension")
+	validationQueryStatStatements := "SELECT extname FROM pg_extension"
 	mock.ExpectQuery(regexp.QuoteMeta(validationQueryStatStatements)).WillReturnRows(sqlmock.NewRows([]string{"extname"}))
 	isExtensionEnabledTest, _ := validations.CheckIndividualQueryMetricsFetchEligibility(conn, version)
 	assert.Equal(t, isExtensionEnabledTest, false)
@@ -66,7 +67,7 @@ func TestIndividualQueryMetricsFetchEligibilitySupportedVersionFail(t *testing.T
 
 func TestCheckWaitEventMetricsFetchEligibility(t *testing.T) {
 	version := uint64(15)
-	validationQuery := fmt.Sprintf("SELECT extname FROM pg_extension")
+	validationQuery := "SELECT extname FROM pg_extension"
 	testCases := []struct {
 		waitExt  string
 		statExt  string
@@ -99,7 +100,7 @@ func TestCheckSlowQueryMetricsFetchEligibilityUnSupportedVersion(t *testing.T) {
 func TestCheckSlowQueryMetricsFetchEligibilitySupportedVersionSuccess(t *testing.T) {
 	conn, mock := connection.CreateMockSQL(t)
 	version := uint64(14)
-	validationQueryStatStatements := fmt.Sprintf("SELECT extname FROM pg_extension")
+	validationQueryStatStatements := "SELECT extname FROM pg_extension"
 	mock.ExpectQuery(regexp.QuoteMeta(validationQueryStatStatements)).WillReturnRows(sqlmock.NewRows([]string{"extname"}).AddRow("pg_stat_statements"))
 	isExtensionEnabledTest, _ := validations.CheckSlowQueryMetricsFetchEligibility(conn, version)
 	assert.Equal(t, isExtensionEnabledTest, true)

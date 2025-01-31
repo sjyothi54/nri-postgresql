@@ -1,11 +1,12 @@
 package commonutils_test
 
 import (
+	"sort"
+	"testing"
+
 	"github.com/newrelic/nri-postgresql/src/collection"
 	commonutils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
 	"github.com/stretchr/testify/assert"
-	"sort"
-	"testing"
 )
 
 func TestGetDatabaseListInString(t *testing.T) {

@@ -2,8 +2,9 @@ package queryperformancemonitoring
 
 // this is the main go file for the query_monitoring package
 import (
-	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
 	"time"
+
+	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
 
 	global_variables "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/global-variables"
 

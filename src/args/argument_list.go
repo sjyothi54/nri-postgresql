@@ -10,6 +10,12 @@ import (
 // The maximum number records that can be fetched in a single metrics
 const MaxQueryCountThreshold = 30
 
+var (
+	ErrInvalidQueryResponseTimeThreshold  = errors.New("invalid configuration: QueryResponseTimeThreshold should be greater than or equal to 0")
+	ErrInvalidQueryCountThreshold         = errors.New("invalid configuration: QueryCountThreshold should be greater than or equal to 0")
+	ErrQueryCountThresholdExceedsMaxLimit = errors.New("invalid configuration: QueryCountThreshold should be less than or equal to max limit")
+)
+
 // ArgumentList struct that holds all PostgreSQL arguments
 type ArgumentList struct {
 	sdkArgs.DefaultArgumentList
@@ -34,7 +40,7 @@ type ArgumentList struct {
 	CollectBloatMetrics                  bool   `default:"true" help:"Enable collecting bloat metrics which can be performance intensive"`
 	ShowVersion                          bool   `default:"false" help:"Print build information and exit"`
 	EnableQueryMonitoring                bool   `default:"false" help:"Enable collection of detailed query performance metrics."`
-	QueryMonitoringResponseTimeThreshold int    `default:"500" help:"Threshold in milliseconds for query response time. If response time exceeds this threshold, the query will be considered slow."`
+	QueryMonitoringResponseTimeThreshold int    `default:"500" help:"Threshold in milliseconds for query response time. If response time for the individual query exceeds this threshold, the individual query is reported in metrics"`
 	QueryMonitoringCountThreshold        int    `default:"20" help:"Maximum number of queries returned in query analysis results."`
 }
 
@@ -72,15 +78,15 @@ func (al ArgumentList) validateQueryPerformanceConfig() error {
 	}
 	if al.QueryMonitoringResponseTimeThreshold < 0 {
 		log.Warn("QueryResponseTimeThreshold should be greater than or equal to 0, setting value to default")
-		return errors.New("invalid configuration: QueryResponseTimeThreshold should be greater than or equal to 0")
+		return ErrInvalidQueryResponseTimeThreshold
 	}
 	if al.QueryMonitoringCountThreshold < 0 {
 		log.Warn("QueryCountThreshold should be greater than or equal to 0, setting value to default")
-		return errors.New("invalid configuration: QueryCountThreshold should be greater than or equal to 0")
+		return ErrInvalidQueryCountThreshold
 	}
 	if al.QueryMonitoringCountThreshold > MaxQueryCountThreshold {
 		log.Warn("QueryCountThreshold should be less than or equal to max limit")
-		return errors.New("invalid configuration: QueryCountThreshold should be less than or equal to max limit")
+		return ErrQueryCountThresholdExceedsMaxLimit
 	}
 	return nil
 }
