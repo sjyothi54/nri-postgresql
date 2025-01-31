@@ -9,7 +9,7 @@ const MaxQueryCountThreshold = 30
 const MaxIndividualQueryCountThreshold = 10
 
 // The maximum number of metrics to be published in a single batch
-const PublishThreshold = 100
+const PublishThreshold = 600
 const RandomIntRange = 1000000
 const TimeFormat = "20060102150405"
 
