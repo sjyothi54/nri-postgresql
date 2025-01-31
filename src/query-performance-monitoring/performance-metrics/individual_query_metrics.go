@@ -52,7 +52,7 @@ func GetIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, sl
 		if slowRunningMetric.QueryID == nil {
 			continue
 		}
-		query := fmt.Sprintf(versionSpecificIndividualQuery, *slowRunningMetric.QueryID, cp.DatabaseString, cp.Arguments.QueryMonitoringResponseTimeThreshold, cp.Arguments.QueryMonitoringCountThreshold)
+		query := fmt.Sprintf(versionSpecificIndividualQuery, *slowRunningMetric.QueryID, cp.Databases, cp.Arguments.QueryMonitoringResponseTimeThreshold, cp.Arguments.QueryMonitoringCountThreshold)
 		rows, err := conn.Queryx(query)
 		if err != nil {
 			log.Debug("Error executing query in individual query: %v", err)

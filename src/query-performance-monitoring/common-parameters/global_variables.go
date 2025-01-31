@@ -5,15 +5,15 @@ import (
 )
 
 type CommonParameters struct {
-	Version        uint64
-	DatabaseString string
-	Arguments      args.ArgumentList
+	Version   uint64
+	Databases string
+	Arguments args.ArgumentList
 }
 
-func SetCommonParameters(args args.ArgumentList, version uint64, databaseString string) *CommonParameters {
+func SetCommonParameters(args args.ArgumentList, version uint64, databases string) *CommonParameters {
 	return &CommonParameters{
-		Version:        version,
-		DatabaseString: databaseString,
-		Arguments:      args,
+		Version:   version,
+		Databases: databases,
+		Arguments: args,
 	}
 }

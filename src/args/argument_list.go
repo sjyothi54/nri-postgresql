@@ -78,15 +78,15 @@ func (al ArgumentList) validateQueryPerformanceConfig() error {
 	}
 	if al.QueryMonitoringResponseTimeThreshold < 0 {
 		log.Warn("QueryResponseTimeThreshold should be greater than or equal to 0, setting value to default")
-		return ErrInvalidQueryResponseTimeThreshold
+		al.QueryMonitoringResponseTimeThreshold = 500
 	}
 	if al.QueryMonitoringCountThreshold < 0 {
 		log.Warn("QueryCountThreshold should be greater than or equal to 0, setting value to default")
-		return ErrInvalidQueryCountThreshold
+		al.QueryMonitoringCountThreshold = 20
 	}
 	if al.QueryMonitoringCountThreshold > MaxQueryCountThreshold {
 		log.Warn("QueryCountThreshold should be less than or equal to max limit")
-		return ErrQueryCountThresholdExceedsMaxLimit
+		al.QueryMonitoringCountThreshold = MaxQueryCountThreshold
 	}
 	return nil
 }
