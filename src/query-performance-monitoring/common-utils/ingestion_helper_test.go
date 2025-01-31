@@ -35,7 +35,11 @@ func TestIngestMetric(t *testing.T) {
 			TestField int `metric_name:"testField" source_type:"gauge"`
 		}{TestField: 123},
 	}
-	commonutils.IngestMetric(metricList, "testEvent", pgIntegration, cp)
+	err := commonutils.IngestMetric(metricList, "testEvent", pgIntegration, cp)
+	if err != nil {
+		t.Error(err)
+		return
+	}
 	assert.NotEmpty(t, pgIntegration.Entities)
 }
 

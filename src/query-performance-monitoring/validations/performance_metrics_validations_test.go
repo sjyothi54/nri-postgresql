@@ -1,7 +1,6 @@
 package validations_test
 
 import (
-	"fmt"
 	"regexp"
 	"testing"
 
@@ -97,7 +96,7 @@ func TestCheckSlowQueryMetricsFetchEligibilitySupportedVersionSuccess(t *testing
 
 func TestCheckSlowQueryMetricsFetchEligibilitySupportedVersionFail(t *testing.T) {
 	conn, mock := connection.CreateMockSQL(t)
-	validationQueryStatStatements := fmt.Sprintf("SELECT extname FROM pg_extension")
+	validationQueryStatStatements := "SELECT extname FROM pg_extension"
 	mock.ExpectQuery(regexp.QuoteMeta(validationQueryStatStatements)).WillReturnRows(sqlmock.NewRows([]string{"extname"}))
 	isExtensionEnabledTest, _ := validations.CheckSlowQueryMetricsFetchEligibility(conn)
 	assert.Equal(t, isExtensionEnabledTest, false)

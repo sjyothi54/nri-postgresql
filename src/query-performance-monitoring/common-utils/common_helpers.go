@@ -3,12 +3,13 @@ package commonutils
 import (
 	"crypto/rand"
 	"fmt"
-	"github.com/newrelic/infra-integrations-sdk/v3/log"
-	"github.com/newrelic/nri-postgresql/src/args"
 	"math/big"
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/newrelic/infra-integrations-sdk/v3/log"
+	"github.com/newrelic/nri-postgresql/src/args"
 
 	"github.com/newrelic/nri-postgresql/src/collection"
 )
