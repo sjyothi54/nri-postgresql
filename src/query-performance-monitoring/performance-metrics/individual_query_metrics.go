@@ -85,6 +85,7 @@ func processRows(rows *sqlx.Rows, anonymizedQueriesByDB databaseQueryInfoMap) []
 			log.Error("QueryID or DatabaseName is nil")
 			continue
 		}
+		log.Info("Processing individual query: ", *model.QueryID, *model.DatabaseName, *model.QueryText)
 		individualQueryMetric := model
 		anonymizedQueryText := anonymizedQueriesByDB[*model.DatabaseName][*model.QueryID]
 		individualQueryMetric.RealQueryText = model.QueryText
