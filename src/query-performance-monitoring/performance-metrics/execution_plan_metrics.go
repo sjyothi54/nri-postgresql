@@ -44,6 +44,7 @@ func GetExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, cp *gl
 
 func processExecutionPlanOfQueries(individualQueriesList []datamodels.IndividualQueryMetrics, dbConn *performancedbconnection.PGSQLConnection, executionPlanMetricsList *[]interface{}) {
 	for _, individualQuery := range individualQueriesList {
+		log.Info("Query to fetch execution plan: ", *individualQuery.RealQueryText)
 		if individualQuery.RealQueryText == nil || individualQuery.QueryID == nil || individualQuery.DatabaseName == nil {
 			log.Error("QueryText, QueryID or Database Name is nil")
 			continue
