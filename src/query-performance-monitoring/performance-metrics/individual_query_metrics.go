@@ -88,6 +88,8 @@ func processRows(rows *sqlx.Rows, anonymizedQueriesByDB databaseQueryInfoMap) []
 		log.Info("Processing individual query: ", *model.QueryID, *model.DatabaseName, *model.QueryText)
 		individualQueryMetric := model
 		anonymizedQueryText := anonymizedQueriesByDB[*model.DatabaseName][*model.QueryID]
+		queryText := *model.QueryText
+		log.Info("Anonymized query text: ", queryText)
 		individualQueryMetric.RealQueryText = model.QueryText
 		individualQueryMetric.QueryText = &anonymizedQueryText
 		generatedPlanID, err := commonutils.GeneratePlanID()
