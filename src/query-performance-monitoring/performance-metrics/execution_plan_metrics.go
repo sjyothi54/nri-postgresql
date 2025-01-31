@@ -18,7 +18,11 @@ func PopulateExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, p
 		return
 	}
 	executionDetailsList := GetExecutionPlanMetrics(results, cp)
-	commonutils.IngestMetric(executionDetailsList, "PostgresExecutionPlanMetrics", pgIntegration, cp)
+	err := commonutils.IngestMetric(executionDetailsList, "PostgresExecutionPlanMetrics", pgIntegration, cp)
+	if err != nil {
+		log.Error("Error ingesting Execution Plan metrics: %v", err)
+		return
+	}
 }
 
 func GetExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, cp *globalvariables.CommonParameters) []interface{} {
@@ -40,6 +44,10 @@ func GetExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, cp *gl
 
 func processExecutionPlanOfQueries(individualQueriesList []datamodels.IndividualQueryMetrics, dbConn *performancedbconnection.PGSQLConnection, executionPlanMetricsList *[]interface{}) {
 	for _, individualQuery := range individualQueriesList {
+		if individualQuery.RealQueryText == nil || individualQuery.QueryID == nil || individualQuery.DatabaseName == nil {
+			log.Error("QueryText, QueryID or Database Name is nil")
+			continue
+		}
 		query := "EXPLAIN (FORMAT JSON) " + *individualQuery.RealQueryText
 		rows, err := dbConn.Queryx(query)
 		if err != nil {
@@ -47,10 +55,6 @@ func processExecutionPlanOfQueries(individualQueriesList []datamodels.Individual
 			continue
 		}
 		defer rows.Close()
-		if individualQuery.QueryText == nil || individualQuery.QueryID == nil || individualQuery.DatabaseName == nil {
-			log.Error("QueryText, QueryID or Database Name is nil")
-			continue
-		}
 		if !rows.Next() {
 			log.Debug("Execution plan not found for queryId", *individualQuery.QueryID)
 			continue
@@ -86,12 +90,12 @@ func validateAndFetchNestedExecPlan(execPlan []map[string]interface{}, individua
 
 func GroupQueriesByDatabase(results []datamodels.IndividualQueryMetrics) map[string][]datamodels.IndividualQueryMetrics {
 	databaseMap := make(map[string][]datamodels.IndividualQueryMetrics)
-	for _, query := range results {
-		if query.DatabaseName == nil {
+	for _, individualQueryMetric := range results {
+		if individualQueryMetric.DatabaseName == nil {
 			continue
 		}
-		dbName := *query.DatabaseName
-		databaseMap[dbName] = append(databaseMap[dbName], query)
+		dbName := *individualQueryMetric.DatabaseName
+		databaseMap[dbName] = append(databaseMap[dbName], individualQueryMetric)
 	}
 	return databaseMap
 }

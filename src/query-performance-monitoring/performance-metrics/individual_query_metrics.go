@@ -2,6 +2,7 @@ package performancemetrics
 
 import (
 	"fmt"
+	"github.com/jmoiron/sqlx"
 
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
@@ -26,13 +27,17 @@ func PopulateIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnectio
 		return nil
 	}
 	log.Debug("Extension 'pg_stat_monitor' enabled.")
-	individualQueryMetricsInterface, individualQueriesForExecPlan := GetIndividualQueryMetrics(conn, slowRunningQueries, cp)
+	individualQueryMetricsInterface, individualQueriesList := GetIndividualQueryMetrics(conn, slowRunningQueries, cp)
 	if len(individualQueryMetricsInterface) == 0 {
 		log.Debug("No individual queries found.")
 		return nil
 	}
-	commonutils.IngestMetric(individualQueryMetricsInterface, "PostgresIndividualQueries", pgIntegration, cp)
-	return individualQueriesForExecPlan
+	err = commonutils.IngestMetric(individualQueryMetricsInterface, "PostgresIndividualQueries", pgIntegration, cp)
+	if err != nil {
+		log.Error("Error ingesting individual queries: %v", err)
+		return nil
+	}
+	return individualQueriesList
 }
 
 func GetIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, slowRunningQueries []datamodels.SlowRunningQueryMetrics, cp *globalvariables.CommonParameters) ([]interface{}, []datamodels.IndividualQueryMetrics) {
@@ -40,7 +45,7 @@ func GetIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, sl
 		log.Debug("No slow running queries found.")
 		return nil, nil
 	}
-	var individualQueryMetricsForExecPlanList []datamodels.IndividualQueryMetrics
+	var individualQueryMetricsList []datamodels.IndividualQueryMetrics
 	var individualQueryMetricsListInterface []interface{}
 	anonymizedQueriesByDB := processForAnonymizeQueryMap(slowRunningQueries)
 	versionSpecificIndividualQuery, err := commonutils.FetchVersionSpecificIndividualQueries(cp.Version)
@@ -59,33 +64,41 @@ func GetIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, sl
 			return nil, nil
 		}
 		defer rows.Close()
-		for rows.Next() {
-			var model datamodels.IndividualQueryMetrics
-			if scanErr := rows.StructScan(&model); scanErr != nil {
-				log.Error("Could not scan row: ", scanErr)
-				continue
-			}
-			if model.QueryID == nil || model.DatabaseName == nil {
-				log.Error("QueryID or DatabaseName is nil")
-				continue
-			}
-			individualQueryMetric := model
-			anonymizedQueryText := anonymizedQueriesByDB[*model.DatabaseName][*model.QueryID]
-			individualQueryMetric.QueryText = &anonymizedQueryText
-			generatedPlanID, err := commonutils.GeneratePlanID()
-			if err != nil {
-				log.Error("Error generating plan ID: %v", err)
-				continue
-			}
-			individualQueryMetric.PlanID = &generatedPlanID
-			model.PlanID = &generatedPlanID
-			model.RealQueryText = model.QueryText
-			model.QueryText = &anonymizedQueryText
-			individualQueryMetricsForExecPlanList = append(individualQueryMetricsForExecPlanList, model)
-			individualQueryMetricsListInterface = append(individualQueryMetricsListInterface, individualQueryMetric)
+		individualQuerySamplesList := processRows(rows, anonymizedQueriesByDB)
+		for _, individualQuery := range individualQuerySamplesList {
+			individualQueryMetricsList = append(individualQueryMetricsList, individualQuery)
+			individualQueryMetricsListInterface = append(individualQueryMetricsListInterface, individualQuery)
 		}
 	}
-	return individualQueryMetricsListInterface, individualQueryMetricsForExecPlanList
+	return individualQueryMetricsListInterface, individualQueryMetricsList
+}
+
+func processRows(rows *sqlx.Rows, anonymizedQueriesByDB databaseQueryInfoMap) []datamodels.IndividualQueryMetrics {
+	var individualQueryMetricsList []datamodels.IndividualQueryMetrics
+	for rows.Next() {
+		var model datamodels.IndividualQueryMetrics
+		if scanErr := rows.StructScan(&model); scanErr != nil {
+			log.Error("Could not scan row: ", scanErr)
+			continue
+		}
+		if model.QueryID == nil || model.DatabaseName == nil {
+			log.Error("QueryID or DatabaseName is nil")
+			continue
+		}
+		individualQueryMetric := model
+		anonymizedQueryText := anonymizedQueriesByDB[*model.DatabaseName][*model.QueryID]
+		queryText := *model.QueryText
+		individualQueryMetric.RealQueryText = &queryText
+		individualQueryMetric.QueryText = &anonymizedQueryText
+		generatedPlanID, err := commonutils.GeneratePlanID()
+		if err != nil {
+			log.Error("Error generating plan ID: %v", err)
+			continue
+		}
+		individualQueryMetric.PlanID = &generatedPlanID
+		individualQueryMetricsList = append(individualQueryMetricsList, model)
+	}
+	return individualQueryMetricsList
 }
 
 func processForAnonymizeQueryMap(slowRunningMetricList []datamodels.SlowRunningQueryMetrics) databaseQueryInfoMap {

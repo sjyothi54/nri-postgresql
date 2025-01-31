@@ -34,7 +34,11 @@ func PopulateWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, pgI
 		log.Debug("No wait event queries found.")
 		return nil
 	}
-	commonutils.IngestMetric(waitEventMetricsList, "PostgresWaitEvents", pgIntegration, cp)
+	err := commonutils.IngestMetric(waitEventMetricsList, "PostgresWaitEvents", pgIntegration, cp)
+	if err != nil {
+		log.Error("Error ingesting wait event queries: %v", err)
+		return err
+	}
 	return nil
 }
 
