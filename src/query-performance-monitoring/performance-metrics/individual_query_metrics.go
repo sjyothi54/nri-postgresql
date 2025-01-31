@@ -85,13 +85,10 @@ func processRows(rows *sqlx.Rows, anonymizedQueriesByDB databaseQueryInfoMap) []
 			log.Error("QueryID or DatabaseName is nil")
 			continue
 		}
-		log.Info("Processing individual query: ", *model.QueryID, *model.DatabaseName, *model.QueryText)
 		individualQueryMetric := model
 		anonymizedQueryText := anonymizedQueriesByDB[*model.DatabaseName][*model.QueryID]
 		queryText := *model.QueryText
-		log.Info("Anonymized query text: ", queryText)
 		individualQueryMetric.RealQueryText = &queryText
-		log.Info("Real query text: ", *individualQueryMetric.RealQueryText)
 		individualQueryMetric.QueryText = &anonymizedQueryText
 		generatedPlanID, err := commonutils.GeneratePlanID()
 		if err != nil {
@@ -99,7 +96,7 @@ func processRows(rows *sqlx.Rows, anonymizedQueriesByDB databaseQueryInfoMap) []
 			continue
 		}
 		individualQueryMetric.PlanID = &generatedPlanID
-		individualQueryMetricsList = append(individualQueryMetricsList, model)
+		individualQueryMetricsList = append(individualQueryMetricsList, individualQueryMetric)
 	}
 	return individualQueryMetricsList
 }
