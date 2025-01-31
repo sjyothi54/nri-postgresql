@@ -7,7 +7,6 @@ import (
 
 	"github.com/newrelic/nri-postgresql/src/args"
 	"github.com/newrelic/nri-postgresql/src/connection"
-	commonutils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
 	global_variables "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/global-variables"
 	performancemetrics "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-metrics"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
@@ -17,18 +16,18 @@ import (
 
 func TestGetBlockingMetrics(t *testing.T) {
 	conn, mock := connection.CreateMockSQL(t)
-	args := args.ArgumentList{QueryCountThreshold: 10}
+	args := args.ArgumentList{QueryMonitoringCountThreshold: 10}
 	databaseName := "testdb"
 	version := uint64(13)
 	gv := global_variables.SetGlobalVariables(args, version, databaseName)
 
 	expectedQuery := queries.BlockingQueriesForV12AndV13
-	query := fmt.Sprintf(expectedQuery, databaseName, min(args.QueryCountThreshold, commonutils.MaxQueryCountThreshold))
+	query := fmt.Sprintf(expectedQuery, databaseName, args.QueryMonitoringCountThreshold)
 	mock.ExpectQuery(regexp.QuoteMeta(query)).WillReturnRows(sqlmock.NewRows([]string{
-		"newrelic", "blocked_pid", "blocked_query", "blocked_query_id", "blocked_query_start", "database_name",
+		"blocked_pid", "blocked_query", "blocked_query_id", "blocked_query_start", "database_name",
 		"blocking_pid", "blocking_query", "blocking_query_id", "blocking_query_start",
 	}).AddRow(
-		"newrelic_value", 123, "SELECT 1", 1233444, "2023-01-01 00:00:00", "testdb",
+		123, "SELECT 1", 1233444, "2023-01-01 00:00:00", "testdb",
 		456, "SELECT 2", 4566, "2023-01-01 00:00:00",
 	))
 	blockingQueriesMetricsList, err := performancemetrics.GetBlockingMetrics(conn, gv)

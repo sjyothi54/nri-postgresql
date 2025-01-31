@@ -43,6 +43,7 @@ func CheckSlowQueryMetricsFetchEligibility(conn *performancedbconnection.PGSQLCo
 func CheckWaitEventMetricsFetchEligibility(conn *performancedbconnection.PGSQLConnection, version uint64) (bool, error) {
 	if extensions == nil {
 		if err := fetchAllExtensions(conn); err != nil {
+			log.Debug("Error fetching all extensions: %v", err)
 			return false, err
 		}
 	}
@@ -50,14 +51,14 @@ func CheckWaitEventMetricsFetchEligibility(conn *performancedbconnection.PGSQLCo
 }
 
 func CheckBlockingSessionMetricsFetchEligibility(conn *performancedbconnection.PGSQLConnection, version uint64) (bool, error) {
+	// Version 12 and 13 do not require the pg_stat_statements extension
+	if version == commonutils.PostgresVersion12 || version == commonutils.PostgresVersion13 {
+		return true, nil
+	}
 	if extensions == nil {
 		if err := fetchAllExtensions(conn); err != nil {
 			return false, err
 		}
-	}
-	// Version 12 and 13 do not require the pg_stat_statements extension
-	if version == commonutils.PostgresVersion12 || version == commonutils.PostgresVersion13 {
-		return true, nil
 	}
 	return isExtensionEnabled("pg_stat_statements"), nil
 }
@@ -76,4 +77,8 @@ func CheckIndividualQueryMetricsFetchEligibility(conn *performancedbconnection.P
 
 func CheckPostgresVersionSupportForQueryMonitoring(version uint64) bool {
 	return version >= commonutils.PostgresVersion12
+}
+
+func ClearExtensionsLoadCache() {
+	extensions = nil
 }

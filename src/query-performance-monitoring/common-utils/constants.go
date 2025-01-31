@@ -2,9 +2,6 @@ package commonutils
 
 import "errors"
 
-// The maximum number records that can be fetched in a single metrics
-const MaxQueryCountThreshold = 30
-
 // The maximum number of individual queries that can be fetched in a single metrics
 const MaxIndividualQueryCountThreshold = 10
 

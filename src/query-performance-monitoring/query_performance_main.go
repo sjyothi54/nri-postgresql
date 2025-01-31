@@ -42,6 +42,7 @@ func QueryPerformanceMain(args args.ArgumentList, pgIntegration *integration.Int
 	}
 	gv := global_variables.SetGlobalVariables(args, versionInt, commonutils.GetDatabaseListInString(databaseMap))
 	populateQueryPerformanceMetrics(newConnection, pgIntegration, gv)
+	validations.ClearExtensionsLoadCache()
 }
 
 func populateQueryPerformanceMetrics(newConnection *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, gv *global_variables.GlobalVariables) {

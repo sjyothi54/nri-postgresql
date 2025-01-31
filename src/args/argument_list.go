@@ -3,11 +3,12 @@ package args
 
 import (
 	"errors"
-	commonutils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
-
 	sdkArgs "github.com/newrelic/infra-integrations-sdk/v3/args"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 )
+
+// The maximum number records that can be fetched in a single metrics
+const MaxQueryCountThreshold = 30
 
 // ArgumentList struct that holds all PostgreSQL arguments
 type ArgumentList struct {
@@ -77,7 +78,7 @@ func (al ArgumentList) validateQueryPerformanceConfig() error {
 		log.Warn("QueryCountThreshold should be greater than or equal to 0, setting value to default")
 		return errors.New("invalid configuration: QueryCountThreshold should be greater than or equal to 0")
 	}
-	if al.QueryMonitoringCountThreshold > commonutils.MaxQueryCountThreshold {
+	if al.QueryMonitoringCountThreshold > MaxQueryCountThreshold {
 		log.Warn("QueryCountThreshold should be less than or equal to max limit")
 		return errors.New("invalid configuration: QueryCountThreshold should be less than or equal to max limit")
 	}

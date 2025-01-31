@@ -17,16 +17,16 @@ import (
 
 func runSlowQueryTest(t *testing.T, query string, version uint64, expectedLength int) {
 	conn, mock := connection.CreateMockSQL(t)
-	args := args.ArgumentList{QueryCountThreshold: 10}
+	args := args.ArgumentList{QueryMonitoringCountThreshold: 10}
 	databaseName := "testdb"
 	gv := global_variables.SetGlobalVariables(args, version, databaseName)
 
-	query = fmt.Sprintf(query, "testdb", min(args.QueryCountThreshold, commonutils.MaxQueryCountThreshold))
+	query = fmt.Sprintf(query, "testdb", args.QueryMonitoringCountThreshold)
 	mock.ExpectQuery(regexp.QuoteMeta(query)).WillReturnRows(sqlmock.NewRows([]string{
-		"newrelic", "query_id", "query_text", "database_name", "schema_name", "execution_count",
+		"query_id", "query_text", "database_name", "schema_name", "execution_count",
 		"avg_elapsed_time_ms", "avg_disk_reads", "avg_disk_writes", "statement_type", "collection_timestamp",
 	}).AddRow(
-		"newrelic_value", "queryid1", "SELECT 1", "testdb", "public", 10,
+		"queryid1", "SELECT 1", "testdb", "public", 10,
 		15.0, 5, 2, "SELECT", "2023-01-01T00:00:00Z",
 	))
 	slowQueryList, _, err := performancemetrics.GetSlowRunningMetrics(conn, gv)
@@ -45,12 +45,12 @@ func TestGetSlowRunningMetricsV12(t *testing.T) {
 
 func TestGetSlowRunningEmptyMetrics(t *testing.T) {
 	conn, mock := connection.CreateMockSQL(t)
-	args := args.ArgumentList{QueryCountThreshold: 10}
+	args := args.ArgumentList{QueryMonitoringCountThreshold: 10}
 	databaseName := "testdb"
 	version := uint64(13)
 	gv := global_variables.SetGlobalVariables(args, version, databaseName)
 	expectedQuery := queries.SlowQueriesForV13AndAbove
-	query := fmt.Sprintf(expectedQuery, "testdb", min(args.QueryCountThreshold, commonutils.MaxQueryCountThreshold))
+	query := fmt.Sprintf(expectedQuery, "testdb", args.QueryMonitoringCountThreshold)
 	mock.ExpectQuery(regexp.QuoteMeta(query)).WillReturnRows(sqlmock.NewRows([]string{
 		"newrelic", "query_id", "query_text", "database_name", "schema_name", "execution_count",
 		"avg_elapsed_time_ms", "avg_disk_reads", "avg_disk_writes", "statement_type", "collection_timestamp",
@@ -64,7 +64,7 @@ func TestGetSlowRunningEmptyMetrics(t *testing.T) {
 
 func TestGetSlowRunningMetricsUnsupportedVersion(t *testing.T) {
 	conn, mock := connection.CreateMockSQL(t)
-	args := args.ArgumentList{QueryCountThreshold: 10}
+	args := args.ArgumentList{QueryMonitoringCountThreshold: 10}
 	databaseName := "testdb"
 	version := uint64(11)
 	gv := global_variables.SetGlobalVariables(args, version, databaseName)
