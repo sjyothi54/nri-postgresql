@@ -7,7 +7,7 @@ import (
 
 	"github.com/newrelic/nri-postgresql/src/args"
 	"github.com/newrelic/nri-postgresql/src/connection"
-	global_variables "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/global-variables"
+	common_parameters "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-parameters"
 	performancemetrics "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-metrics"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
 	"github.com/stretchr/testify/assert"
@@ -19,7 +19,7 @@ func TestGetBlockingMetrics(t *testing.T) {
 	args := args.ArgumentList{QueryMonitoringCountThreshold: 10}
 	databaseName := "testdb"
 	version := uint64(13)
-	gv := global_variables.SetGlobalVariables(args, version, databaseName)
+	cp := common_parameters.SetCommonParameters(args, version, databaseName)
 
 	expectedQuery := queries.BlockingQueriesForV12AndV13
 	query := fmt.Sprintf(expectedQuery, databaseName, args.QueryMonitoringCountThreshold)
@@ -30,7 +30,7 @@ func TestGetBlockingMetrics(t *testing.T) {
 		123, "SELECT 1", 1233444, "2023-01-01 00:00:00", "testdb",
 		456, "SELECT 2", 4566, "2023-01-01 00:00:00",
 	))
-	blockingQueriesMetricsList, err := performancemetrics.GetBlockingMetrics(conn, gv)
+	blockingQueriesMetricsList, err := performancemetrics.GetBlockingMetrics(conn, cp)
 	assert.NoError(t, err)
 	assert.Len(t, blockingQueriesMetricsList, 1)
 	assert.NoError(t, mock.ExpectationsWereMet())

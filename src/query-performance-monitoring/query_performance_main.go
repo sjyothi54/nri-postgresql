@@ -6,7 +6,7 @@ import (
 
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
 
-	global_variables "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/global-variables"
+	common_parameters "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-parameters"
 
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
@@ -41,34 +41,34 @@ func QueryPerformanceMain(args args.ArgumentList, pgIntegration *integration.Int
 		log.Debug("Postgres version is not supported for query monitoring")
 		return
 	}
-	gv := global_variables.SetGlobalVariables(args, versionInt, commonutils.GetDatabaseListInString(databaseMap))
-	populateQueryPerformanceMetrics(newConnection, pgIntegration, gv)
+	cp := common_parameters.SetCommonParameters(args, versionInt, commonutils.GetDatabaseListInString(databaseMap))
+	populateQueryPerformanceMetrics(newConnection, pgIntegration, cp)
 	validations.ClearExtensionsLoadCache()
 }
 
-func populateQueryPerformanceMetrics(newConnection *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, gv *global_variables.GlobalVariables) {
+func populateQueryPerformanceMetrics(newConnection *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, cp *common_parameters.CommonParameters) {
 	start := time.Now()
 	log.Debug("Starting PopulateSlowRunningMetrics at ", start)
-	slowRunningQueries := performancemetrics.PopulateSlowRunningMetrics(newConnection, pgIntegration, gv)
+	slowRunningQueries := performancemetrics.PopulateSlowRunningMetrics(newConnection, pgIntegration, cp)
 	log.Debug("PopulateSlowRunningMetrics completed in ", time.Since(start))
 
 	start = time.Now()
 	log.Debug("Starting PopulateWaitEventMetrics at ", start)
-	_ = performancemetrics.PopulateWaitEventMetrics(newConnection, pgIntegration, gv)
+	_ = performancemetrics.PopulateWaitEventMetrics(newConnection, pgIntegration, cp)
 	log.Debug("PopulateWaitEventMetrics completed in ", time.Since(start))
 
 	start = time.Now()
 	log.Debug("Starting PopulateBlockingMetrics at ", start)
-	performancemetrics.PopulateBlockingMetrics(newConnection, pgIntegration, gv)
+	performancemetrics.PopulateBlockingMetrics(newConnection, pgIntegration, cp)
 	log.Debug("PopulateBlockingMetrics completed in ", time.Since(start))
 
 	start = time.Now()
 	log.Debug("Starting PopulateIndividualQueryMetrics at ", start)
-	individualQueries := performancemetrics.PopulateIndividualQueryMetrics(newConnection, slowRunningQueries, pgIntegration, gv)
+	individualQueries := performancemetrics.PopulateIndividualQueryMetrics(newConnection, slowRunningQueries, pgIntegration, cp)
 	log.Debug("PopulateIndividualQueryMetrics completed in ", time.Since(start))
 
 	start = time.Now()
 	log.Debug("Starting PopulateExecutionPlanMetrics at ", start)
-	performancemetrics.PopulateExecutionPlanMetrics(individualQueries, pgIntegration, gv)
+	performancemetrics.PopulateExecutionPlanMetrics(individualQueries, pgIntegration, cp)
 	log.Debug("PopulateExecutionPlanMetrics completed in ", time.Since(start))
 }

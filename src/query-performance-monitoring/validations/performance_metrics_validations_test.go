@@ -45,10 +45,9 @@ func TestCheckBlockingSessionMetricsFetchEligibilitySupportedVersionFail(t *test
 
 func TestIndividualQueryMetricsFetchEligibilitySupportedVersionSuccess(t *testing.T) {
 	conn, mock := connection.CreateMockSQL(t)
-	version := uint64(14)
 	validationQueryStatStatements := "SELECT extname FROM pg_extension"
 	mock.ExpectQuery(regexp.QuoteMeta(validationQueryStatStatements)).WillReturnRows(sqlmock.NewRows([]string{"extname"}).AddRow("pg_stat_monitor"))
-	isExtensionEnabledTest, _ := validations.CheckIndividualQueryMetricsFetchEligibility(conn, version)
+	isExtensionEnabledTest, _ := validations.CheckIndividualQueryMetricsFetchEligibility(conn)
 	assert.Equal(t, isExtensionEnabledTest, true)
 	assert.NoError(t, mock.ExpectationsWereMet())
 	validations.ClearExtensionsLoadCache()
@@ -56,17 +55,15 @@ func TestIndividualQueryMetricsFetchEligibilitySupportedVersionSuccess(t *testin
 
 func TestIndividualQueryMetricsFetchEligibilitySupportedVersionFail(t *testing.T) {
 	conn, mock := connection.CreateMockSQL(t)
-	version := uint64(14)
 	validationQueryStatStatements := "SELECT extname FROM pg_extension"
 	mock.ExpectQuery(regexp.QuoteMeta(validationQueryStatStatements)).WillReturnRows(sqlmock.NewRows([]string{"extname"}))
-	isExtensionEnabledTest, _ := validations.CheckIndividualQueryMetricsFetchEligibility(conn, version)
+	isExtensionEnabledTest, _ := validations.CheckIndividualQueryMetricsFetchEligibility(conn)
 	assert.Equal(t, isExtensionEnabledTest, false)
 	assert.NoError(t, mock.ExpectationsWereMet())
 	validations.ClearExtensionsLoadCache()
 }
 
 func TestCheckWaitEventMetricsFetchEligibility(t *testing.T) {
-	version := uint64(15)
 	validationQuery := "SELECT extname FROM pg_extension"
 	testCases := []struct {
 		waitExt  string
@@ -81,28 +78,18 @@ func TestCheckWaitEventMetricsFetchEligibility(t *testing.T) {
 	conn, mock := connection.CreateMockSQL(t)
 	for _, tc := range testCases {
 		mock.ExpectQuery(regexp.QuoteMeta(validationQuery)).WillReturnRows(sqlmock.NewRows([]string{"extname"}).AddRow(tc.waitExt).AddRow(tc.statExt))
-		isExtensionEnabledTest, _ := validations.CheckWaitEventMetricsFetchEligibility(conn, version)
+		isExtensionEnabledTest, _ := validations.CheckWaitEventMetricsFetchEligibility(conn)
 		assert.Equal(t, isExtensionEnabledTest, tc.expected)
 		assert.NoError(t, mock.ExpectationsWereMet())
 		validations.ClearExtensionsLoadCache()
 	}
 }
 
-func TestCheckSlowQueryMetricsFetchEligibilityUnSupportedVersion(t *testing.T) {
-	conn, mock := connection.CreateMockSQL(t)
-	version := uint64(11)
-	isExtensionEnabledTest, _ := validations.CheckSlowQueryMetricsFetchEligibility(conn, version)
-	assert.Equal(t, isExtensionEnabledTest, false)
-	assert.NoError(t, mock.ExpectationsWereMet())
-	validations.ClearExtensionsLoadCache()
-}
-
 func TestCheckSlowQueryMetricsFetchEligibilitySupportedVersionSuccess(t *testing.T) {
 	conn, mock := connection.CreateMockSQL(t)
-	version := uint64(14)
 	validationQueryStatStatements := "SELECT extname FROM pg_extension"
 	mock.ExpectQuery(regexp.QuoteMeta(validationQueryStatStatements)).WillReturnRows(sqlmock.NewRows([]string{"extname"}).AddRow("pg_stat_statements"))
-	isExtensionEnabledTest, _ := validations.CheckSlowQueryMetricsFetchEligibility(conn, version)
+	isExtensionEnabledTest, _ := validations.CheckSlowQueryMetricsFetchEligibility(conn)
 	assert.Equal(t, isExtensionEnabledTest, true)
 	assert.NoError(t, mock.ExpectationsWereMet())
 	validations.ClearExtensionsLoadCache()
@@ -110,10 +97,9 @@ func TestCheckSlowQueryMetricsFetchEligibilitySupportedVersionSuccess(t *testing
 
 func TestCheckSlowQueryMetricsFetchEligibilitySupportedVersionFail(t *testing.T) {
 	conn, mock := connection.CreateMockSQL(t)
-	version := uint64(14)
 	validationQueryStatStatements := fmt.Sprintf("SELECT extname FROM pg_extension")
 	mock.ExpectQuery(regexp.QuoteMeta(validationQueryStatStatements)).WillReturnRows(sqlmock.NewRows([]string{"extname"}))
-	isExtensionEnabledTest, _ := validations.CheckSlowQueryMetricsFetchEligibility(conn, version)
+	isExtensionEnabledTest, _ := validations.CheckSlowQueryMetricsFetchEligibility(conn)
 	assert.Equal(t, isExtensionEnabledTest, false)
 	assert.NoError(t, mock.ExpectationsWereMet())
 	validations.ClearExtensionsLoadCache()

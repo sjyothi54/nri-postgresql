@@ -7,9 +7,9 @@ import (
 
 	"github.com/newrelic/nri-postgresql/src/args"
 	"github.com/newrelic/nri-postgresql/src/connection"
+	common_parameters "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-parameters"
 	commonutils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
-	global_variables "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/global-variables"
 	performancemetrics "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-metrics"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
 	"github.com/stretchr/testify/assert"
@@ -23,7 +23,7 @@ func TestGetIndividualQueryMetrics(t *testing.T) {
 	version := uint64(13)
 	mockQueryID := "-123"
 	mockQueryText := "SELECT 1"
-	gv := global_variables.SetGlobalVariables(args, version, databaseName)
+	cp := common_parameters.SetCommonParameters(args, version, databaseName)
 
 	// Mock the individual query
 	query := fmt.Sprintf(queries.IndividualQuerySearchV13AndAbove, mockQueryID, databaseName, args.QueryMonitoringResponseTimeThreshold, min(args.QueryMonitoringCountThreshold, commonutils.MaxIndividualQueryCountThreshold))
@@ -41,7 +41,7 @@ func TestGetIndividualQueryMetrics(t *testing.T) {
 		},
 	}
 
-	individualQueryMetricsInterface, individualQueryMetrics := performancemetrics.GetIndividualQueryMetrics(conn, slowRunningQueries, gv)
+	individualQueryMetricsInterface, individualQueryMetrics := performancemetrics.GetIndividualQueryMetrics(conn, slowRunningQueries, cp)
 
 	assert.Len(t, individualQueryMetricsInterface, 1)
 	assert.Len(t, individualQueryMetrics, 1)

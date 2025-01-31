@@ -7,8 +7,8 @@ import (
 
 	"github.com/newrelic/nri-postgresql/src/args"
 	"github.com/newrelic/nri-postgresql/src/connection"
+	common_parameters "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-parameters"
 	commonutils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
-	global_variables "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/global-variables"
 	performancemetrics "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-metrics"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
 	"github.com/stretchr/testify/assert"
@@ -19,7 +19,7 @@ func runSlowQueryTest(t *testing.T, query string, version uint64, expectedLength
 	conn, mock := connection.CreateMockSQL(t)
 	args := args.ArgumentList{QueryMonitoringCountThreshold: 10}
 	databaseName := "testdb"
-	gv := global_variables.SetGlobalVariables(args, version, databaseName)
+	cp := common_parameters.SetCommonParameters(args, version, databaseName)
 
 	query = fmt.Sprintf(query, "testdb", args.QueryMonitoringCountThreshold)
 	mock.ExpectQuery(regexp.QuoteMeta(query)).WillReturnRows(sqlmock.NewRows([]string{
@@ -29,7 +29,7 @@ func runSlowQueryTest(t *testing.T, query string, version uint64, expectedLength
 		"queryid1", "SELECT 1", "testdb", "public", 10,
 		15.0, 5, 2, "SELECT", "2023-01-01T00:00:00Z",
 	))
-	slowQueryList, _, err := performancemetrics.GetSlowRunningMetrics(conn, gv)
+	slowQueryList, _, err := performancemetrics.GetSlowRunningMetrics(conn, cp)
 	assert.NoError(t, err)
 	assert.Len(t, slowQueryList, expectedLength)
 	assert.NoError(t, mock.ExpectationsWereMet())
@@ -48,14 +48,14 @@ func TestGetSlowRunningEmptyMetrics(t *testing.T) {
 	args := args.ArgumentList{QueryMonitoringCountThreshold: 10}
 	databaseName := "testdb"
 	version := uint64(13)
-	gv := global_variables.SetGlobalVariables(args, version, databaseName)
+	cp := common_parameters.SetCommonParameters(args, version, databaseName)
 	expectedQuery := queries.SlowQueriesForV13AndAbove
 	query := fmt.Sprintf(expectedQuery, "testdb", args.QueryMonitoringCountThreshold)
 	mock.ExpectQuery(regexp.QuoteMeta(query)).WillReturnRows(sqlmock.NewRows([]string{
 		"newrelic", "query_id", "query_text", "database_name", "schema_name", "execution_count",
 		"avg_elapsed_time_ms", "avg_disk_reads", "avg_disk_writes", "statement_type", "collection_timestamp",
 	}))
-	slowQueryList, _, err := performancemetrics.GetSlowRunningMetrics(conn, gv)
+	slowQueryList, _, err := performancemetrics.GetSlowRunningMetrics(conn, cp)
 
 	assert.NoError(t, err)
 	assert.Len(t, slowQueryList, 0)
@@ -67,8 +67,8 @@ func TestGetSlowRunningMetricsUnsupportedVersion(t *testing.T) {
 	args := args.ArgumentList{QueryMonitoringCountThreshold: 10}
 	databaseName := "testdb"
 	version := uint64(11)
-	gv := global_variables.SetGlobalVariables(args, version, databaseName)
-	slowQueryList, _, err := performancemetrics.GetSlowRunningMetrics(conn, gv)
+	cp := common_parameters.SetCommonParameters(args, version, databaseName)
+	slowQueryList, _, err := performancemetrics.GetSlowRunningMetrics(conn, cp)
 	assert.EqualError(t, err, commonutils.ErrUnsupportedVersion.Error())
 	assert.Len(t, slowQueryList, 0)
 	assert.NoError(t, mock.ExpectationsWereMet())

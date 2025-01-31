@@ -7,24 +7,24 @@ import (
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	performancedbconnection "github.com/newrelic/nri-postgresql/src/connection"
+	globalvariables "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-parameters"
 	commonutils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
-	globalvariables "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/global-variables"
 )
 
-func PopulateExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, pgIntegration *integration.Integration, gv *globalvariables.GlobalVariables) {
+func PopulateExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, pgIntegration *integration.Integration, cp *globalvariables.CommonParameters) {
 	if len(results) == 0 {
 		log.Debug("No individual queries found.")
 		return
 	}
-	executionDetailsList := GetExecutionPlanMetrics(results, gv)
-	commonutils.IngestMetric(executionDetailsList, "PostgresExecutionPlanMetrics", pgIntegration, gv)
+	executionDetailsList := GetExecutionPlanMetrics(results, cp)
+	commonutils.IngestMetric(executionDetailsList, "PostgresExecutionPlanMetrics", pgIntegration, cp)
 }
 
-func GetExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, gv *globalvariables.GlobalVariables) []interface{} {
+func GetExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, cp *globalvariables.CommonParameters) []interface{} {
 	var executionPlanMetricsList []interface{}
 	var groupIndividualQueriesByDatabase = GroupQueriesByDatabase(results)
-	connectionInfo := performancedbconnection.DefaultConnectionInfo(&gv.Arguments)
+	connectionInfo := performancedbconnection.DefaultConnectionInfo(&cp.Arguments)
 	for dbName, individualQueriesList := range groupIndividualQueriesByDatabase {
 		dbConn, err := connectionInfo.NewConnection(dbName)
 		if err != nil {
