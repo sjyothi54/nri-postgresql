@@ -3,6 +3,8 @@ package commonutils
 import (
 	"crypto/rand"
 	"fmt"
+	"github.com/newrelic/infra-integrations-sdk/v3/log"
+	"github.com/newrelic/nri-postgresql/src/args"
 	"math/big"
 	"regexp"
 	"strings"
@@ -39,4 +41,19 @@ func GeneratePlanID() (string, error) {
 	currentTime := time.Now().Format(TimeFormat)
 	result := fmt.Sprintf("%d-%s", randomInt.Int64(), currentTime)
 	return result, nil
+}
+
+func ValidateAndSetDefaultQueryPerformanceConfig(args *args.ArgumentList) {
+	if args.QueryMonitoringResponseTimeThreshold < 0 {
+		log.Warn("QueryResponseTimeThreshold should be greater than or equal to 0, setting value to default")
+		args.QueryMonitoringResponseTimeThreshold = 500
+	}
+	if args.QueryMonitoringCountThreshold < 0 {
+		log.Warn("QueryCountThreshold should be greater than or equal to 0, setting value to default")
+		args.QueryMonitoringCountThreshold = 20
+	}
+	if args.QueryMonitoringCountThreshold > MaxQueryCountThreshold {
+		log.Warn("QueryCountThreshold should be less than or equal to max limit")
+		args.QueryMonitoringCountThreshold = MaxQueryCountThreshold
+	}
 }

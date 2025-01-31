@@ -7,15 +7,6 @@ import (
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 )
 
-// The maximum number records that can be fetched in a single metrics
-const MaxQueryCountThreshold = 30
-
-var (
-	ErrInvalidQueryResponseTimeThreshold  = errors.New("invalid configuration: QueryResponseTimeThreshold should be greater than or equal to 0")
-	ErrInvalidQueryCountThreshold         = errors.New("invalid configuration: QueryCountThreshold should be greater than or equal to 0")
-	ErrQueryCountThresholdExceedsMaxLimit = errors.New("invalid configuration: QueryCountThreshold should be less than or equal to max limit")
-)
-
 // ArgumentList struct that holds all PostgreSQL arguments
 type ArgumentList struct {
 	sdkArgs.DefaultArgumentList
@@ -52,9 +43,6 @@ func (al ArgumentList) Validate() error {
 	if err := al.validateSSL(); err != nil {
 		return err
 	}
-	if err := al.validateQueryPerformanceConfig(); err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -69,24 +57,5 @@ func (al ArgumentList) validateSSL() error {
 		}
 	}
 
-	return nil
-}
-
-func (al ArgumentList) validateQueryPerformanceConfig() error {
-	if !al.EnableQueryMonitoring {
-		return nil
-	}
-	if al.QueryMonitoringResponseTimeThreshold < 0 {
-		log.Warn("QueryResponseTimeThreshold should be greater than or equal to 0, setting value to default")
-		al.QueryMonitoringResponseTimeThreshold = 500
-	}
-	if al.QueryMonitoringCountThreshold < 0 {
-		log.Warn("QueryCountThreshold should be greater than or equal to 0, setting value to default")
-		al.QueryMonitoringCountThreshold = 20
-	}
-	if al.QueryMonitoringCountThreshold > MaxQueryCountThreshold {
-		log.Warn("QueryCountThreshold should be less than or equal to max limit")
-		al.QueryMonitoringCountThreshold = MaxQueryCountThreshold
-	}
 	return nil
 }

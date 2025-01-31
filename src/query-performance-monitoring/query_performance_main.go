@@ -19,6 +19,7 @@ import (
 )
 
 func QueryPerformanceMain(args args.ArgumentList, pgIntegration *integration.Integration, databaseMap collection.DatabaseList) {
+	commonutils.ValidateAndSetDefaultQueryPerformanceConfig(&args)
 	connectionInfo := performancedbconnection.DefaultConnectionInfo(&args)
 	if len(databaseMap) == 0 {
 		log.Debug("No databases found")
