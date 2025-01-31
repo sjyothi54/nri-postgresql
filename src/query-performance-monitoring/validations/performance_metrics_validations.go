@@ -31,22 +31,13 @@ func isExtensionEnabled(extensionName string) bool {
 	return extensions[extensionName]
 }
 
-func CheckSlowQueryMetricsFetchEligibility(conn *performancedbconnection.PGSQLConnection, version uint64) (bool, error) {
-	if extensions == nil {
-		if err := fetchAllExtensions(conn); err != nil {
-			return false, err
-		}
-	}
+func CheckSlowQueryMetricsFetchEligibility(conn *performancedbconnection.PGSQLConnection) (bool, error) {
+	loadExtensionsMap(conn)
 	return isExtensionEnabled("pg_stat_statements"), nil
 }
 
-func CheckWaitEventMetricsFetchEligibility(conn *performancedbconnection.PGSQLConnection, version uint64) (bool, error) {
-	if extensions == nil {
-		if err := fetchAllExtensions(conn); err != nil {
-			log.Debug("Error fetching all extensions: %v", err)
-			return false, err
-		}
-	}
+func CheckWaitEventMetricsFetchEligibility(conn *performancedbconnection.PGSQLConnection) (bool, error) {
+	loadExtensionsMap(conn)
 	return isExtensionEnabled("pg_wait_sampling") && isExtensionEnabled("pg_stat_statements"), nil
 }
 
@@ -55,23 +46,12 @@ func CheckBlockingSessionMetricsFetchEligibility(conn *performancedbconnection.P
 	if version == commonutils.PostgresVersion12 || version == commonutils.PostgresVersion13 {
 		return true, nil
 	}
-	if extensions == nil {
-		if err := fetchAllExtensions(conn); err != nil {
-			return false, err
-		}
-	}
+	loadExtensionsMap(conn)
 	return isExtensionEnabled("pg_stat_statements"), nil
 }
 
-func CheckIndividualQueryMetricsFetchEligibility(conn *performancedbconnection.PGSQLConnection, version uint64) (bool, error) {
-	if extensions == nil {
-		if err := fetchAllExtensions(conn); err != nil {
-			return false, err
-		}
-	}
-	if version < commonutils.PostgresVersion12 {
-		return false, nil
-	}
+func CheckIndividualQueryMetricsFetchEligibility(conn *performancedbconnection.PGSQLConnection) (bool, error) {
+	loadExtensionsMap(conn)
 	return isExtensionEnabled("pg_stat_monitor"), nil
 }
 
@@ -81,4 +61,12 @@ func CheckPostgresVersionSupportForQueryMonitoring(version uint64) bool {
 
 func ClearExtensionsLoadCache() {
 	extensions = nil
+}
+
+func loadExtensionsMap(conn *performancedbconnection.PGSQLConnection) {
+	if extensions == nil {
+		if err := fetchAllExtensions(conn); err != nil {
+			log.Error("Error fetching all extensions: %v", err)
+		}
+	}
 }
