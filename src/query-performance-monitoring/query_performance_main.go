@@ -2,6 +2,7 @@ package queryperformancemonitoring
 
 // this is the main go file for the query_monitoring package
 import (
+	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
 	"time"
 
 	global_variables "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/global-variables"
@@ -30,9 +31,13 @@ func QueryPerformanceMain(args args.ArgumentList, pgIntegration *integration.Int
 	defer newConnection.Close()
 
 	version, versionErr := metrics.CollectVersion(newConnection)
-	versionInt := version.Major
 	if versionErr != nil {
 		log.Error("Error fetching version: ", versionErr)
+		return
+	}
+	versionInt := version.Major
+	if validations.CheckPostgresVersionSupportForQueryMonitoring(versionInt) {
+		log.Debug("Postgres version is not supported for query monitoring")
 		return
 	}
 	gv := global_variables.SetGlobalVariables(args, versionInt, commonutils.GetDatabaseListInString(databaseMap))
