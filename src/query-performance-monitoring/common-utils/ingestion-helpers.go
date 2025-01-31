@@ -35,11 +35,11 @@ func SetMetric(metricSet *metric.Set, name string, value interface{}, sourceType
 }
 
 // IngestMetric is a util by which we publish data in batches .Reason for this is to avoid publishing large data in one go and its a limitation for NewRelic.
-func IngestMetric(metricList []interface{}, eventName string, pgIntegration *integration.Integration, gv *globalvariables.GlobalVariables) {
+func IngestMetric(metricList []interface{}, eventName string, pgIntegration *integration.Integration, gv *globalvariables.GlobalVariables) error {
 	instanceEntity, err := CreateEntity(pgIntegration, gv)
 	if err != nil {
 		log.Error("Error creating entity: %v", err)
-		return
+		return err
 	}
 
 	metricCount := 0
@@ -61,16 +61,17 @@ func IngestMetric(metricList []interface{}, eventName string, pgIntegration *int
 			metricCount = 0
 			if err := PublishMetrics(pgIntegration, &instanceEntity, gv); err != nil {
 				log.Error("Error publishing metrics: %v", err)
-				return
+				return err
 			}
 		}
 	}
 	if metricCount > 0 {
 		if err := PublishMetrics(pgIntegration, &instanceEntity, gv); err != nil {
 			log.Error("Error publishing metrics: %v", err)
-			return
+			return err
 		}
 	}
+	return nil
 }
 
 func CreateEntity(pgIntegration *integration.Integration, gv *globalvariables.GlobalVariables) (*integration.Entity, error) {

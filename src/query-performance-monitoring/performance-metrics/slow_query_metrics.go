@@ -58,6 +58,10 @@ func PopulateSlowRunningMetrics(conn *performancedbconnection.PGSQLConnection, p
 		log.Debug("No slow-running queries found.")
 		return nil
 	}
-	commonutils.IngestMetric(slowQueryMetricsListInterface, "PostgresSlowQueries", pgIntegration, gv)
+	err = commonutils.IngestMetric(slowQueryMetricsListInterface, "PostgresSlowQueries", pgIntegration, gv)
+	if err != nil {
+		log.Error("Error ingesting slow-running queries: %v", err)
+		return nil
+	}
 	return slowQueryMetricsList
 }
