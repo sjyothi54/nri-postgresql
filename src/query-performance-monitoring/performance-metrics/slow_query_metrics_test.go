@@ -23,10 +23,10 @@ func runSlowQueryTest(t *testing.T, query string, version uint64, expectedLength
 
 	query = fmt.Sprintf(query, "testdb", args.QueryMonitoringCountThreshold)
 	mock.ExpectQuery(regexp.QuoteMeta(query)).WillReturnRows(sqlmock.NewRows([]string{
-		"query_id", "query_text", "database_name", "schema_name", "execution_count",
+		"newrelic", "query_id", "query_text", "database_name", "schema_name", "execution_count",
 		"avg_elapsed_time_ms", "avg_disk_reads", "avg_disk_writes", "statement_type", "collection_timestamp",
 	}).AddRow(
-		"queryid1", "SELECT 1", "testdb", "public", 10,
+		"newrelic_value", "queryid1", "SELECT 1", "testdb", "public", 10,
 		15.0, 5, 2, "SELECT", "2023-01-01T00:00:00Z",
 	))
 	slowQueryList, _, err := performancemetrics.GetSlowRunningMetrics(conn, cp)
