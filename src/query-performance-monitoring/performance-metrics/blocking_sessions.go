@@ -47,7 +47,7 @@ func GetBlockingMetrics(conn *performancedbconnection.PGSQLConnection, cp *commo
 		log.Error("Unsupported postgres version: %v", err)
 		return nil, err
 	}
-	var query = fmt.Sprintf(versionSpecificBlockingQuery, cp.Databases, cp.Arguments.QueryMonitoringCountThreshold)
+	var query = fmt.Sprintf(versionSpecificBlockingQuery, cp.Databases, cp.QueryMonitoringCountThreshold)
 	rows, err := conn.Queryx(query)
 	if err != nil {
 		log.Error("Failed to execute query: %v", err)

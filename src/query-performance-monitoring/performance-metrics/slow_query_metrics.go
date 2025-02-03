@@ -20,7 +20,7 @@ func GetSlowRunningMetrics(conn *performancedbconnection.PGSQLConnection, cp *co
 		log.Error("Unsupported postgres version: %v", err)
 		return nil, nil, err
 	}
-	var query = fmt.Sprintf(versionSpecificSlowQuery, cp.Databases, cp.Arguments.QueryMonitoringCountThreshold)
+	var query = fmt.Sprintf(versionSpecificSlowQuery, cp.Databases, cp.QueryMonitoringCountThreshold)
 	rows, err := conn.Queryx(query)
 	if err != nil {
 		return nil, nil, err
