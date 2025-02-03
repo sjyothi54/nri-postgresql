@@ -3,7 +3,7 @@ package performancemetrics
 import (
 	"fmt"
 
-	globalvariables "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-parameters"
+	commonparameters "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-parameters"
 
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	commonutils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
@@ -14,7 +14,7 @@ import (
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
 )
 
-func PopulateBlockingMetrics(conn *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, cp *globalvariables.CommonParameters) {
+func PopulateBlockingMetrics(conn *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, cp *commonparameters.CommonParameters) {
 	isEligible, enableCheckError := validations.CheckBlockingSessionMetricsFetchEligibility(conn, cp.Version)
 	if enableCheckError != nil {
 		log.Error("Error executing query: %v in PopulateBlockingMetrics", enableCheckError)
@@ -40,7 +40,7 @@ func PopulateBlockingMetrics(conn *performancedbconnection.PGSQLConnection, pgIn
 	}
 }
 
-func GetBlockingMetrics(conn *performancedbconnection.PGSQLConnection, cp *globalvariables.CommonParameters) ([]interface{}, error) {
+func GetBlockingMetrics(conn *performancedbconnection.PGSQLConnection, cp *commonparameters.CommonParameters) ([]interface{}, error) {
 	var blockingQueriesMetricsList []interface{}
 	versionSpecificBlockingQuery, err := commonutils.FetchVersionSpecificBlockingQueries(cp.Version)
 	if err != nil {

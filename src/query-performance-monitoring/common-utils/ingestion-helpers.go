@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
-	globalvariables "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-parameters"
+	commonparameters "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-parameters"
 
 	"github.com/newrelic/infra-integrations-sdk/v3/data/metric"
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
@@ -35,7 +35,7 @@ func SetMetric(metricSet *metric.Set, name string, value interface{}, sourceType
 }
 
 // IngestMetric is a util by which we publish data in batches .Reason for this is to avoid publishing large data in one go and its a limitation for NewRelic.
-func IngestMetric(metricList []interface{}, eventName string, pgIntegration *integration.Integration, cp *globalvariables.CommonParameters) error {
+func IngestMetric(metricList []interface{}, eventName string, pgIntegration *integration.Integration, cp *commonparameters.CommonParameters) error {
 	instanceEntity, err := CreateEntity(pgIntegration, cp)
 	if err != nil {
 		log.Error("Error creating entity: %v", err)
@@ -74,7 +74,7 @@ func IngestMetric(metricList []interface{}, eventName string, pgIntegration *int
 	return nil
 }
 
-func CreateEntity(pgIntegration *integration.Integration, cp *globalvariables.CommonParameters) (*integration.Entity, error) {
+func CreateEntity(pgIntegration *integration.Integration, cp *commonparameters.CommonParameters) (*integration.Entity, error) {
 	return pgIntegration.Entity(fmt.Sprintf("%s:%s", cp.Arguments.Hostname, cp.Arguments.Port), "pg-instance")
 }
 
@@ -110,7 +110,7 @@ func ProcessModel(model interface{}, metricSet *metric.Set) error {
 	return nil
 }
 
-func PublishMetrics(pgIntegration *integration.Integration, instanceEntity **integration.Entity, cp *globalvariables.CommonParameters) error {
+func PublishMetrics(pgIntegration *integration.Integration, instanceEntity **integration.Entity, cp *commonparameters.CommonParameters) error {
 	if err := pgIntegration.Publish(); err != nil {
 		return err
 	}

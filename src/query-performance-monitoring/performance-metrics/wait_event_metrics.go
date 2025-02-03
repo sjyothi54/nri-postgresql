@@ -6,14 +6,14 @@ import (
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	performancedbconnection "github.com/newrelic/nri-postgresql/src/connection"
-	globalvariables "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-parameters"
+	commonparameters "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-parameters"
 	commonutils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
 )
 
-func PopulateWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, cp *globalvariables.CommonParameters) error {
+func PopulateWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, cp *commonparameters.CommonParameters) error {
 	var isEligible bool
 	var eligibleCheckErr error
 	isEligible, eligibleCheckErr = validations.CheckWaitEventMetricsFetchEligibility(conn)
@@ -42,7 +42,7 @@ func PopulateWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, pgI
 	return nil
 }
 
-func GetWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, cp *globalvariables.CommonParameters) ([]interface{}, error) {
+func GetWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, cp *commonparameters.CommonParameters) ([]interface{}, error) {
 	var waitEventMetricsList []interface{}
 	var query = fmt.Sprintf(queries.WaitEvents, cp.Databases, cp.Arguments.QueryMonitoringCountThreshold)
 	rows, err := conn.Queryx(query)
