@@ -12,12 +12,12 @@ import (
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
 )
 
-func PopulateExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, pgIntegration *integration.Integration, cp *commonparameters.CommonParameters) {
+func PopulateExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, pgIntegration *integration.Integration, cp *commonparameters.CommonParameters, connectionInfo performancedbconnection.Info) {
 	if len(results) == 0 {
 		log.Debug("No individual queries found.")
 		return
 	}
-	executionDetailsList := GetExecutionPlanMetrics(results, cp)
+	executionDetailsList := GetExecutionPlanMetrics(results, connectionInfo)
 	err := commonutils.IngestMetric(executionDetailsList, "PostgresExecutionPlanMetrics", pgIntegration, cp)
 	if err != nil {
 		log.Error("Error ingesting Execution Plan metrics: %v", err)
@@ -25,10 +25,9 @@ func PopulateExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, p
 	}
 }
 
-func GetExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, cp *commonparameters.CommonParameters) []interface{} {
+func GetExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, connectionInfo performancedbconnection.Info) []interface{} {
 	var executionPlanMetricsList []interface{}
 	var groupIndividualQueriesByDatabase = GroupQueriesByDatabase(results)
-	connectionInfo := performancedbconnection.DefaultConnectionInfo(&cp.Arguments)
 	for dbName, individualQueriesList := range groupIndividualQueriesByDatabase {
 		dbConn, err := connectionInfo.NewConnection(dbName)
 		if err != nil {
