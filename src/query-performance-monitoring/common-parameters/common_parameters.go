@@ -17,18 +17,20 @@ const DefaultQueryResponseTimeThreshold = 500
 type CommonParameters struct {
 	Version                              uint64
 	Databases                            string
-	Arguments                            args.ArgumentList
 	QueryMonitoringCountThreshold        int
 	QueryMonitoringResponseTimeThreshold int
+	Host                                 string
+	Port                                 string
 }
 
 func SetCommonParameters(args args.ArgumentList, version uint64, databases string) *CommonParameters {
 	return &CommonParameters{
 		Version:                              version,
 		Databases:                            databases,
-		Arguments:                            args,
 		QueryMonitoringCountThreshold:        validateAndGetQueryMonitoringCountThreshold(args),
 		QueryMonitoringResponseTimeThreshold: validateAndGetQueryMonitoringResponseTimeThreshold(args),
+		Host:                                 args.Hostname,
+		Port:                                 args.Port,
 	}
 }
 
