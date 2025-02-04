@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/newrelic/go-agent/v3/newrelic"
 
-	globalvariables "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/global-variables"
+	commonparameters "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-parameters"
 
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	commonutils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
@@ -15,8 +15,8 @@ import (
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
 )
 
-func PopulateBlockingMetrics(conn *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, gv *globalvariables.GlobalVariables, app *newrelic.Application) {
-	isEligible, enableCheckError := validations.CheckBlockingSessionMetricsFetchEligibility(conn, gv.Version, app)
+func PopulateBlockingMetrics(conn *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, cp *commonparameters.CommonParameters, app *newrelic.Application) {
+	isEligible, enableCheckError := validations.CheckBlockingSessionMetricsFetchEligibility(conn, cp.Version, app)
 	if enableCheckError != nil {
 		log.Error("Error executing query: %v in PopulateBlockingMetrics", enableCheckError)
 		return
@@ -25,7 +25,7 @@ func PopulateBlockingMetrics(conn *performancedbconnection.PGSQLConnection, pgIn
 		log.Debug("Extension 'pg_stat_statements' is not enabled or unsupported version.")
 		return
 	}
-	blockingQueriesMetricsList, blockQueryFetchErr := GetBlockingMetrics(conn, gv, app)
+	blockingQueriesMetricsList, blockQueryFetchErr := GetBlockingMetrics(conn, cp, app)
 	if blockQueryFetchErr != nil {
 		log.Error("Error fetching Blocking queries: %v", blockQueryFetchErr)
 		return
@@ -34,17 +34,21 @@ func PopulateBlockingMetrics(conn *performancedbconnection.PGSQLConnection, pgIn
 		log.Debug("No Blocking queries found.")
 		return
 	}
-	commonutils.IngestMetric(blockingQueriesMetricsList, "PostgresBlockingSessions", pgIntegration, gv, nil)
+	err := commonutils.IngestMetric(blockingQueriesMetricsList, "PostgresBlockingSessions", pgIntegration, cp, nil)
+	if err != nil {
+		log.Error("Error ingesting Blocking queries: %v", err)
+		return
+	}
 }
 
-func GetBlockingMetrics(conn *performancedbconnection.PGSQLConnection, gv *globalvariables.GlobalVariables, app *newrelic.Application) ([]interface{}, error) {
+func GetBlockingMetrics(conn *performancedbconnection.PGSQLConnection, cp *commonparameters.CommonParameters, app *newrelic.Application) ([]interface{}, error) {
 	var blockingQueriesMetricsList []interface{}
-	versionSpecificBlockingQuery, err := commonutils.FetchVersionSpecificBlockingQueries(gv.Version)
+	versionSpecificBlockingQuery, err := commonutils.FetchVersionSpecificBlockingQueries(cp.Version)
 	if err != nil {
 		log.Error("Unsupported postgres version: %v", err)
 		return nil, err
 	}
-	var query = fmt.Sprintf(versionSpecificBlockingQuery, gv.DatabaseString, min(gv.Arguments.QueryCountThreshold, commonutils.MaxQueryCountThreshold))
+	var query = fmt.Sprintf(versionSpecificBlockingQuery, cp.Databases, cp.QueryMonitoringCountThreshold)
 	rows, err := conn.Queryx(query, app)
 	if err != nil {
 		log.Error("Failed to execute query: %v", err)
@@ -57,7 +61,7 @@ func GetBlockingMetrics(conn *performancedbconnection.PGSQLConnection, gv *globa
 			return nil, scanError
 		}
 		// For PostgreSQL versions 13 and 12, anonymization of queries does not occur for blocking sessions, so it's necessary to explicitly anonymize them.
-		if gv.Version == commonutils.PostgresVersion13 || gv.Version == commonutils.PostgresVersion12 {
+		if cp.Version == commonutils.PostgresVersion13 || cp.Version == commonutils.PostgresVersion12 {
 			*blockingQueryMetric.BlockedQuery = commonutils.AnonymizeQueryText(*blockingQueryMetric.BlockedQuery)
 			*blockingQueryMetric.BlockingQuery = commonutils.AnonymizeQueryText(*blockingQueryMetric.BlockingQuery)
 		}

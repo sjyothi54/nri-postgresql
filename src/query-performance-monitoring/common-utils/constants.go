@@ -4,14 +4,13 @@ import "errors"
 
 // The maximum number records that can be fetched in a single metrics
 const MaxQueryCountThreshold = 300
+// The maximum number of metrics to be published in a single batch
+const PublishThreshold = 600
+const RandomIntRange = 1000000
+const TimeFormat = "20060102150405"
 
 // The maximum number of individual queries that can be fetched in a single metrics
 const MaxIndividualQueryCountThreshold = 300
-
-// The maximum number of metrics to be published in a single batch
-const PublishThreshold = 100
-const RandomIntRange = 1000000
-const TimeFormat = "20060102150405"
 
 var ErrUnsupportedVersion = errors.New("unsupported PostgreSQL version")
 var ErrUnExpectedError = errors.New("unexpected error")

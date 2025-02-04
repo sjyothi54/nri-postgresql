@@ -8,25 +8,28 @@ import (
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	performancedbconnection "github.com/newrelic/nri-postgresql/src/connection"
+	commonparameters "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-parameters"
 	commonutils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
-	globalvariables "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/global-variables"
 )
 
-func PopulateExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, pgIntegration *integration.Integration, gv *globalvariables.GlobalVariables, app *newrelic.Application) {
+func PopulateExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, pgIntegration *integration.Integration, cp *commonparameters.CommonParameters, connectionInfo performancedbconnection.Info, app *newrelic.Application) {
 	if len(results) == 0 {
 		log.Debug("No individual queries found.")
 		return
 	}
-	executionDetailsList := GetExecutionPlanMetrics(results, gv, app)
-	commonutils.IngestMetric(executionDetailsList, "PostgresExecutionPlanMetrics", pgIntegration, gv, app)
+	executionDetailsList := GetExecutionPlanMetrics(results, connectionInfo, app)
+	err := commonutils.IngestMetric(executionDetailsList, "PostgresExecutionPlanMetrics", pgIntegration, cp, app)
+	if err != nil {
+		log.Error("Error ingesting Execution Plan metrics: %v", err)
+		return
+	}
 }
 
-func GetExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, gv *globalvariables.GlobalVariables, app *newrelic.Application) []interface{} {
+func GetExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, connectionInfo performancedbconnection.Info, app *newrelic.Application) []interface{} {
 	var executionPlanMetricsList []interface{}
 	var groupIndividualQueriesByDatabase = GroupQueriesByDatabase(results)
 	for dbName, individualQueriesList := range groupIndividualQueriesByDatabase {
-		connectionInfo := performancedbconnection.DefaultConnectionInfo(&gv.Arguments)
 		dbConn, err := connectionInfo.NewConnection(dbName)
 		if err != nil {
 			log.Error("Error opening database connection: %v", err)
@@ -41,6 +44,10 @@ func GetExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, gv *gl
 
 func processExecutionPlanOfQueries(individualQueriesList []datamodels.IndividualQueryMetrics, dbConn *performancedbconnection.PGSQLConnection, executionPlanMetricsList *[]interface{}, app *newrelic.Application) {
 	for _, individualQuery := range individualQueriesList {
+		if individualQuery.RealQueryText == nil || individualQuery.QueryID == nil || individualQuery.DatabaseName == nil {
+			log.Error("QueryText, QueryID or Database Name is nil")
+			continue
+		}
 		query := "EXPLAIN (FORMAT JSON) " + *individualQuery.RealQueryText
 		rows, err := dbConn.Queryx(query, app)
 		if err != nil {
@@ -48,10 +55,6 @@ func processExecutionPlanOfQueries(individualQueriesList []datamodels.Individual
 			continue
 		}
 		defer rows.Close()
-		if individualQuery.QueryText == nil || individualQuery.QueryID == nil || individualQuery.DatabaseName == nil {
-			log.Error("QueryText, QueryID or Database Name is nil")
-			continue
-		}
 		if !rows.Next() {
 			log.Debug("Execution plan not found for queryId", *individualQuery.QueryID)
 			continue
@@ -87,12 +90,12 @@ func validateAndFetchNestedExecPlan(execPlan []map[string]interface{}, individua
 
 func GroupQueriesByDatabase(results []datamodels.IndividualQueryMetrics) map[string][]datamodels.IndividualQueryMetrics {
 	databaseMap := make(map[string][]datamodels.IndividualQueryMetrics)
-	for _, query := range results {
-		if query.DatabaseName == nil {
+	for _, individualQueryMetric := range results {
+		if individualQueryMetric.DatabaseName == nil {
 			continue
 		}
-		dbName := *query.DatabaseName
-		databaseMap[dbName] = append(databaseMap[dbName], query)
+		dbName := *individualQueryMetric.DatabaseName
+		databaseMap[dbName] = append(databaseMap[dbName], individualQueryMetric)
 	}
 	return databaseMap
 }

@@ -1,9 +1,10 @@
-package validations
+package validations_test
 
 import (
-	"fmt"
 	"regexp"
 	"testing"
+
+	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
 
 	"github.com/newrelic/nri-postgresql/src/connection"
 	"github.com/stretchr/testify/assert"
@@ -13,124 +14,92 @@ import (
 func TestCheckBlockingSessionMetricsFetchEligibilityExtensionNotRequired(t *testing.T) {
 	conn, mock := connection.CreateMockSQL(t)
 	version := uint64(12)
-	isExtensionEnabledTest, _ := CheckBlockingSessionMetricsFetchEligibility(conn, version, nil)
+	isExtensionEnabledTest, _ := validations.CheckBlockingSessionMetricsFetchEligibility(conn, version,nil)
 	assert.Equal(t, isExtensionEnabledTest, true)
 	assert.NoError(t, mock.ExpectationsWereMet())
-}
-
-func TestCheckBlockingSessionMetricsFetchEligibilityUnsupportedVersion(t *testing.T) {
-	conn, mock := connection.CreateMockSQL(t)
-	version := uint64(11)
-	isExtensionEnabledTest, _ := CheckBlockingSessionMetricsFetchEligibility(conn, version, nil)
-	assert.Equal(t, isExtensionEnabledTest, false)
-	assert.NoError(t, mock.ExpectationsWereMet())
+	validations.ClearExtensionsLoadCache()
 }
 
 func TestCheckBlockingSessionMetricsFetchEligibilitySupportedVersionSuccess(t *testing.T) {
 	conn, mock := connection.CreateMockSQL(t)
 	version := uint64(14)
-	validationQueryStatStatements := fmt.Sprintf("SELECT count(*) FROM pg_extension WHERE extname = '%s'", "pg_stat_statements")
-	mock.ExpectQuery(regexp.QuoteMeta(validationQueryStatStatements)).WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
-	isExtensionEnabledTest, _ := CheckBlockingSessionMetricsFetchEligibility(conn, version, nil)
+	validationQueryStatStatements := "SELECT extname FROM pg_extension"
+	mock.ExpectQuery(regexp.QuoteMeta(validationQueryStatStatements)).WillReturnRows(sqlmock.NewRows([]string{"extname"}).AddRow("pg_stat_statements"))
+	isExtensionEnabledTest, _ := validations.CheckBlockingSessionMetricsFetchEligibility(conn, version, nil)
 	assert.Equal(t, isExtensionEnabledTest, true)
 	assert.NoError(t, mock.ExpectationsWereMet())
+	validations.ClearExtensionsLoadCache()
 }
 
 func TestCheckBlockingSessionMetricsFetchEligibilitySupportedVersionFail(t *testing.T) {
 	conn, mock := connection.CreateMockSQL(t)
 	version := uint64(14)
-	validationQueryStatStatements := fmt.Sprintf("SELECT count(*) FROM pg_extension WHERE extname = '%s'", "pg_stat_statements")
-	mock.ExpectQuery(regexp.QuoteMeta(validationQueryStatStatements)).WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
-	isExtensionEnabledTest, _ := CheckBlockingSessionMetricsFetchEligibility(conn, version, nil)
+	validationQueryStatStatements := "SELECT extname FROM pg_extension"
+	mock.ExpectQuery(regexp.QuoteMeta(validationQueryStatStatements)).WillReturnRows(sqlmock.NewRows([]string{"extname"}).AddRow("pg_stat_statements"))
+	isExtensionEnabledTest, _ := validations.CheckBlockingSessionMetricsFetchEligibility(conn, version, nil)
 	assert.Equal(t, isExtensionEnabledTest, true)
 	assert.NoError(t, mock.ExpectationsWereMet())
-}
-
-func TestIndividualQueryMetricsFetchEligibilityUnSupportedVersion(t *testing.T) {
-	conn, mock := connection.CreateMockSQL(t)
-	version := uint64(11)
-	isExtensionEnabledTest, _ := CheckIndividualQueryMetricsFetchEligibility(conn, version, nil)
-	assert.Equal(t, isExtensionEnabledTest, false)
-	assert.NoError(t, mock.ExpectationsWereMet())
+	validations.ClearExtensionsLoadCache()
 }
 
 func TestIndividualQueryMetricsFetchEligibilitySupportedVersionSuccess(t *testing.T) {
 	conn, mock := connection.CreateMockSQL(t)
-	version := uint64(14)
-	validationQueryStatStatements := fmt.Sprintf("SELECT count(*) FROM pg_extension WHERE extname = '%s'", "pg_stat_monitor")
-	mock.ExpectQuery(regexp.QuoteMeta(validationQueryStatStatements)).WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
-	isExtensionEnabledTest, _ := CheckIndividualQueryMetricsFetchEligibility(conn, version, nil)
+	validationQueryStatStatements := "SELECT extname FROM pg_extension"
+	mock.ExpectQuery(regexp.QuoteMeta(validationQueryStatStatements)).WillReturnRows(sqlmock.NewRows([]string{"extname"}).AddRow("pg_stat_monitor"))
+	isExtensionEnabledTest, _ := validations.CheckIndividualQueryMetricsFetchEligibility(conn, nil)
 	assert.Equal(t, isExtensionEnabledTest, true)
 	assert.NoError(t, mock.ExpectationsWereMet())
+	validations.ClearExtensionsLoadCache()
 }
 
 func TestIndividualQueryMetricsFetchEligibilitySupportedVersionFail(t *testing.T) {
 	conn, mock := connection.CreateMockSQL(t)
-	version := uint64(14)
-	validationQueryStatStatements := fmt.Sprintf("SELECT count(*) FROM pg_extension WHERE extname = '%s'", "pg_stat_monitor")
-	mock.ExpectQuery(regexp.QuoteMeta(validationQueryStatStatements)).WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(0))
-	isExtensionEnabledTest, _ := CheckIndividualQueryMetricsFetchEligibility(conn, version, nil)
+	validationQueryStatStatements := "SELECT extname FROM pg_extension"
+	mock.ExpectQuery(regexp.QuoteMeta(validationQueryStatStatements)).WillReturnRows(sqlmock.NewRows([]string{"extname"}))
+	isExtensionEnabledTest, _ := validations.CheckIndividualQueryMetricsFetchEligibility(conn, nil)
 	assert.Equal(t, isExtensionEnabledTest, false)
 	assert.NoError(t, mock.ExpectationsWereMet())
-}
-
-func TestCheckWaitEventMetricsFetchEligibilityUnsupportedVersion(t *testing.T) {
-	conn, mock := connection.CreateMockSQL(t)
-	version := uint64(11)
-	isExtensionEnabledTest, _ := CheckWaitEventMetricsFetchEligibility(conn, version, nil)
-	assert.Equal(t, isExtensionEnabledTest, false)
-	assert.NoError(t, mock.ExpectationsWereMet())
+	validations.ClearExtensionsLoadCache()
 }
 
 func TestCheckWaitEventMetricsFetchEligibility(t *testing.T) {
-	conn, mock := connection.CreateMockSQL(t)
-	version := uint64(15)
-	validationWait := fmt.Sprintf("SELECT count(*) FROM pg_extension WHERE extname = '%s'", "pg_wait_sampling")
-	validationStat := fmt.Sprintf("SELECT count(*) FROM pg_extension WHERE extname = '%s'", "pg_stat_statements")
-
+	validationQuery := "SELECT extname FROM pg_extension"
 	testCases := []struct {
-		waitCount int
-		statCount int
-		expected  bool
+		waitExt  string
+		statExt  string
+		expected bool
 	}{
-		{1, 1, true},  // Success
-		{0, 1, false}, // Fail V1
-		{1, 0, false}, // Fail V2
+		{"pg_wait_sampling", "pg_stat_statements", true}, // Success
+		{"pg_wait_sampling", "", false},                  // Fail V1
+		{"", "pg_stat_statements", false},                // Fail V2
 	}
 
+	conn, mock := connection.CreateMockSQL(t)
 	for _, tc := range testCases {
-		mock.ExpectQuery(regexp.QuoteMeta(validationWait)).WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(tc.waitCount))
-		mock.ExpectQuery(regexp.QuoteMeta(validationStat)).WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(tc.statCount))
-		isExtensionEnabledTest, _ := CheckWaitEventMetricsFetchEligibility(conn, version, nil)
+		mock.ExpectQuery(regexp.QuoteMeta(validationQuery)).WillReturnRows(sqlmock.NewRows([]string{"extname"}).AddRow(tc.waitExt).AddRow(tc.statExt))
+		isExtensionEnabledTest, _ := validations.CheckWaitEventMetricsFetchEligibility(conn, nil)
 		assert.Equal(t, isExtensionEnabledTest, tc.expected)
 		assert.NoError(t, mock.ExpectationsWereMet())
+		validations.ClearExtensionsLoadCache()
 	}
-}
-
-func TestCheckSlowQueryMetricsFetchEligibilityUnSupportedVersion(t *testing.T) {
-	conn, mock := connection.CreateMockSQL(t)
-	version := uint64(11)
-	isExtensionEnabledTest, _ := CheckSlowQueryMetricsFetchEligibility(conn, version, nil)
-	assert.Equal(t, isExtensionEnabledTest, false)
-	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
 func TestCheckSlowQueryMetricsFetchEligibilitySupportedVersionSuccess(t *testing.T) {
 	conn, mock := connection.CreateMockSQL(t)
-	version := uint64(14)
-	validationQueryStatStatements := fmt.Sprintf("SELECT count(*) FROM pg_extension WHERE extname = '%s'", "pg_stat_statements")
-	mock.ExpectQuery(regexp.QuoteMeta(validationQueryStatStatements)).WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
-	isExtensionEnabledTest, _ := CheckSlowQueryMetricsFetchEligibility(conn, version, nil)
+	validationQueryStatStatements := "SELECT extname FROM pg_extension"
+	mock.ExpectQuery(regexp.QuoteMeta(validationQueryStatStatements)).WillReturnRows(sqlmock.NewRows([]string{"extname"}).AddRow("pg_stat_statements"))
+	isExtensionEnabledTest, _ := validations.CheckSlowQueryMetricsFetchEligibility(conn, nil)
 	assert.Equal(t, isExtensionEnabledTest, true)
 	assert.NoError(t, mock.ExpectationsWereMet())
+	validations.ClearExtensionsLoadCache()
 }
 
 func TestCheckSlowQueryMetricsFetchEligibilitySupportedVersionFail(t *testing.T) {
 	conn, mock := connection.CreateMockSQL(t)
-	version := uint64(14)
-	validationQueryStatStatements := fmt.Sprintf("SELECT count(*) FROM pg_extension WHERE extname = '%s'", "pg_stat_statements")
-	mock.ExpectQuery(regexp.QuoteMeta(validationQueryStatStatements)).WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(0))
-	isExtensionEnabledTest, _ := CheckSlowQueryMetricsFetchEligibility(conn, version, nil)
+	validationQueryStatStatements := "SELECT extname FROM pg_extension"
+	mock.ExpectQuery(regexp.QuoteMeta(validationQueryStatStatements)).WillReturnRows(sqlmock.NewRows([]string{"extname"}))
+	isExtensionEnabledTest, _ := validations.CheckSlowQueryMetricsFetchEligibility(conn, nil)
 	assert.Equal(t, isExtensionEnabledTest, false)
 	assert.NoError(t, mock.ExpectationsWereMet())
+	validations.ClearExtensionsLoadCache()
 }
