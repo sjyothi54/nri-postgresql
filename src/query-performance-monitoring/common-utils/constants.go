@@ -7,7 +7,7 @@ const PublishThreshold = 600
 const RandomIntRange = 1000000
 const TimeFormat = "20060102150405"
 
-// The maximum number of individual queries that can be fetched in a single metrics, the value was choosen as the queries samples were with same query statements but with different parameters so 10 samples would be enough to check the execution plan
+// The maximum number of individual queries that can be fetched in a single metrics, the value was chosen as the queries samples were with same query statements but with different parameters so 10 samples would be enough to check the execution plan
 const MaxIndividualQueryCountThreshold = 10
 
 var ErrUnsupportedVersion = errors.New("unsupported PostgreSQL version")

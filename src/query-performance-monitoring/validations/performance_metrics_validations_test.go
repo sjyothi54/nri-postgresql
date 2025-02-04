@@ -82,7 +82,6 @@ func TestCheckWaitEventMetricsFetchEligibility(t *testing.T) {
 		isExtensionEnabledTest, _ := validations.CheckWaitEventMetricsFetchEligibility(enabledExtensions)
 		assert.Equal(t, isExtensionEnabledTest, tc.expected)
 		assert.NoError(t, mock.ExpectationsWereMet())
-
 	}
 }
 
