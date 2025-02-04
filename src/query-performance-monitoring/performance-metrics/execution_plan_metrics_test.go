@@ -1,8 +1,9 @@
 package performancemetrics_test
 
 import (
-	performancedbconnection "github.com/newrelic/nri-postgresql/src/connection"
 	"testing"
+
+	performancedbconnection "github.com/newrelic/nri-postgresql/src/connection"
 
 	common_parameters "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-parameters"
 
