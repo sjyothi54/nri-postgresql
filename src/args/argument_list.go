@@ -32,7 +32,7 @@ type ArgumentList struct {
 	ShowVersion                          bool   `default:"false" help:"Print build information and exit"`
 	EnableQueryMonitoring                bool   `default:"false" help:"Enable collection of detailed query performance metrics."`
 	QueryMonitoringResponseTimeThreshold int    `default:"500" help:"Threshold in milliseconds for query response time. If response time for the individual query exceeds this threshold, the individual query is reported in metrics"`
-	QueryMonitoringCountThreshold        int    `default:"20" help:"Maximum number of queries returned in query analysis results."`
+	QueryMonitoringCountThreshold        int    `default:"20" help:"The number of records for each query performance metrics"`
 }
 
 // Validate validates PostgreSQl arguments
