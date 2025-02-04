@@ -6,67 +6,45 @@ import (
 	commonutils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
 )
 
-var extensions map[string]bool
-
-func fetchAllExtensions(conn *performancedbconnection.PGSQLConnection) error {
+func FetchAllExtensions(conn *performancedbconnection.PGSQLConnection) (map[string]bool, error) {
 	rows, err := conn.Queryx("SELECT extname FROM pg_extension")
 	if err != nil {
 		log.Error("Error executing query: ", err.Error())
-		return err
+		return nil, err
 	}
 	defer rows.Close()
-	extensions = make(map[string]bool)
+	var enabledExtensions = make(map[string]bool)
 	for rows.Next() {
 		var extname string
 		if err := rows.Scan(&extname); err != nil {
 			log.Error("Error scanning rows: ", err.Error())
-			return err
+			return nil, err
 		}
-		extensions[extname] = true
+		enabledExtensions[extname] = true
 	}
-	return nil
+	return enabledExtensions, nil
 }
 
-func isExtensionEnabled(extensionName string) bool {
-	return extensions[extensionName]
+func CheckSlowQueryMetricsFetchEligibility(enabledExtensions map[string]bool) (bool, error) {
+	return enabledExtensions["pg_stat_statements"], nil
 }
 
-func CheckSlowQueryMetricsFetchEligibility(conn *performancedbconnection.PGSQLConnection) (bool, error) {
-	loadExtensionsMap(conn)
-	return isExtensionEnabled("pg_stat_statements"), nil
+func CheckWaitEventMetricsFetchEligibility(enabledExtensions map[string]bool) (bool, error) {
+	return enabledExtensions["pg_wait_sampling"] && enabledExtensions["pg_stat_statements"], nil
 }
 
-func CheckWaitEventMetricsFetchEligibility(conn *performancedbconnection.PGSQLConnection) (bool, error) {
-	loadExtensionsMap(conn)
-	return isExtensionEnabled("pg_wait_sampling") && isExtensionEnabled("pg_stat_statements"), nil
-}
-
-func CheckBlockingSessionMetricsFetchEligibility(conn *performancedbconnection.PGSQLConnection, version uint64) (bool, error) {
+func CheckBlockingSessionMetricsFetchEligibility(enabledExtensions map[string]bool, version uint64) (bool, error) {
 	// Version 12 and 13 do not require the pg_stat_statements extension
 	if version == commonutils.PostgresVersion12 || version == commonutils.PostgresVersion13 {
 		return true, nil
 	}
-	loadExtensionsMap(conn)
-	return isExtensionEnabled("pg_stat_statements"), nil
+	return enabledExtensions["pg_stat_statements"], nil
 }
 
-func CheckIndividualQueryMetricsFetchEligibility(conn *performancedbconnection.PGSQLConnection) (bool, error) {
-	loadExtensionsMap(conn)
-	return isExtensionEnabled("pg_stat_monitor"), nil
+func CheckIndividualQueryMetricsFetchEligibility(enabledExtensions map[string]bool) (bool, error) {
+	return enabledExtensions["pg_stat_monitor"], nil
 }
 
 func CheckPostgresVersionSupportForQueryMonitoring(version uint64) bool {
 	return version >= commonutils.PostgresVersion12
-}
-
-func ClearExtensionsLoadCache() {
-	extensions = nil
-}
-
-func loadExtensionsMap(conn *performancedbconnection.PGSQLConnection) {
-	if extensions == nil {
-		if err := fetchAllExtensions(conn); err != nil {
-			log.Error("Error fetching all extensions: %v", err)
-		}
-	}
 }

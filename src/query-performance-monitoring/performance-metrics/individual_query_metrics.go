@@ -17,8 +17,8 @@ import (
 type queryInfoMap map[string]string
 type databaseQueryInfoMap map[string]queryInfoMap
 
-func PopulateIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, slowRunningQueries []datamodels.SlowRunningQueryMetrics, pgIntegration *integration.Integration, cp *commonparameters.CommonParameters) []datamodels.IndividualQueryMetrics {
-	isEligible, err := validations.CheckIndividualQueryMetricsFetchEligibility(conn)
+func PopulateIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, slowRunningQueries []datamodels.SlowRunningQueryMetrics, pgIntegration *integration.Integration, cp *commonparameters.CommonParameters, enabledExtensions map[string]bool) []datamodels.IndividualQueryMetrics {
+	isEligible, err := validations.CheckIndividualQueryMetricsFetchEligibility(enabledExtensions)
 	if err != nil {
 		log.Error("Error executing query: %v", err)
 		return nil

@@ -37,8 +37,8 @@ func GetSlowRunningMetrics(conn *performancedbconnection.PGSQLConnection, cp *co
 	return slowQueryMetricsList, slowQueryMetricsListInterface, nil
 }
 
-func PopulateSlowRunningMetrics(conn *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, cp *commonparameters.CommonParameters) []datamodels.SlowRunningQueryMetrics {
-	isEligible, err := validations.CheckSlowQueryMetricsFetchEligibility(conn)
+func PopulateSlowRunningMetrics(conn *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, cp *commonparameters.CommonParameters, enabledExtensions map[string]bool) []datamodels.SlowRunningQueryMetrics {
+	isEligible, err := validations.CheckSlowQueryMetricsFetchEligibility(enabledExtensions)
 	if err != nil {
 		log.Error("Error executing query: %v", err)
 		return nil

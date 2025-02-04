@@ -42,28 +42,33 @@ func QueryPerformanceMain(args args.ArgumentList, pgIntegration *integration.Int
 		return
 	}
 	cp := common_parameters.SetCommonParameters(args, versionInt, commonutils.GetDatabaseListInString(databaseMap))
-	populateQueryPerformanceMetrics(newConnection, pgIntegration, cp, connectionInfo)
+	enabledExtensions, err := validations.FetchAllExtensions(newConnection)
+	if err != nil {
+		log.Error("Error fetching extensions: ", err)
+		return
+	}
+	populateQueryPerformanceMetrics(newConnection, pgIntegration, cp, connectionInfo, enabledExtensions)
 }
 
-func populateQueryPerformanceMetrics(newConnection *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, cp *common_parameters.CommonParameters, connectionInfo performancedbconnection.Info) {
+func populateQueryPerformanceMetrics(newConnection *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, cp *common_parameters.CommonParameters, connectionInfo performancedbconnection.Info, enabledExtensions map[string]bool) {
 	start := time.Now()
 	log.Debug("Starting PopulateSlowRunningMetrics at ", start)
-	slowRunningQueries := performancemetrics.PopulateSlowRunningMetrics(newConnection, pgIntegration, cp)
+	slowRunningQueries := performancemetrics.PopulateSlowRunningMetrics(newConnection, pgIntegration, cp, enabledExtensions)
 	log.Debug("PopulateSlowRunningMetrics completed in ", time.Since(start))
 
 	start = time.Now()
 	log.Debug("Starting PopulateWaitEventMetrics at ", start)
-	_ = performancemetrics.PopulateWaitEventMetrics(newConnection, pgIntegration, cp)
+	_ = performancemetrics.PopulateWaitEventMetrics(newConnection, pgIntegration, cp, enabledExtensions)
 	log.Debug("PopulateWaitEventMetrics completed in ", time.Since(start))
 
 	start = time.Now()
 	log.Debug("Starting PopulateBlockingMetrics at ", start)
-	performancemetrics.PopulateBlockingMetrics(newConnection, pgIntegration, cp)
+	performancemetrics.PopulateBlockingMetrics(newConnection, pgIntegration, cp, enabledExtensions)
 	log.Debug("PopulateBlockingMetrics completed in ", time.Since(start))
 
 	start = time.Now()
 	log.Debug("Starting PopulateIndividualQueryMetrics at ", start)
-	individualQueries := performancemetrics.PopulateIndividualQueryMetrics(newConnection, slowRunningQueries, pgIntegration, cp)
+	individualQueries := performancemetrics.PopulateIndividualQueryMetrics(newConnection, slowRunningQueries, pgIntegration, cp, enabledExtensions)
 	log.Debug("PopulateIndividualQueryMetrics completed in ", time.Since(start))
 
 	start = time.Now()
