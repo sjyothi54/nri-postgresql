@@ -26,7 +26,7 @@ type CommonParameters struct {
 func SetCommonParameters(args args.ArgumentList, version uint64, databases string) *CommonParameters {
 	return &CommonParameters{
 		Version:                              version,
-		Databases:                            databases, // comma seperated database names
+		Databases:                            databases, // comma separated database names
 		QueryMonitoringCountThreshold:        validateAndGetQueryMonitoringCountThreshold(args),
 		QueryMonitoringResponseTimeThreshold: validateAndGetQueryMonitoringResponseTimeThreshold(args),
 		Host:                                 args.Hostname,
