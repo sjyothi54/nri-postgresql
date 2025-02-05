@@ -42,15 +42,16 @@ func QueryPerformanceMain(args args.ArgumentList, pgIntegration *integration.Int
 		return
 	}
 	cp := common_parameters.SetCommonParameters(args, versionInt, commonutils.GetDatabaseListInString(databaseMap))
+
+	populateQueryPerformanceMetrics(newConnection, pgIntegration, cp, connectionInfo)
+}
+
+func populateQueryPerformanceMetrics(newConnection *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, cp *common_parameters.CommonParameters, connectionInfo performancedbconnection.Info) {
 	enabledExtensions, err := validations.FetchAllExtensions(newConnection)
 	if err != nil {
 		log.Error("Error fetching extensions: ", err)
 		return
 	}
-	populateQueryPerformanceMetrics(newConnection, pgIntegration, cp, connectionInfo, enabledExtensions)
-}
-
-func populateQueryPerformanceMetrics(newConnection *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, cp *common_parameters.CommonParameters, connectionInfo performancedbconnection.Info, enabledExtensions map[string]bool) {
 	start := time.Now()
 	log.Debug("Starting PopulateSlowRunningMetrics at ", start)
 	slowRunningQueries := performancemetrics.PopulateSlowRunningMetrics(newConnection, pgIntegration, cp, enabledExtensions)
