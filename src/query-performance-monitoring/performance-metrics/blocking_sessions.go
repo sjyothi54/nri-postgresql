@@ -15,8 +15,8 @@ import (
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
 )
 
-func PopulateBlockingMetrics(conn *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, cp *commonparameters.CommonParameters, app *newrelic.Application) {
-	isEligible, enableCheckError := validations.CheckBlockingSessionMetricsFetchEligibility(conn, cp.Version, app)
+func PopulateBlockingMetrics(conn *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, cp *commonparameters.CommonParameters, enabledExtensions map[string]bool, app *newrelic.Application) {
+	isEligible, enableCheckError := validations.CheckBlockingSessionMetricsFetchEligibility(enabledExtensions, cp.Version, app)
 	if enableCheckError != nil {
 		log.Error("Error executing query: %v in PopulateBlockingMetrics", enableCheckError)
 		return

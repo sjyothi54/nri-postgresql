@@ -4,6 +4,7 @@ package queryperformancemonitoring
 import (
 	"github.com/newrelic/go-agent/v3/newrelic"
 	common_package "github.com/newrelic/nri-postgresql/common-package"
+	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
 	"time"
 
 	common_parameters "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-parameters"
@@ -36,17 +37,28 @@ func QueryPerformanceMain(args args.ArgumentList, pgIntegration *integration.Int
 		log.Error("Error fetching version: ", versionErr)
 		return
 	}
-	gv := common_parameters.SetCommonParameters(args, version.Major, commonutils.GetDatabaseListInString(databaseMap))
-	populateQueryPerformanceMetrics(newConnection, pgIntegration, gv, connectionInfo, app)
+	versionInt := version.Major
+	if !validations.CheckPostgresVersionSupportForQueryMonitoring(versionInt) {
+		log.Debug("Postgres version is not supported for query monitoring")
+		return
+	}
+	cp := common_parameters.SetCommonParameters(args, versionInt, commonutils.GetDatabaseListInString(databaseMap))
+
+	populateQueryPerformanceMetrics(newConnection, pgIntegration, cp, connectionInfo, app)
 }
 
 func populateQueryPerformanceMetrics(newConnection *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, cp *common_parameters.CommonParameters, connectionInfo performancedbconnection.Info, app *newrelic.Application) {
+	enabledExtensions, err := validations.FetchAllExtensions(newConnection, app)
+	if err != nil {
+		log.Error("Error fetching extensions: ", err)
+		return
+	}
 	start := time.Now()
 	txn := app.StartTransaction("slow_queries_metrics_go")
 	defer txn.End()
 	common_package.Txn = txn
 	log.Debug("Starting PopulateSlowRunningMetrics at ", start)
-	slowRunningQueries := performancemetrics.PopulateSlowRunningMetrics(newConnection, pgIntegration, cp, app)
+	slowRunningQueries := performancemetrics.PopulateSlowRunningMetrics(newConnection, pgIntegration, cp, enabledExtensions, app)
 	log.Debug("PopulateSlowRunningMetrics completed in ", time.Since(start))
 
 	waitTxn := app.StartTransaction("wait_queries_metrics_go")
@@ -54,7 +66,7 @@ func populateQueryPerformanceMetrics(newConnection *performancedbconnection.PGSQ
 	common_package.Txn = waitTxn
 	start = time.Now()
 	log.Debug("Starting PopulateWaitEventMetrics at ", start)
-	_ = performancemetrics.PopulateWaitEventMetrics(newConnection, pgIntegration, cp, app)
+	_ = performancemetrics.PopulateWaitEventMetrics(newConnection, pgIntegration, cp, enabledExtensions, app)
 	log.Debug("PopulateWaitEventMetrics completed in ", time.Since(start))
 
 	blockingEventsTxn := app.StartTransaction("blocking_queries_go")
@@ -62,7 +74,7 @@ func populateQueryPerformanceMetrics(newConnection *performancedbconnection.PGSQ
 	common_package.Txn = blockingEventsTxn
 	start = time.Now()
 	log.Debug("Starting PopulateBlockingMetrics at ", start)
-	performancemetrics.PopulateBlockingMetrics(newConnection, pgIntegration, cp, app)
+	performancemetrics.PopulateBlockingMetrics(newConnection, pgIntegration, cp, enabledExtensions, app)
 	log.Debug("PopulateBlockingMetrics completed in ", time.Since(start))
 
 	individualTxn := app.StartTransaction("individual_txns_go")
@@ -70,7 +82,7 @@ func populateQueryPerformanceMetrics(newConnection *performancedbconnection.PGSQ
 	common_package.Txn = individualTxn
 	start = time.Now()
 	log.Debug("Starting PopulateIndividualQueryMetrics at ", start)
-	individualQueries := performancemetrics.PopulateIndividualQueryMetrics(newConnection, slowRunningQueries, pgIntegration, cp, app)
+	individualQueries := performancemetrics.PopulateIndividualQueryMetrics(newConnection, slowRunningQueries, pgIntegration, cp, enabledExtensions, app)
 	log.Debug("PopulateIndividualQueryMetrics completed in ", time.Since(start))
 
 	execPlanTxn := app.StartTransaction("execution_plan_go")

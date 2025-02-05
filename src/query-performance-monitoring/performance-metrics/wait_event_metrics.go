@@ -14,10 +14,10 @@ import (
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
 )
 
-func PopulateWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, cp *commonparameters.CommonParameters, app *newrelic.Application) error {
+func PopulateWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, cp *commonparameters.CommonParameters, enabledExtensions map[string]bool, app *newrelic.Application) error {
 	var isEligible bool
 	var eligibleCheckErr error
-	isEligible, eligibleCheckErr = validations.CheckWaitEventMetricsFetchEligibility(conn, app)
+	isEligible, eligibleCheckErr = validations.CheckWaitEventMetricsFetchEligibility(enabledExtensions, app)
 	if eligibleCheckErr != nil {
 		log.Error("Error executing query: %v", eligibleCheckErr)
 		return commonutils.ErrUnExpectedError

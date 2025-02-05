@@ -18,8 +18,8 @@ import (
 type queryInfoMap map[string]string
 type databaseQueryInfoMap map[string]queryInfoMap
 
-func PopulateIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, slowRunningQueries []datamodels.SlowRunningQueryMetrics, pgIntegration *integration.Integration, cp *commonparameters.CommonParameters, app *newrelic.Application) []datamodels.IndividualQueryMetrics {
-	isEligible, err := validations.CheckIndividualQueryMetricsFetchEligibility(conn, app)
+func PopulateIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, slowRunningQueries []datamodels.SlowRunningQueryMetrics, pgIntegration *integration.Integration, cp *commonparameters.CommonParameters, enabledExtensions map[string]bool, app *newrelic.Application) []datamodels.IndividualQueryMetrics {
+	isEligible, err := validations.CheckIndividualQueryMetricsFetchEligibility(enabledExtensions,app)
 	if err != nil {
 		log.Error("Error executing query: %v", err)
 		return nil
