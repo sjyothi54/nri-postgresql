@@ -111,9 +111,7 @@ func FetchNestedExecutionPlanDetails(individualQuery datamodels.IndividualQueryM
 	execPlanMetrics.Level = *level
 	*level++
 	execPlanMetrics.PlanID = *individualQuery.PlanID
-
 	*executionPlanMetricsList = append(*executionPlanMetricsList, execPlanMetrics)
-
 	if nestedPlans, ok := execPlan["Plans"].([]interface{}); ok {
 		for _, nestedPlan := range nestedPlans {
 			if nestedPlanMap, nestedOk := nestedPlan.(map[string]interface{}); nestedOk {
