@@ -55,14 +55,14 @@ func populateQueryPerformanceMetrics(newConnection *performancedbconnection.PGSQ
 	}
 	start := time.Now()
 	txn := app.StartTransaction("slow_queries_metrics_go")
-	defer txn.End()
+	txn.End()
 	common_package.Txn = txn
 	log.Debug("Starting PopulateSlowRunningMetrics at ", start)
 	slowRunningQueries := performancemetrics.PopulateSlowRunningMetrics(newConnection, pgIntegration, cp, enabledExtensions, app)
 	log.Debug("PopulateSlowRunningMetrics completed in ", time.Since(start))
 
 	waitTxn := app.StartTransaction("wait_queries_metrics_go")
-	defer waitTxn.End()
+	waitTxn.End()
 	common_package.Txn = waitTxn
 	start = time.Now()
 	log.Debug("Starting PopulateWaitEventMetrics at ", start)
@@ -70,7 +70,7 @@ func populateQueryPerformanceMetrics(newConnection *performancedbconnection.PGSQ
 	log.Debug("PopulateWaitEventMetrics completed in ", time.Since(start))
 
 	blockingEventsTxn := app.StartTransaction("blocking_queries_go")
-	defer blockingEventsTxn.End()
+	blockingEventsTxn.End()
 	common_package.Txn = blockingEventsTxn
 	start = time.Now()
 	log.Debug("Starting PopulateBlockingMetrics at ", start)
@@ -78,7 +78,7 @@ func populateQueryPerformanceMetrics(newConnection *performancedbconnection.PGSQ
 	log.Debug("PopulateBlockingMetrics completed in ", time.Since(start))
 
 	individualTxn := app.StartTransaction("individual_txns_go")
-	defer individualTxn.End()
+	individualTxn.End()
 	common_package.Txn = individualTxn
 	start = time.Now()
 	log.Debug("Starting PopulateIndividualQueryMetrics at ", start)
@@ -86,7 +86,7 @@ func populateQueryPerformanceMetrics(newConnection *performancedbconnection.PGSQ
 	log.Debug("PopulateIndividualQueryMetrics completed in ", time.Since(start))
 
 	execPlanTxn := app.StartTransaction("execution_plan_go")
-	defer execPlanTxn.End()
+	execPlanTxn.End()
 	common_package.Txn = individualTxn
 	start = time.Now()
 	log.Debug("Starting PopulateExecutionPlanMetrics at ", start)
