@@ -106,8 +106,6 @@ func FetchNestedExecutionPlanDetails(individualQuery datamodels.IndividualQueryM
 		log.Error("Failed to decode execPlan to execPlanMetrics: %v", err)
 		return
 	}
-
-	execPlanMetrics.QueryText = *individualQuery.QueryText
 	execPlanMetrics.QueryID = *individualQuery.QueryID
 	execPlanMetrics.DatabaseName = *individualQuery.DatabaseName
 	execPlanMetrics.Level = *level
