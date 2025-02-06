@@ -59,8 +59,8 @@ type QueryExecutionPlanMetrics struct {
 	PlanRows            int64   `mapstructure:"Plan Rows"           json:"Plan Rows"           metric_name:"plan_rows"            source_type:"gauge"`
 	PlanWidth           int64   `mapstructure:"Plan Width"          json:"Plan Width"          metric_name:"plan_width"           source_type:"gauge"`
 	RowsRemovedByFilter int64   `mapstructure:"Rows Removed by Filter" json:"Rows Removed by Filter" metric_name:"rows_removed_by_filter" source_type:"gauge"`
-	SharedHitBlocks     int64   `mapstructure:"Shared Hit Blocks"   json:"Shared Hit Blocks"   metric_name:"shared_hit_blocks"    source_type:"gauge"`
-	SharedReadBlocks    int64   `mapstructure:"Shared Read Blocks"  json:"Shared Read Blocks"  metric_name:"shared_read_blocks"   source_type:"gauge"`
+	SharedHitBlocks     int64   `mapstructure:"Buffers.Shared Hit Blocks" json:"Shared Hit Blocks" metric_name:"shared_hit_blocks" source_type:"gauge"`
+	SharedReadBlocks    int64   `mapstructure:"Buffers.Shared Read Blocks" json:"Shared Read Blocks" metric_name:"shared_read_blocks" source_type:"gauge"`
 	DatabaseName        string  `mapstructure:"Database"            json:"Database"            metric_name:"database_name"        source_type:"attribute"`
 	QueryID             string  `mapstructure:"Query Id"            json:"Query Id"            metric_name:"query_id"             source_type:"attribute"`
 	PlanID              string  `mapstructure:"Plan Id"             json:"Plan Id"             metric_name:"plan_id"              source_type:"attribute"`
