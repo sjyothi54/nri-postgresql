@@ -48,8 +48,8 @@ type IndividualQueryMetrics struct {
 
 type QueryExecutionPlanMetrics struct {
 	NodeType            string  `mapstructure:"Node Type"           json:"Node Type"           metric_name:"node_type"             source_type:"attribute"`
-	ParallelAware       bool    `mapstructure:"Parallel Aware"      json:"Parallel Aware"      metric_name:"parallel_aware"       source_type:"attribute"`
-	AsyncCapable        bool    `mapstructure:"Async Capable"       json:"Async Capable"       metric_name:"async_capable"        source_type:"attribute"`
+	ParallelAware       bool    `mapstructure:"Parallel Aware"      json:"Parallel Aware"      metric_name:"parallel_aware"       source_type:"gauge"`
+	AsyncCapable        bool    `mapstructure:"Async Capable"       json:"Async Capable"       metric_name:"async_capable"        source_type:"gauge"`
 	ScanDirection       string  `mapstructure:"Scan Direction"      json:"Scan Direction"      metric_name:"scan_direction"       source_type:"attribute"`
 	IndexName           string  `mapstructure:"Index Name"          json:"Index Name"          metric_name:"index_name"           source_type:"attribute"`
 	RelationName        string  `mapstructure:"Relation Name"       json:"Relation Name"       metric_name:"relation_name"        source_type:"attribute"`
