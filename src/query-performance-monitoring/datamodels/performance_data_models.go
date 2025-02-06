@@ -62,7 +62,6 @@ type QueryExecutionPlanMetrics struct {
 	SharedHitBlocks     int64   `mapstructure:"Shared Hit Blocks"   json:"Shared Hit Blocks"   metric_name:"shared_hit_blocks"    source_type:"gauge"`
 	SharedReadBlocks    int64   `mapstructure:"Shared Read Blocks"  json:"Shared Read Blocks"  metric_name:"shared_read_blocks"   source_type:"gauge"`
 	DatabaseName        string  `mapstructure:"Database"            json:"Database"            metric_name:"database_name"        source_type:"attribute"`
-	QueryText           string  `mapstructure:"Query"               json:"Query"               metric_name:"query_text"           source_type:"attribute"`
 	QueryID             string  `mapstructure:"Query Id"            json:"Query Id"            metric_name:"query_id"             source_type:"attribute"`
 	PlanID              string  `mapstructure:"Plan Id"             json:"Plan Id"             metric_name:"plan_id"              source_type:"attribute"`
 	Level               int     `mapstructure:"Level"               json:"Level"               metric_name:"level_id"             source_type:"gauge"`
