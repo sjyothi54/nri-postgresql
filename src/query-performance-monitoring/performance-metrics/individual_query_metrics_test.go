@@ -1,4 +1,4 @@
-package performancemetrics_test
+package performancemetrics
 
 import (
 	"fmt"
@@ -9,7 +9,6 @@ import (
 	"github.com/newrelic/nri-postgresql/src/connection"
 	common_parameters "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-parameters"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
-	performancemetrics "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/performance-metrics"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/DATA-DOG/go-sqlmock.v1"
@@ -40,7 +39,7 @@ func TestGetIndividualQueryMetrics(t *testing.T) {
 		},
 	}
 
-	individualQueryMetricsInterface, individualQueryMetrics := performancemetrics.GetIndividualQueryMetrics(conn, slowRunningQueries, cp)
+	individualQueryMetricsInterface, individualQueryMetrics := getIndividualQueryMetrics(conn, slowRunningQueries, cp)
 
 	assert.Len(t, individualQueryMetricsInterface, 1)
 	assert.Len(t, individualQueryMetrics, 1)
