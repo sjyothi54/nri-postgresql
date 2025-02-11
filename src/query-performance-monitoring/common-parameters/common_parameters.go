@@ -44,7 +44,7 @@ func validateAndGetQueryMonitoringResponseTimeThreshold(args args.ArgumentList) 
 
 func validateAndGetQueryMonitoringCountThreshold(args args.ArgumentList) int {
 	if args.QueryMonitoringCountThreshold < 0 {
-		log.Warn("QueryCountThreshold should be greater than or equal to 0 but the input is %d, setting value to default which is %d", args.QueryMonitoringCountThreshold, DefaultQueryMonitoringCountThreshold)
+		log.Warn("QueryCountThreshold should be greater than 0 but the input is %d, setting value to default which is %d", args.QueryMonitoringCountThreshold, DefaultQueryMonitoringCountThreshold)
 		return DefaultQueryMonitoringCountThreshold
 	}
 	if args.QueryMonitoringCountThreshold > MaxQueryCountThreshold {
