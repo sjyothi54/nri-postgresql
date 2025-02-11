@@ -59,7 +59,7 @@
                                 "query_text",
                                 "database_name",
                                 "plan_id",
-                                "avg_exec_time_ms"
+                                "exec_time_ms"
                             ],
                              "properties": {
                                 "cpu_time_ms": {

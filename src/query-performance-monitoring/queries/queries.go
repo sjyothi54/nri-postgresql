@@ -191,7 +191,7 @@ const (
 		GROUP BY
 		 query, queryid, datname, planid, cpu_user_time, cpu_sys_time, calls, total_exec_time
 		ORDER BY
-		 avg_exec_time_ms DESC -- Order by average execution time in descending order
+		 exec_time_ms DESC -- Order by average execution time in descending order
 		LIMIT %d; -- Limit the number of results`
 
 	// IndividualQuerySearchV12 retrieves individual query statistics for PostgreSQL version 12
@@ -212,6 +212,6 @@ const (
 		GROUP BY
 		 query, queryid, datname, planid, cpu_user_time, cpu_sys_time, calls, total_time
 		ORDER BY
-		 avg_exec_time_ms DESC -- Order by average execution time in descending order
+		 exec_time_ms DESC -- Order by average execution time in descending order
 		LIMIT %d; -- Limit the number of results`
 )
