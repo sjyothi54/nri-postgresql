@@ -179,8 +179,8 @@ const (
 		 queryid, -- Unique identifier for the query
 		 datname, -- Name of the database
 		 planid, -- Plan identifier
-		 ROUND(((cpu_user_time + cpu_sys_time) / NULLIF(calls, 0))::numeric, 3) AS avg_cpu_time_ms, -- Average CPU time in milliseconds
-		 total_exec_time / NULLIF(calls, 0) AS avg_exec_time_ms -- Average execution time in milliseconds
+		 ROUND(((cpu_user_time + cpu_sys_time) / NULLIF(calls, 0))::numeric, 3) AS cpu_time_ms, -- Average CPU time in milliseconds
+		 total_exec_time / NULLIF(calls, 0) AS exec_time_ms -- Average execution time in milliseconds
 		FROM
 		 pg_stat_monitor
 		WHERE
@@ -200,8 +200,8 @@ const (
 		 queryid, -- Unique identifier for the query
 		 datname, -- Name of the database
 		 planid, -- Plan identifier
-		 ROUND(((cpu_user_time + cpu_sys_time) / NULLIF(calls, 0))::numeric, 3) AS avg_cpu_time_ms, -- Average CPU time in milliseconds
-		 total_time / NULLIF(calls, 0) AS avg_exec_time_ms -- Average execution time in milliseconds
+		 ROUND(((cpu_user_time + cpu_sys_time) / NULLIF(calls, 0))::numeric, 3) AS cpu_time_ms, -- Average CPU time in milliseconds
+		 total_time / NULLIF(calls, 0) AS exec_time_ms -- Average execution time in milliseconds
 		FROM
 		 pg_stat_monitor
 		WHERE

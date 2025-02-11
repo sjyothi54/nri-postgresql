@@ -62,11 +62,11 @@
                                 "avg_exec_time_ms"
                             ],
                              "properties": {
-                                "avg_cpu_time_ms": {
+                                "cpu_time_ms": {
                                     "type": "number",
                                     "minimum": 0
                                 },
-                                "avg_exec_time_ms": {
+                                "exec_time_ms": {
                                     "type": "number",
                                     "minimum": 0
                                 },
