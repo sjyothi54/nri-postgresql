@@ -3,10 +3,11 @@ package performancemetrics
 import (
 	"database/sql/driver"
 	"fmt"
-	commonutils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
-	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
 	"regexp"
 	"testing"
+
+	commonutils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
+	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
 
 	"github.com/newrelic/nri-postgresql/src/args"
 	"github.com/newrelic/nri-postgresql/src/connection"
