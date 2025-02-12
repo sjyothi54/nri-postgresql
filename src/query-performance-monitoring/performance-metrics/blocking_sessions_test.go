@@ -46,7 +46,7 @@ func TestGetBlockingMetrics(t *testing.T) {
 
 func compareMockRowsWithMetrics(t *testing.T, expectedRows [][]driver.Value, blockingQueriesMetricsList []interface{}) {
 	assert.Equal(t, 2, len(blockingQueriesMetricsList))
-	for index, _ := range blockingQueriesMetricsList {
+	for index := range blockingQueriesMetricsList {
 		anonymizeQuery := commonutils.AnonymizeQueryText(expectedRows[index][2].(string))
 		blockingSession := blockingQueriesMetricsList[index].(datamodels.BlockingSessionMetrics)
 		assert.Equal(t, expectedRows[index][0], *blockingSession.Newrelic)
