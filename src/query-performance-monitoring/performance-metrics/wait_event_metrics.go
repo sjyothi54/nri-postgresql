@@ -47,13 +47,13 @@ func getWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, cp *comm
 	var query = fmt.Sprintf(queries.WaitEvents, cp.Databases, cp.QueryMonitoringCountThreshold)
 	rows, err := conn.Queryx(query)
 	if err != nil {
-		return nil, err
+		return waitEventMetricsList, err
 	}
 	defer rows.Close()
 	for rows.Next() {
 		var waitEvent datamodels.WaitEventMetrics
 		if waitScanErr := rows.StructScan(&waitEvent); waitScanErr != nil {
-			return nil, err
+			return waitEventMetricsList, err
 		}
 		waitEventMetricsList = append(waitEventMetricsList, waitEvent)
 	}

@@ -21,22 +21,22 @@ func PopulateIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnectio
 	isEligible, err := validations.CheckIndividualQueryMetricsFetchEligibility(enabledExtensions)
 	if err != nil {
 		log.Error("Error executing query: %v", err)
-		return nil
+		return []datamodels.IndividualQueryMetrics{}
 	}
 	if !isEligible {
 		log.Debug("Extension 'pg_stat_monitor' is not enabled or unsupported version.")
-		return nil
+		return []datamodels.IndividualQueryMetrics{}
 	}
 	log.Debug("Extension 'pg_stat_monitor' enabled.")
 	individualQueryMetricsInterface, individualQueriesList := getIndividualQueryMetrics(conn, slowRunningQueries, cp)
 	if len(individualQueryMetricsInterface) == 0 {
 		log.Debug("No individual queries found.")
-		return nil
+		return []datamodels.IndividualQueryMetrics{}
 	}
 	err = commonutils.IngestMetric(individualQueryMetricsInterface, "PostgresIndividualQueries", pgIntegration, cp)
 	if err != nil {
 		log.Error("Error ingesting individual queries: %v", err)
-		return nil
+		return []datamodels.IndividualQueryMetrics{}
 	}
 	return individualQueriesList
 }
@@ -44,7 +44,7 @@ func PopulateIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnectio
 func getIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, slowRunningQueries []datamodels.SlowRunningQueryMetrics, cp *commonparameters.CommonParameters) ([]interface{}, []datamodels.IndividualQueryMetrics) {
 	if len(slowRunningQueries) == 0 {
 		log.Debug("No slow running queries found.")
-		return nil, nil
+		return []interface{}{}, []datamodels.IndividualQueryMetrics{}
 	}
 	var individualQueryMetricsList []datamodels.IndividualQueryMetrics
 	var individualQueryMetricsListInterface []interface{}
@@ -52,7 +52,7 @@ func getIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, sl
 	versionSpecificIndividualQuery, err := commonutils.FetchVersionSpecificIndividualQueries(cp.Version)
 	if err != nil {
 		log.Error("Unsupported postgres version: %v", err)
-		return nil, nil
+		return []interface{}{}, []datamodels.IndividualQueryMetrics{}
 	}
 	for _, slowRunningMetric := range slowRunningQueries {
 		if slowRunningMetric.QueryID == nil {
@@ -62,7 +62,7 @@ func getIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, sl
 		rows, err := conn.Queryx(query)
 		if err != nil {
 			log.Debug("Error executing query in individual query: %v", err)
-			return nil, nil
+			return []interface{}{}, []datamodels.IndividualQueryMetrics{}
 		}
 		defer rows.Close()
 		individualQuerySamplesList := processRows(rows, anonymizedQueriesByDB)
