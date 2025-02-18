@@ -2,8 +2,6 @@ package commonutils
 
 import (
 	"fmt"
-	"reflect"
-
 	commonparameters "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-parameters"
 
 	"github.com/newrelic/infra-integrations-sdk/v3/data/metric"
@@ -79,34 +77,37 @@ func CreateEntity(pgIntegration *integration.Integration, cp *commonparameters.C
 }
 
 func ProcessModel(model interface{}, metricSet *metric.Set) error {
-	modelValue := reflect.ValueOf(model)
-	if modelValue.Kind() == reflect.Ptr {
-		modelValue = modelValue.Elem()
+	//modelValue := reflect.ValueOf(model)
+	//if modelValue.Kind() == reflect.Ptr {
+	//	modelValue = modelValue.Elem()
+	//}
+	//if !modelValue.IsValid() || modelValue.Kind() != reflect.Struct {
+	//	log.Error("Invalid model type: %v", modelValue.Kind())
+	//	return ErrInvalidModelType
+	//}
+
+	//modelType := reflect.TypeOf(model)
+	err := metricSet.MarshalMetrics(model)
+	if err != nil {
+		return err
 	}
-	if !modelValue.IsValid() || modelValue.Kind() != reflect.Struct {
-		log.Error("Invalid model type: %v", modelValue.Kind())
-		return ErrInvalidModelType
-	}
-
-	modelType := reflect.TypeOf(model)
-
-	for i := 0; i < modelValue.NumField(); i++ {
-		field := modelValue.Field(i)
-		fieldType := modelType.Field(i)
-		metricName := fieldType.Tag.Get("metric_name")
-		sourceType := fieldType.Tag.Get("source_type")
-		ingestData := fieldType.Tag.Get("ingest_data")
-
-		if ingestData == "false" {
-			continue
-		}
-
-		if field.Kind() == reflect.Ptr && !field.IsNil() {
-			SetMetric(metricSet, metricName, field.Elem().Interface(), sourceType)
-		} else if field.Kind() != reflect.Ptr {
-			SetMetric(metricSet, metricName, field.Interface(), sourceType)
-		}
-	}
+	//for i := 0; i < modelValue.NumField(); i++ {
+	//	field := modelValue.Field(i)
+	//	fieldType := modelType.Field(i)
+	//	metricName := fieldType.Tag.Get("metric_name")
+	//	sourceType := fieldType.Tag.Get("source_type")
+	//	ingestData := fieldType.Tag.Get("ingest_data")
+	//
+	//	if ingestData == "false" {
+	//		continue
+	//	}
+	//
+	//	if field.Kind() == reflect.Ptr && !field.IsNil() {
+	//		SetMetric(metricSet, metricName, field.Elem().Interface(), sourceType)
+	//	} else if field.Kind() != reflect.Ptr {
+	//		SetMetric(metricSet, metricName, field.Interface(), sourceType)
+	//	}
+	//}
 	return nil
 }
 

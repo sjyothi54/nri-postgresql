@@ -5,7 +5,7 @@ import (
 
 	performancedbconnection "github.com/newrelic/nri-postgresql/src/connection"
 
-	common_parameters "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-parameters"
+	commonparameters "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-parameters"
 
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/nri-postgresql/src/args"
@@ -17,7 +17,7 @@ func TestPopulateExecutionPlanMetrics(t *testing.T) {
 	pgIntegration, _ := integration.New("test", "1.0.0")
 	args := args.ArgumentList{}
 	results := []datamodels.IndividualQueryMetrics{}
-	cp := common_parameters.SetCommonParameters(args, uint64(13), "testdb")
+	cp := commonparameters.SetCommonParameters(args, uint64(13), "testdb")
 	connectionInfo := performancedbconnection.DefaultConnectionInfo(&args)
 	PopulateExecutionPlanMetrics(results, pgIntegration, cp, connectionInfo)
 	assert.Empty(t, pgIntegration.Entities)

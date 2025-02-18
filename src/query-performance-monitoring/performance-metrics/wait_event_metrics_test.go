@@ -7,7 +7,7 @@ import (
 
 	"github.com/newrelic/nri-postgresql/src/args"
 	"github.com/newrelic/nri-postgresql/src/connection"
-	common_parameters "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-parameters"
+	commonparameters "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-parameters"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/DATA-DOG/go-sqlmock.v1"
@@ -17,7 +17,7 @@ func TestGetWaitEventMetrics(t *testing.T) {
 	conn, mock := connection.CreateMockSQL(t)
 	args := args.ArgumentList{QueryMonitoringCountThreshold: 10}
 	databaseName := "testdb"
-	cp := common_parameters.SetCommonParameters(args, uint64(14), databaseName)
+	cp := commonparameters.SetCommonParameters(args, uint64(14), databaseName)
 
 	var query = fmt.Sprintf(queries.WaitEvents, databaseName, args.QueryMonitoringCountThreshold)
 	mock.ExpectQuery(regexp.QuoteMeta(query)).WillReturnRows(sqlmock.NewRows([]string{
@@ -36,7 +36,7 @@ func TestGetWaitEventEmptyMetrics(t *testing.T) {
 	conn, mock := connection.CreateMockSQL(t)
 	args := args.ArgumentList{QueryMonitoringCountThreshold: 10}
 	databaseName := "testdb"
-	cp := common_parameters.SetCommonParameters(args, uint64(14), databaseName)
+	cp := commonparameters.SetCommonParameters(args, uint64(14), databaseName)
 
 	var query = fmt.Sprintf(queries.WaitEvents, databaseName, args.QueryMonitoringCountThreshold)
 	mock.ExpectQuery(regexp.QuoteMeta(query)).WillReturnRows(sqlmock.NewRows([]string{
