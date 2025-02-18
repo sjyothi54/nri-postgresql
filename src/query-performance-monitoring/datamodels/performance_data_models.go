@@ -39,8 +39,14 @@ type IndividualQueryMetrics struct {
 	DatabaseName    *string  `json:"datname" db:"datname" metric_name:"database_name" source_type:"attribute"`
 	AvgCPUTimeInMS  *float64 `json:"cpu_time_ms" db:"cpu_time_ms" metric_name:"cpu_time_ms" source_type:"gauge"`
 	PlanID          *string  `json:"planid" db:"planid" metric_name:"plan_id" source_type:"attribute"`
-	RealQueryText   *string  `ingest_data:"false"`
 	AvgExecTimeInMs *float64 `json:"exec_time_ms" db:"exec_time_ms" metric_name:"exec_time_ms" source_type:"gauge"`
+}
+
+type IndividualQueryInfo struct {
+	QueryID       *string
+	DatabaseName  *string
+	PlanID        *string
+	RealQueryText *string
 }
 
 type QueryExecutionPlanMetrics struct {

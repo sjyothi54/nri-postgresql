@@ -12,7 +12,7 @@ import (
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
 )
 
-func PopulateExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, pgIntegration *integration.Integration, cp *commonparameters.CommonParameters, connectionInfo performancedbconnection.Info) {
+func PopulateExecutionPlanMetrics(results []datamodels.IndividualQueryInfo, pgIntegration *integration.Integration, cp *commonparameters.CommonParameters, connectionInfo performancedbconnection.Info) {
 	if len(results) == 0 {
 		log.Debug("No individual queries found.")
 		return
@@ -26,7 +26,7 @@ func PopulateExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, p
 	log.Debug("Successfully ingested execution plan metrics")
 }
 
-func getExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, connectionInfo performancedbconnection.Info) []interface{} {
+func getExecutionPlanMetrics(results []datamodels.IndividualQueryInfo, connectionInfo performancedbconnection.Info) []interface{} {
 	var executionPlanMetricsList []interface{}
 	var databaseIndividualQueriesMap = groupQueriesByDatabase(results)
 	for dbName, individualQueriesList := range databaseIndividualQueriesMap {
@@ -43,7 +43,7 @@ func getExecutionPlanMetrics(results []datamodels.IndividualQueryMetrics, connec
 	return executionPlanMetricsList
 }
 
-func processExecutionPlanOfQueries(individualQueriesList []datamodels.IndividualQueryMetrics, dbConn *performancedbconnection.PGSQLConnection, executionPlanMetricsList *[]interface{}) {
+func processExecutionPlanOfQueries(individualQueriesList []datamodels.IndividualQueryInfo, dbConn *performancedbconnection.PGSQLConnection, executionPlanMetricsList *[]interface{}) {
 	for _, individualQuery := range individualQueriesList {
 		if individualQuery.RealQueryText == nil || individualQuery.QueryID == nil || individualQuery.DatabaseName == nil {
 			log.Error("QueryText, QueryID or Database Name is nil for query: %+v", individualQuery)
@@ -62,7 +62,7 @@ func processExecutionPlanOfQueries(individualQueriesList []datamodels.Individual
 		}
 		var execPlanJSON string
 		if scanErr := rows.Scan(&execPlanJSON); scanErr != nil {
-			log.Error("Error scanning row for queryId  %v",scanErr)
+			log.Error("Error scanning row for queryId  %v", scanErr)
 			continue
 		}
 
@@ -77,7 +77,7 @@ func processExecutionPlanOfQueries(individualQueriesList []datamodels.Individual
 	log.Debug("Processed execution plans for %d queries", len(individualQueriesList))
 }
 
-func validateAndFetchNestedExecPlan(execPlan []map[string]interface{}, individualQuery datamodels.IndividualQueryMetrics, executionPlanMetricsList *[]interface{}) {
+func validateAndFetchNestedExecPlan(execPlan []map[string]interface{}, individualQuery datamodels.IndividualQueryInfo, executionPlanMetricsList *[]interface{}) {
 	level := 0
 	if len(execPlan) > 0 {
 		if plan, ok := execPlan[0]["Plan"].(map[string]interface{}); ok {
@@ -90,8 +90,8 @@ func validateAndFetchNestedExecPlan(execPlan []map[string]interface{}, individua
 	}
 }
 
-func groupQueriesByDatabase(results []datamodels.IndividualQueryMetrics) map[string][]datamodels.IndividualQueryMetrics {
-	databaseMap := make(map[string][]datamodels.IndividualQueryMetrics)
+func groupQueriesByDatabase(results []datamodels.IndividualQueryInfo) map[string][]datamodels.IndividualQueryInfo {
+	databaseMap := make(map[string][]datamodels.IndividualQueryInfo)
 	for _, individualQueryMetric := range results {
 		if individualQueryMetric.DatabaseName == nil {
 			continue
@@ -102,7 +102,7 @@ func groupQueriesByDatabase(results []datamodels.IndividualQueryMetrics) map[str
 	return databaseMap
 }
 
-func fetchNestedExecutionPlanDetails(individualQuery datamodels.IndividualQueryMetrics, level *int, execPlan map[string]interface{}, executionPlanMetricsList *[]interface{}) {
+func fetchNestedExecutionPlanDetails(individualQuery datamodels.IndividualQueryInfo, level *int, execPlan map[string]interface{}, executionPlanMetricsList *[]interface{}) {
 	var execPlanMetrics datamodels.QueryExecutionPlanMetrics
 	err := mapstructure.Decode(execPlan, &execPlanMetrics)
 	if err != nil {
