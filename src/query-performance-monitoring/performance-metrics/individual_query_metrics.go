@@ -20,7 +20,7 @@ type databaseQueryInfoMap map[string]queryInfoMap
 func PopulateIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, slowRunningQueries []datamodels.SlowRunningQueryMetrics, pgIntegration *integration.Integration, cp *commonparameters.CommonParameters, enabledExtensions map[string]bool) []datamodels.IndividualQueryMetrics {
 	isEligible, err := validations.CheckIndividualQueryMetricsFetchEligibility(enabledExtensions)
 	if err != nil {
-		log.Error("Error executing query: %v", err)
+		log.Error("Error executing query for eligibility check: %v", err)
 		return []datamodels.IndividualQueryMetrics{}
 	}
 	if !isEligible {
@@ -38,6 +38,7 @@ func PopulateIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnectio
 		log.Error("Error ingesting individual queries: %v", err)
 		return []datamodels.IndividualQueryMetrics{}
 	}
+	log.Debug("Successfully ingested individual query metrics for databases")
 	return individualQueriesList
 }
 
@@ -71,6 +72,7 @@ func getIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, sl
 			individualQueryMetricsListInterface = append(individualQueryMetricsListInterface, individualQuery)
 		}
 	}
+	log.Debug("Fetched %d individual query metrics", len(individualQueryMetricsList))
 	return individualQueryMetricsListInterface, individualQueryMetricsList
 }
 
@@ -79,7 +81,7 @@ func processRows(rows *sqlx.Rows, anonymizedQueriesByDB databaseQueryInfoMap) []
 	for rows.Next() {
 		var model datamodels.IndividualQueryMetrics
 		if scanErr := rows.StructScan(&model); scanErr != nil {
-			log.Error("Could not scan row: ", scanErr)
+			log.Error("Could not scan row: %v", scanErr)
 			continue
 		}
 		if model.QueryID == nil || model.DatabaseName == nil {
@@ -99,6 +101,7 @@ func processRows(rows *sqlx.Rows, anonymizedQueriesByDB databaseQueryInfoMap) []
 		individualQueryMetric.PlanID = &generatedPlanID
 		individualQueryMetricsList = append(individualQueryMetricsList, individualQueryMetric)
 	}
+	log.Debug("Processed %d rows into individual query metrics", len(individualQueryMetricsList))
 	return individualQueryMetricsList
 }
 
