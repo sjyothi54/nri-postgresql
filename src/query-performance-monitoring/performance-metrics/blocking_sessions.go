@@ -59,7 +59,7 @@ func getBlockingMetrics(conn *performancedbconnection.PGSQLConnection, cp *commo
 			*blockingQueriesMetricsList[i].BlockingQuery = commonutils.AnonymizeQueryText(*blockingQueriesMetricsList[i].BlockingQuery)
 		}
 	}
-	var blockingQueriesMetricsListInterface []interface{}
+	var blockingQueriesMetricsListInterface = make([]interface{}, 0)
 	for _, metric := range blockingQueriesMetricsList {
 		blockingQueriesMetricsListInterface = append(blockingQueriesMetricsListInterface, metric)
 	}
