@@ -24,9 +24,9 @@ func PopulateBlockingMetrics(conn *performancedbconnection.PGSQLConnection, pgIn
 		log.Debug("Extension 'pg_stat_statements' is not enabled or unsupported version.")
 		return
 	}
-	blockingQueriesMetricsList, blockQueryFetchErr := getBlockingMetrics(conn, cp)
-	if blockQueryFetchErr != nil {
-		log.Error("Error fetching blocking queries: %v", blockQueryFetchErr)
+	blockingQueriesMetricsList, blockQueryMetricsFetchErr := getBlockingMetrics(conn, cp)
+	if blockQueryMetricsFetchErr != nil {
+		log.Error("Error fetching blocking queries: %v", blockQueryMetricsFetchErr)
 		return
 	}
 	if len(blockingQueriesMetricsList) == 0 {
@@ -42,33 +42,26 @@ func PopulateBlockingMetrics(conn *performancedbconnection.PGSQLConnection, pgIn
 }
 
 func getBlockingMetrics(conn *performancedbconnection.PGSQLConnection, cp *commonparameters.CommonParameters) ([]interface{}, error) {
-	var blockingQueriesMetricsList []interface{}
 	versionSpecificBlockingQuery, err := commonutils.FetchVersionSpecificBlockingQueries(cp.Version)
 	if err != nil {
 		log.Error("Unsupported postgres version: %v", err)
 		return nil, err
 	}
-	var query = fmt.Sprintf(versionSpecificBlockingQuery, cp.Databases, cp.QueryMonitoringCountThreshold)
-	log.Debug("Executing query to fetch blocking metrics")
-	rows, err := conn.Queryx(query)
+	query := fmt.Sprintf(versionSpecificBlockingQuery, cp.Databases, cp.QueryMonitoringCountThreshold)
+	blockingQueriesMetricsList, _, err := fetchMetrics[datamodels.BlockingSessionMetrics](conn, query, "Blocking Query")
 	if err != nil {
-		log.Error("Failed to execute query, error: %v", err)
+		log.Error("Error fetching blocking queries: %v", err)
 		return nil, commonutils.ErrUnExpectedError
 	}
-	defer rows.Close()
-	for rows.Next() {
-		var blockingQueryMetric datamodels.BlockingSessionMetrics
-		if scanError := rows.StructScan(&blockingQueryMetric); scanError != nil {
-			log.Error("Error scanning row into BlockingSessionMetrics: %v", scanError)
-			return nil, scanError
+	if cp.Version == commonutils.PostgresVersion13 || cp.Version == commonutils.PostgresVersion12 {
+		for i := range blockingQueriesMetricsList {
+			*blockingQueriesMetricsList[i].BlockedQuery = commonutils.AnonymizeQueryText(*blockingQueriesMetricsList[i].BlockedQuery)
+			*blockingQueriesMetricsList[i].BlockingQuery = commonutils.AnonymizeQueryText(*blockingQueriesMetricsList[i].BlockingQuery)
 		}
-		// For PostgreSQL versions 13 and 12, anonymization of queries does not occur for blocking sessions, so it's necessary to explicitly anonymize them.
-		if cp.Version == commonutils.PostgresVersion13 || cp.Version == commonutils.PostgresVersion12 {
-			*blockingQueryMetric.BlockedQuery = commonutils.AnonymizeQueryText(*blockingQueryMetric.BlockedQuery)
-			*blockingQueryMetric.BlockingQuery = commonutils.AnonymizeQueryText(*blockingQueryMetric.BlockingQuery)
-		}
-		blockingQueriesMetricsList = append(blockingQueriesMetricsList, blockingQueryMetric)
 	}
-	log.Debug("Fetched %d blocking metrics", len(blockingQueriesMetricsList))
-	return blockingQueriesMetricsList, nil
+	var blockingQueriesMetricsListInterface []interface{}
+	for _, metric := range blockingQueriesMetricsList {
+		blockingQueriesMetricsListInterface = append(blockingQueriesMetricsListInterface, metric)
+	}
+	return blockingQueriesMetricsListInterface, nil
 }

@@ -3,15 +3,14 @@ package performancemetrics
 import (
 	"database/sql/driver"
 	"fmt"
+	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
 	"regexp"
 	"testing"
-
-	commonutils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
-	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
 
 	"github.com/newrelic/nri-postgresql/src/args"
 	"github.com/newrelic/nri-postgresql/src/connection"
 	commonparameters "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-parameters"
+	commonutils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/DATA-DOG/go-sqlmock.v1"

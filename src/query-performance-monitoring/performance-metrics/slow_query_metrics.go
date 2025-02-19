@@ -12,32 +12,14 @@ import (
 )
 
 func getSlowRunningMetrics(conn *performancedbconnection.PGSQLConnection, cp *commonparameters.CommonParameters) ([]datamodels.SlowRunningQueryMetrics, []interface{}, error) {
-	var slowQueryMetricsList []datamodels.SlowRunningQueryMetrics
-	var slowQueryMetricsListInterface []interface{}
 	versionSpecificSlowQuery, err := commonutils.FetchVersionSpecificSlowQueries(cp.Version)
 	if err != nil {
 		log.Error("Unsupported postgres version: %v", err)
-		return slowQueryMetricsList, slowQueryMetricsListInterface, err
+		return nil, nil, err
 	}
-	var query = fmt.Sprintf(versionSpecificSlowQuery, cp.Databases, cp.QueryMonitoringCountThreshold)
-	log.Debug("Executing query to fetch slow running metrics")
-	rows, err := conn.Queryx(query)
-	if err != nil {
-		log.Error("Error executing error: %v", err)
-		return slowQueryMetricsList, slowQueryMetricsListInterface, err
-	}
-	defer rows.Close()
-	for rows.Next() {
-		var slowQuery datamodels.SlowRunningQueryMetrics
-		if scanErr := rows.StructScan(&slowQuery); scanErr != nil {
-			log.Error("Error scanning row into SlowRunningQueryMetrics: %v", scanErr)
-			return slowQueryMetricsList, slowQueryMetricsListInterface, err
-		}
-		slowQueryMetricsList = append(slowQueryMetricsList, slowQuery)
-		slowQueryMetricsListInterface = append(slowQueryMetricsListInterface, slowQuery)
-	}
-	log.Debug("Fetched %d slow running metrics", len(slowQueryMetricsList))
-	return slowQueryMetricsList, slowQueryMetricsListInterface, nil
+	query := fmt.Sprintf(versionSpecificSlowQuery, cp.Databases, cp.QueryMonitoringCountThreshold)
+	slowQueryMetricsList, slowQueryMetricsListInterface, err := fetchMetrics[datamodels.SlowRunningQueryMetrics](conn, query, "Slow Running")
+	return slowQueryMetricsList, slowQueryMetricsListInterface, err
 }
 
 func PopulateSlowRunningMetrics(conn *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, cp *commonparameters.CommonParameters, enabledExtensions map[string]bool) []datamodels.SlowRunningQueryMetrics {

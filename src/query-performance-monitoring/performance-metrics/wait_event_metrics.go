@@ -44,23 +44,7 @@ func PopulateWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, pgI
 }
 
 func getWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, cp *commonparameters.CommonParameters) ([]interface{}, error) {
-	var waitEventMetricsList []interface{}
-	var query = fmt.Sprintf(queries.WaitEvents, cp.Databases, cp.QueryMonitoringCountThreshold)
-	log.Debug("Executing query to fetch wait event metrics")
-	rows, err := conn.Queryx(query)
-	if err != nil {
-		log.Error("Error executing query, error: %v", err)
-		return waitEventMetricsList, err
-	}
-	defer rows.Close()
-	for rows.Next() {
-		var waitEvent datamodels.WaitEventMetrics
-		if waitScanErr := rows.StructScan(&waitEvent); waitScanErr != nil {
-			log.Error("Error scanning row into WaitEventMetrics: %v", waitScanErr)
-			return waitEventMetricsList, err
-		}
-		waitEventMetricsList = append(waitEventMetricsList, waitEvent)
-	}
-	log.Debug("Fetched %d wait event metrics", len(waitEventMetricsList))
-	return waitEventMetricsList, nil
+	query := fmt.Sprintf(queries.WaitEvents, cp.Databases, cp.QueryMonitoringCountThreshold)
+	_, waitEventMetricsListInterface, err := fetchMetrics[datamodels.WaitEventMetrics](conn, query, "Wait Event")
+	return waitEventMetricsListInterface, err
 }
