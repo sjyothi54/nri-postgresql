@@ -41,9 +41,7 @@ func PopulateBlockingMetrics(conn *performancedbconnection.PGSQLConnection, pgIn
 	log.Debug("Successfully ingested blocking metrics ")
 }
 
-func getBlockingMetrics(
-	conn *performancedbconnection.PGSQLConnection,
-	cp *commonparameters.CommonParameters) ([]interface{}, error) {
+func getBlockingMetrics(conn *performancedbconnection.PGSQLConnection, cp *commonparameters.CommonParameters) ([]interface{}, error) {
 	versionSpecificBlockingQuery, err := commonutils.FetchVersionSpecificBlockingQueries(cp.Version)
 	if err != nil {
 		log.Error("Unsupported postgres version: %v", err)
@@ -52,7 +50,8 @@ func getBlockingMetrics(
 	query := fmt.Sprintf(versionSpecificBlockingQuery, cp.Databases, cp.QueryMonitoringCountThreshold)
 	blockingQueriesMetricsList, _, err := fetchMetrics[datamodels.BlockingSessionMetrics](conn, query, "Blocking Query")
 	if err != nil {
-		return nil, err
+		log.Error("Error fetching blocking queries: %v", err)
+		return nil, commonutils.ErrUnExpectedError
 	}
 	if cp.Version == commonutils.PostgresVersion13 || cp.Version == commonutils.PostgresVersion12 {
 		for i := range blockingQueriesMetricsList {
@@ -61,7 +60,7 @@ func getBlockingMetrics(
 		}
 	}
 	var blockingQueriesMetricsListInterface []interface{}
-	for metric := range blockingQueriesMetricsList {
+	for _, metric := range blockingQueriesMetricsList {
 		blockingQueriesMetricsListInterface = append(blockingQueriesMetricsListInterface, metric)
 	}
 	return blockingQueriesMetricsListInterface, nil
