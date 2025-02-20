@@ -3,9 +3,10 @@ package performancemetrics
 import (
 	"database/sql/driver"
 	"fmt"
-	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"regexp"
 	"testing"
+
+	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 
 	"github.com/newrelic/nri-postgresql/src/args"
 	"github.com/newrelic/nri-postgresql/src/connection"
@@ -55,10 +56,10 @@ func TestIndividualQueriesInEligibility(t *testing.T) {
 	version := uint64(13)
 	cp := commonparameters.SetCommonParameters(argumentList, version, databaseName)
 	queryText := "SELECT 1"
-	queryId := "123"
+	queryID := "123"
 	slowRunningQueries := []datamodels.SlowRunningQueryMetrics{
 		{
-			QueryID:      &queryId,
+			QueryID:      &queryID,
 			QueryText:    &queryText,
 			DatabaseName: &databaseName,
 		},
@@ -77,7 +78,7 @@ func TestPopulateIndividualQueryMetrics(t *testing.T) {
 	databaseName := "testdb"
 	version := uint64(13)
 	queryText := "SELECT 1"
-	queryId := "123"
+	queryID := "123"
 	expectedQuery := queries.IndividualQuerySearchV13AndAbove
 	query := fmt.Sprintf(expectedQuery, "123", databaseName, args.QueryMonitoringResponseTimeThreshold, args.QueryMonitoringCountThreshold)
 	rowData := []driver.Value{
@@ -88,7 +89,7 @@ func TestPopulateIndividualQueryMetrics(t *testing.T) {
 	}).AddRow(rowData...).AddRow(rowData...))
 	slowRunningQueries := []datamodels.SlowRunningQueryMetrics{
 		{
-			QueryID:      &queryId,
+			QueryID:      &queryID,
 			QueryText:    &queryText,
 			DatabaseName: &databaseName,
 		},
