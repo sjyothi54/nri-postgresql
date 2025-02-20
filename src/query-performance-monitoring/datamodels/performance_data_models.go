@@ -34,12 +34,12 @@ type BlockingSessionMetrics struct {
 }
 
 type IndividualQueryMetrics struct {
-	QueryText       *string  `json:"query" db:"query" metric_name:"query_text" source_type:"attribute"`
-	QueryID         *string  `json:"queryid" db:"queryid" metric_name:"query_id" source_type:"attribute"`
-	DatabaseName    *string  `json:"datname" db:"datname" metric_name:"database_name" source_type:"attribute"`
-	AvgCPUTimeInMS  *float64 `json:"cpu_time_ms" db:"cpu_time_ms" metric_name:"cpu_time_ms" source_type:"gauge"`
-	PlanID          *string  `json:"planid" db:"planid" metric_name:"plan_id" source_type:"attribute"`
-	AvgExecTimeInMs *float64 `json:"exec_time_ms" db:"exec_time_ms" metric_name:"exec_time_ms" source_type:"gauge"`
+	QueryText    *string  `json:"query" db:"query" metric_name:"query_text" source_type:"attribute"`
+	QueryID      *string  `json:"queryid" db:"queryid" metric_name:"query_id" source_type:"attribute"`
+	DatabaseName *string  `json:"datname" db:"datname" metric_name:"database_name" source_type:"attribute"`
+	CPUTimeInMS  *float64 `json:"cpu_time_ms" db:"cpu_time_ms" metric_name:"cpu_time_ms" source_type:"gauge"`
+	PlanID       *string  `json:"planid" db:"planid" metric_name:"plan_id" source_type:"attribute"`
+	ExecTimeInMs *float64 `json:"exec_time_ms" db:"exec_time_ms" metric_name:"exec_time_ms" source_type:"gauge"`
 }
 
 type IndividualQueryInfo struct {
