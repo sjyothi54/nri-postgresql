@@ -30,7 +30,7 @@ const (
 	LIMIT %d;`
 
 	// SlowQueriesForV12 retrieves slow queries and their statistics for PostgreSQL version 12
-	SlowQueriesForV12 = `SELECT 'newrelic' as newrelic, -- Common value to filter with like operator in slow query metrics
+	SlowQueriesForV12 = `SELECT
 		pss.queryid AS query_id, -- Unique identifier for the query
 		LEFT(pss.query, 4095) AS query_text, -- Query text truncated to 4095 characters
 		pd.datname AS database_name, -- Name of the database
