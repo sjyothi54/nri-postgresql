@@ -25,7 +25,7 @@ func TestGetWaitEventMetrics(t *testing.T) {
 	}).AddRow(
 		"Locks:Lock", "Locks", 1000.0, "2023-01-01T00:00:00Z", "queryid1", "SELECT 1", "testdb",
 	))
-	waitEventsList, err := getWaitEventMetrics(conn, cp)
+	waitEventsList, err := getWaitEventMetrics(conn, cp,nil)
 
 	assert.NoError(t, err)
 	assert.Len(t, waitEventsList, 1)
@@ -42,7 +42,7 @@ func TestGetWaitEventEmptyMetrics(t *testing.T) {
 	mock.ExpectQuery(regexp.QuoteMeta(query)).WillReturnRows(sqlmock.NewRows([]string{
 		"wait_event_name", "wait_category", "total_wait_time_ms", "collection_timestamp", "query_id", "query_text", "database_name",
 	}))
-	waitEventsList, err := getWaitEventMetrics(conn, cp)
+	waitEventsList, err := getWaitEventMetrics(conn, cp, nil)
 	assert.NoError(t, err)
 	assert.Len(t, waitEventsList, 0)
 	assert.NoError(t, mock.ExpectationsWereMet())
