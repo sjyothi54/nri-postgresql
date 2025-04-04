@@ -111,6 +111,39 @@ const (
 	ORDER BY total_wait_time_ms DESC -- Order by the total wait time in descending order
 	LIMIT %d; -- Limit the number of results`
 
+	WaitEventsWithoutExtension = `WITH current_activity AS (
+        SELECT
+            sa.pid,
+            sa.wait_event_type AS event_type,
+            sa.wait_event AS event,
+            now() AS ts,
+            sa.query AS query_text,
+            sa.query_start
+        FROM
+            pg_stat_activity sa
+        LEFT JOIN
+            pg_database ON pg_database.oid = sa.datid
+        WHERE
+            sa.state != 'idle' AND
+            sa.query IS NOT NULL AND
+            pg_database.datname IN (%s) -- Correct filtering condition
+        )
+        SELECT
+            event AS wait_event_name, -- Concatenated wait event name
+            CASE
+               WHEN event_type IN ('LWLock', 'Lock') THEN 'Locks'       
+               WHEN event_type = 'IO' THEN 'Disk IO'                    
+               WHEN event_type = 'CPU' THEN 'CPU'                      
+               ELSE 'Other'                                           
+        END AS wait_category,                                         
+        COUNT(*) AS wait_event_count,                                 
+        to_char(NOW() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS collection_timestamp, 
+        a.query_text                                                 
+        FROM current_activity a
+        GROUP BY event_type, event, a.query_text
+        ORDER BY wait_event_count DESC                           
+        LIMIT %d;`
+
 	// BlockingQueriesForV14AndAbove retrieves information about blocking and blocked queries for PostgreSQL version 14 and above
 	BlockingQueriesForV14AndAbove = `SELECT 'newrelic' as newrelic, -- Common value to filter with like operator in slow query metrics
 		  blocked_activity.pid AS blocked_pid, -- Process ID of the blocked query

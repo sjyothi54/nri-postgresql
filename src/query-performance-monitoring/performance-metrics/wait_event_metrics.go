@@ -10,22 +10,10 @@ import (
 	commonutils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
-	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/validations"
 )
 
 func PopulateWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, cp *commonparameters.CommonParameters, enabledExtensions map[string]bool) error {
-	var isEligible bool
-	var eligibleCheckErr error
-	isEligible, eligibleCheckErr = validations.CheckWaitEventMetricsFetchEligibility(enabledExtensions)
-	if eligibleCheckErr != nil {
-		log.Error("Error executing query: %v", eligibleCheckErr)
-		return commonutils.ErrUnExpectedError
-	}
-	if !isEligible {
-		log.Debug("Extension 'pg_wait_sampling' or 'pg_stat_statement' is not enabled or unsupported version.")
-		return commonutils.ErrNotEligible
-	}
-	waitEventMetricsList, waitEventErr := getWaitEventMetrics(conn, cp)
+	waitEventMetricsList, waitEventErr := getWaitEventMetrics(conn, cp,enabledExtensions)
 	if waitEventErr != nil {
 		log.Error("Error fetching wait event queries: %v", waitEventErr)
 		return commonutils.ErrUnExpectedError
@@ -42,9 +30,17 @@ func PopulateWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, pgI
 	return nil
 }
 
-func getWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, cp *commonparameters.CommonParameters) ([]interface{}, error) {
+func getWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, cp *commonparameters.CommonParameters, enabledExtensions map[string]bool) ([]interface{}, error) {
 	var waitEventMetricsList []interface{}
-	var query = fmt.Sprintf(queries.WaitEvents, cp.Databases, cp.QueryMonitoringCountThreshold)
+	var query string
+
+	// Check if pg_wait_sampling is enabled
+	if enabledExtensions["pg_wait_sampling"] && enabledExtensions["pg_stat_statements"] {
+		query = fmt.Sprintf(queries.WaitEvents, cp.Databases, cp.QueryMonitoringCountThreshold)
+	} else {
+		query = fmt.Sprintf(queries.WaitEventsWithoutExtension, cp.Databases, cp.QueryMonitoringCountThreshold)
+	}
+
 	rows, err := conn.Queryx(query)
 	if err != nil {
 		return nil, err
@@ -55,6 +51,7 @@ func getWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, cp *comm
 		if waitScanErr := rows.StructScan(&waitEvent); waitScanErr != nil {
 			return nil, err
 		}
+
 		waitEventMetricsList = append(waitEventMetricsList, waitEvent)
 	}
 	return waitEventMetricsList, nil
