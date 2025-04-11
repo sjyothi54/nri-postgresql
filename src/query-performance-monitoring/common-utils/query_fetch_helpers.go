@@ -36,3 +36,14 @@ func FetchVersionSpecificIndividualQueries(version uint64) (string, error) {
 		return "", ErrUnsupportedVersion
 	}
 }
+
+func FetchSupportedWaitEvents(enabledExtensions map[string]bool) (string, error) {
+	switch {
+	case enabledExtensions["pg_wait_sampling"] && enabledExtensions["pg_stat_statements"]:
+		return queries.WaitEvents, nil
+	case enabledExtensions["pg_stat_statements"]:
+		return queries.WaitEventsFromPgStatActivity, nil
+	default:
+		return "", ErrUnsupportedVersion
+	}
+}

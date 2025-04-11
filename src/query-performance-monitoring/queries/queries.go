@@ -111,38 +111,41 @@ const (
 	ORDER BY total_wait_time_ms DESC -- Order by the total wait time in descending order
 	LIMIT %d; -- Limit the number of results`
 
-	WaitEventsWithoutExtension = `WITH current_activity AS (
+	WaitEventsFromPgStatActivity = `WITH wait_history AS (
         SELECT
-            sa.pid,
-            sa.wait_event_type AS event_type,
-            sa.wait_event AS event,
-            now() AS ts,
-            sa.query AS query_text,
-            sa.query_start
+            sa.pid, -- Process ID
+            sa.wait_event_type AS event_type, -- Type of the wait event
+            sa.wait_event AS event, -- Wait event           
+            current_timestamp - sa.backend_start AS duration, -- Timestamp of the wait event
+            pg_database.datname AS database_name, -- Name of the database
+            LEFT(ss.query, 4095) AS query_text, -- Query text truncated to 4095 characters
+            ss.queryid AS query_id -- Unique identifier for the query
         FROM
             pg_stat_activity sa
         LEFT JOIN
+            pg_stat_statements ss ON sa.query_id = ss.queryid
+        LEFT JOIN
             pg_database ON pg_database.oid = sa.datid
-        WHERE
-            sa.state != 'idle' AND
-            sa.query IS NOT NULL AND
-            pg_database.datname IN (%s) -- Correct filtering condition
-        )
-        SELECT
-            event AS wait_event_name, -- Concatenated wait event name
-            CASE
-               WHEN event_type IN ('LWLock', 'Lock') THEN 'Locks'       
-               WHEN event_type = 'IO' THEN 'Disk IO'                    
-               WHEN event_type = 'CPU' THEN 'CPU'                      
-               ELSE 'Other'                                           
-        END AS wait_category,                                         
-        COUNT(*) AS wait_event_count,                                 
-        to_char(NOW() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS collection_timestamp, 
-        a.query_text                                                 
-        FROM current_activity a
-        GROUP BY event_type, event, a.query_text
-        ORDER BY wait_event_count DESC                           
-        LIMIT %d;`
+        WHERE pg_database.datname in (%s) -- List of database names
+    )
+    SELECT
+        event_type || ':' || event AS wait_event_name, -- Concatenated wait event name
+        CASE
+            WHEN event_type IN ('LWLock', 'Lock') THEN 'Locks' -- Wait category is Locks
+            WHEN event_type = 'IO' THEN 'Disk IO' -- Wait category is Disk IO
+            WHEN event_type = 'CPU' THEN 'CPU' -- Wait category is CPU
+            ELSE 'Other' -- Wait category is Other
+        END AS wait_category, -- Category of the wait event
+        EXTRACT(EPOCH FROM SUM(duration)) * 1000 AS total_wait_time_ms, -- Convert duration to milliseconds
+        to_char(NOW() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS collection_timestamp, -- Timestamp of data collection
+        query_id, -- Unique identifier for the query
+        query_text, -- Query text
+        database_name -- Name of the database
+    FROM wait_history
+    WHERE query_text NOT LIKE 'EXPLAIN (FORMAT JSON) %%' AND query_id IS NOT NULL AND event_type IS NOT NULL
+    GROUP BY event_type, event, query_id, query_text, database_name
+    ORDER BY total_wait_time_ms DESC -- Order by the total wait time in descending order
+    LIMIT %d;  -- Limit the number of results`
 
 	// BlockingQueriesForV14AndAbove retrieves information about blocking and blocked queries for PostgreSQL version 14 and above
 	BlockingQueriesForV14AndAbove = `SELECT 'newrelic' as newrelic, -- Common value to filter with like operator in slow query metrics

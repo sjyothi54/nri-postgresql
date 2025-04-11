@@ -29,11 +29,8 @@ func CheckSlowQueryMetricsFetchEligibility(enabledExtensions map[string]bool) (b
 	return enabledExtensions["pg_stat_statements"], nil
 }
 
-func CheckWaitEventMetricsFetchEligibility(enabledExtensions map[string]bool) (string, error) {
-	if enabledExtensions["pg_wait_sampling"] && enabledExtensions["pg_stat_statements"]{
-		return "pg_wait_sampling", nil
-	}
-	return "pg_stat_activity", nil
+func CheckWaitEventMetricsFetchEligibility(enabledExtensions map[string]bool) (bool, error) {
+	return (enabledExtensions["pg_wait_sampling"] && enabledExtensions["pg_stat_statements"])  || enabledExtensions["pg_stat_statements"], nil
 }
 
 func CheckBlockingSessionMetricsFetchEligibility(enabledExtensions map[string]bool, version uint64) (bool, error) {
