@@ -24,7 +24,7 @@ func PopulateWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, pgI
 		log.Debug("Extension 'pg_wait_sampling' or 'pg_stat_statement' is not enabled or unsupported version.")
 		return commonutils.ErrNotEligible
 	}
-	waitEventMetricsList, waitEventErr := getWaitEventMetrics(conn, cp,enabledExtensions)
+	waitEventMetricsList, waitEventErr := getWaitEventMetrics(conn, cp, enabledExtensions)
 	if waitEventErr != nil {
 		log.Error("Error fetching wait event queries: %v", waitEventErr)
 		return commonutils.ErrUnExpectedError
@@ -59,7 +59,7 @@ func getWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, cp *comm
 		if waitScanErr := rows.StructScan(&waitEvent); waitScanErr != nil {
 			return nil, err
 		}
-		
+
 		waitEventMetricsList = append(waitEventMetricsList, waitEvent)
 	}
 	return waitEventMetricsList, nil

@@ -30,7 +30,7 @@ func CheckSlowQueryMetricsFetchEligibility(enabledExtensions map[string]bool) (b
 }
 
 func CheckWaitEventMetricsFetchEligibility(enabledExtensions map[string]bool) (bool, error) {
-	return (enabledExtensions["pg_wait_sampling"] && enabledExtensions["pg_stat_statements"])  || enabledExtensions["pg_stat_statements"], nil
+	return (enabledExtensions["pg_wait_sampling"] && enabledExtensions["pg_stat_statements"]) || enabledExtensions["pg_stat_statements"], nil
 }
 
 func CheckBlockingSessionMetricsFetchEligibility(enabledExtensions map[string]bool, version uint64) (bool, error) {
