@@ -123,7 +123,7 @@ const (
         FROM
             pg_stat_activity sa
         LEFT JOIN
-            pg_stat_statements ss ON sa.query_id = ss.queryid
+            pg_stat_statements ss ON  AnonymizeQueryText(sa.query) = AnonymizeQueryText(ss.query)
         LEFT JOIN
             pg_database ON pg_database.oid = sa.datid
         WHERE pg_database.datname in (%s) -- List of database names
@@ -136,7 +136,7 @@ const (
             WHEN event_type = 'CPU' THEN 'CPU' -- Wait category is CPU
             ELSE 'Other' -- Wait category is Other
         END AS wait_category, -- Category of the wait event
-        EXTRACT(EPOCH FROM SUM(duration)) * 1000 AS total_wait_time_ms, -- Convert duration to milliseconds
+        EXTRACT(EPOCH FROM SUM(duration)) AS total_wait_time_ms, -- Convert duration to seconds
         to_char(NOW() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS collection_timestamp, -- Timestamp of data collection
         query_id, -- Unique identifier for the query
         query_text, -- Query text
