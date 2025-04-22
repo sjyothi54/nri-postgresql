@@ -136,7 +136,7 @@ const (
             WHEN event_type = 'CPU' THEN 'CPU' -- Wait category is CPU
             ELSE 'Other' -- Wait category is Other
         END AS wait_category, -- Category of the wait event
-        EXTRACT(EPOCH FROM SUM(duration)) AS total_wait_time_ms, -- Convert duration to seconds
+        EXTRACT(EPOCH FROM SUM(duration)) * 1000 AS total_wait_time_ms, -- Convert duration to milliseconds
         to_char(NOW() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS collection_timestamp, -- Timestamp of data collection
         query_id, -- Unique identifier for the query
         query_text, -- Query text
