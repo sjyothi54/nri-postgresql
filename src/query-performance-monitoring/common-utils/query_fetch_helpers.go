@@ -15,6 +15,17 @@ func FetchVersionSpecificSlowQueries(version uint64) (string, error) {
 	}
 }
 
+func FetchSlowAndIndividualQueriesPgStat(version uint64) (string, error) {
+	switch {
+	case version == PostgresVersion12:
+		return queries.SlowQueryPgStatV12, nil
+	case version >= PostgresVersion13:
+		return queries.SlowQueryPgStatV13AndAbove, nil
+	default:
+		return "", ErrUnsupportedVersion
+	}
+}
+
 func FetchVersionSpecificBlockingQueries(version uint64) (string, error) {
 	switch {
 	case version == PostgresVersion12, version == PostgresVersion13:
