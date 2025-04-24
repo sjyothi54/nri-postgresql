@@ -2,6 +2,7 @@ package performancemetrics
 
 import (
 	"fmt"
+	_ "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
 
 	"github.com/jmoiron/sqlx"
 
@@ -118,4 +119,30 @@ func processForAnonymizeQueryMap(slowRunningMetricList []datamodels.SlowRunningQ
 		anonymizeQueryMapByDB[dbName][queryID] = anonymizedQuery
 	}
 	return anonymizeQueryMapByDB
+}
+
+func PopulateIndividualQueryMetricsPgStat(slowQueries []datamodels.SlowRunningQueryMetricsPgStat, pgIntegration *integration.Integration, cp *commonparameters.CommonParameters) []datamodels.IndividualQueryMetrics {
+	var individualQueriesList = make([]datamodels.IndividualQueryMetrics, 0)
+	var individualQueriesListInterface = make([]interface{}, 0)
+	for _, slowRunningMetric := range slowQueries {
+		var individualQuery datamodels.IndividualQueryMetrics
+		individualQuery.QueryID = slowRunningMetric.QueryID
+		individualQuery.DatabaseName = slowRunningMetric.DatabaseName
+		individualQuery.QueryText = slowRunningMetric.QueryText
+		individualQuery.RealQueryText = slowRunningMetric.IndividualQuery
+		generatedPlanID, err := commonutils.GeneratePlanID()
+		if err != nil {
+			log.Error("Error generating plan ID: %v", err)
+			continue
+		}
+		individualQuery.PlanID = &generatedPlanID
+		individualQueriesList = append(individualQueriesList, individualQuery)
+		individualQueriesListInterface = append(individualQueriesListInterface, individualQuery)
+	}
+	err := commonutils.IngestMetric(individualQueriesListInterface, "PostgresIndividualQueries", pgIntegration, cp)
+	if err != nil {
+		log.Error("Error ingesting individual queries: %v", err)
+		return nil
+	}
+	return individualQueriesList
 }

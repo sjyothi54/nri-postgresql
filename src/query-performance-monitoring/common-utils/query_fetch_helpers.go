@@ -15,6 +15,17 @@ func FetchVersionSpecificSlowQueries(version uint64) (string, error) {
 	}
 }
 
+func FetchSlowAndIndividualQueriesPgStat(version uint64) (string, error) {
+	switch {
+	case version == PostgresVersion12:
+		return queries.SlowQueryPgStatV12, nil
+	case version >= PostgresVersion13:
+		return queries.SlowQueryPgStatV13AndAbove, nil
+	default:
+		return "", ErrUnsupportedVersion
+	}
+}
+
 func FetchVersionSpecificBlockingQueries(version uint64) (string, error) {
 	switch {
 	case version == PostgresVersion12, version == PostgresVersion13:
@@ -32,6 +43,17 @@ func FetchVersionSpecificIndividualQueries(version uint64) (string, error) {
 		return queries.IndividualQuerySearchV12, nil
 	case version > PostgresVersion12:
 		return queries.IndividualQuerySearchV13AndAbove, nil
+	default:
+		return "", ErrUnsupportedVersion
+	}
+}
+
+func FetchSupportedWaitEvents(enabledExtensions map[string]bool) (string, error) {
+	switch {
+	case enabledExtensions["pg_wait_sampling"] && enabledExtensions["pg_stat_statements"]:
+		return queries.WaitEvents, nil
+	case enabledExtensions["pg_stat_statements"]:
+		return queries.WaitEventsFromPgStatActivity, nil
 	default:
 		return "", ErrUnsupportedVersion
 	}
