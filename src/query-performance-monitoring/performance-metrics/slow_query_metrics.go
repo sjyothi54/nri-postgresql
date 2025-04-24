@@ -2,7 +2,6 @@ package performancemetrics
 
 import (
 	"fmt"
-
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	performancedbconnection "github.com/newrelic/nri-postgresql/src/connection"
@@ -64,4 +63,50 @@ func PopulateSlowRunningMetrics(conn *performancedbconnection.PGSQLConnection, p
 		return nil
 	}
 	return slowQueryMetricsList
+}
+
+func PopulateSlowQueriesPgStat(connection *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, enabledExtensions map[string]bool, cp *commonparameters.CommonParameters) []datamodels.SlowRunningQueryMetricsPgStat {
+	isEligible, _ := validations.CheckSlowQueryMetricsFetchEligibility(enabledExtensions)
+	if !isEligible {
+		log.Debug("Extension 'pg_stat_statements' is not enabled or unsupported version.")
+		return nil
+	}
+	slowQueriesList, slowQueriesListInterface := getSlowQueriesFromPgStat(connection, cp)
+	err := commonutils.IngestMetric(slowQueriesListInterface, "PostgresSlowQueries", pgIntegration, cp)
+	if err != nil {
+		log.Error("Error ingesting slow-running queries: %v", err)
+		return nil
+	}
+	return slowQueriesList
+}
+
+func getSlowQueriesFromPgStat(connection *performancedbconnection.PGSQLConnection, cp *commonparameters.CommonParameters) ([]datamodels.SlowRunningQueryMetricsPgStat, []interface{}) {
+	versionSpecificSlowQuery, err := commonutils.FetchSlowAndIndividualQueriesPgStat(cp.Version)
+	if err != nil {
+		log.Error("Unsupported postgres version: %v", err)
+		return nil, nil
+	}
+	var query = fmt.Sprintf(versionSpecificSlowQuery, cp.Databases, cp.QueryMonitoringCountThreshold)
+	rows, err := connection.Queryx(query)
+	if err != nil {
+		log.Error("Error executing query: %v", err)
+		return nil, nil
+	}
+	defer rows.Close()
+	var slowQueryMetricsList []datamodels.SlowRunningQueryMetricsPgStat
+	var slowQueryMetricsListInterface []interface{}
+	for rows.Next() {
+		var slowQuery datamodels.SlowRunningQueryMetricsPgStat
+		if scanErr := rows.StructScan(&slowQuery); scanErr != nil {
+			log.Error("Error scanning rows: %v", err)
+			return nil, nil
+		}
+		slowQueryMetricsList = append(slowQueryMetricsList, slowQuery)
+		slowQueryMetricsListInterface = append(slowQueryMetricsListInterface, slowQuery)
+	}
+	if len(slowQueryMetricsList) == 0 {
+		log.Debug("No slow-running queries found.")
+		return nil, nil
+	}
+	return slowQueryMetricsList, slowQueryMetricsListInterface
 }
