@@ -21,6 +21,5 @@ const PostgresVersion11 = 11
 const PostgresVersion13 = 13
 const PostgresVersion14 = 14
 
-const SlowQueryExtension = "pg_stat_statements"
-const WaitEventExtension = "pg_wait_sampling"
-const IndividualQueryExtension = "pg_stat_monitor"
+const PgStatStatementExtension = "pg_stat_statements"
+const PgStatMonitorExtension = "pg_stat_monitor"
