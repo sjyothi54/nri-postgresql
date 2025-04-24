@@ -71,7 +71,7 @@ const (
 	ORDER BY
 		avg_elapsed_time_ms DESC -- Order by the average elapsed time in descending order
 	LIMIT
-		 (%d); -- Limit the number of results`
+		 %d; -- Limit the number of results`
 
 	SlowQueryPgStatV13AndAbove = `SELECT 'newrelic' as newrelic, -- Common value to filter with like operator in slow query metrics
 		pss.queryid AS query_id, -- Unique identifier for the query
@@ -116,7 +116,7 @@ const (
 		pd.datname AS database_name, -- Name of the database
 		current_schema() AS schema_name, -- Name of the current schema
 		pss.calls AS execution_count, -- Number of times the query was executed
-		ROUND((pss.total_exec_time / pss.calls)::numeric, 3) AS avg_elapsed_time_ms, -- Average execution time in milliseconds
+		ROUND((pss.total_time / pss.calls)::numeric, 3) AS avg_elapsed_time_ms, -- Average execution time in milliseconds
 		pss.shared_blks_read / pss.calls AS avg_disk_reads, -- Average number of disk reads per execution
 		pss.shared_blks_written / pss.calls AS avg_disk_writes, -- Average number of disk writes per execution
 		psa.query AS individual_query, -- Current query being executed
@@ -146,7 +146,8 @@ const (
 	ORDER BY
 		avg_elapsed_time_ms DESC -- Order by the average elapsed time in descending order
 	LIMIT (%s)`
-	// WaitEvents retrieves wait events and their statistics
+
+	// WaitEvents retrieves wait events and their statistics from pg_wait_sampling_history
 	WaitEvents = `WITH wait_history AS (
 		SELECT
 			wh.pid, -- Process ID
@@ -184,6 +185,7 @@ const (
 	ORDER BY total_wait_time_ms DESC -- Order by the total wait time in descending order
 	LIMIT %d; -- Limit the number of results`
 
+	// WaitEvents retrieves wait events and their statistics from pg_stat_activity
 	WaitEventsFromPgStatActivity = `WITH wait_history AS (
         SELECT
             sa.pid, -- Process ID

@@ -26,11 +26,11 @@ func FetchAllExtensions(conn *performancedbconnection.PGSQLConnection) (map[stri
 }
 
 func CheckSlowQueryMetricsFetchEligibility(enabledExtensions map[string]bool) (bool, error) {
-	return enabledExtensions[commonutils.SlowQueryExtension], nil
+	return enabledExtensions[commonutils.PgStatStatementExtension], nil
 }
 
 func CheckWaitEventMetricsFetchEligibility(enabledExtensions map[string]bool) (bool, error) {
-	return enabledExtensions[commonutils.SlowQueryExtension], nil
+	return enabledExtensions[commonutils.PgStatStatementExtension], nil
 }
 
 func CheckBlockingSessionMetricsFetchEligibility(enabledExtensions map[string]bool, version uint64) (bool, error) {
@@ -38,11 +38,11 @@ func CheckBlockingSessionMetricsFetchEligibility(enabledExtensions map[string]bo
 	if version == commonutils.PostgresVersion12 || version == commonutils.PostgresVersion13 {
 		return true, nil
 	}
-	return enabledExtensions[commonutils.SlowQueryExtension], nil
+	return enabledExtensions[commonutils.PgStatStatementExtension], nil
 }
 
 func CheckIndividualQueryMetricsFetchEligibility(enabledExtensions map[string]bool) (bool, error) {
-	return enabledExtensions[commonutils.IndividualQueryExtension], nil
+	return enabledExtensions[commonutils.PgStatMonitorExtension], nil
 }
 
 func CheckPostgresVersionSupportForQueryMonitoring(version uint64) bool {
