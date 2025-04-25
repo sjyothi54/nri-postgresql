@@ -74,7 +74,7 @@ func TestGetWaitEventMetricsFromPgStatActivity(t *testing.T) {
 }
 func TestGetWaitEventEmptyMetrics(t *testing.T) {
 	conn, mock := connection.CreateMockSQL(t)
-	args := args.ArgumentList{QueryMonitoringCountThreshold: 10, Hostname: "testhost.rds.amazonaws.com"}
+	args := args.ArgumentList{QueryMonitoringCountThreshold: 10, Hostname: "testhost"}
 	databaseName := "testdb"
 	version := uint64(14)
 	cp := common_parameters.SetCommonParameters(args, version, databaseName)
