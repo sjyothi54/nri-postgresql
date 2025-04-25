@@ -255,6 +255,39 @@ const (
 		ORDER BY blocked_activity.query_start ASC -- Order by the start time of the blocked query in ascending order
 		LIMIT %d; -- Limit the number of results`
 
+
+	BlockingQueriesForV14AndAboveQueryMatch = `SELECT 'newrelic' as newrelic, -- Common value to filter with like operator in slow query metrics
+		  blocked_activity.pid AS blocked_pid, -- Process ID of the blocked query
+		  LEFT(blocked_statements.query, 4095) AS blocked_query, -- Blocked query text truncated to 4095 characters
+		  blocked_statements.queryid AS blocked_query_id, -- Unique identifier for the blocked query
+		  blocked_activity.query_start AS blocked_query_start, -- Start time of the blocked query
+		  blocked_activity.datname AS database_name, -- Name of the database
+		  blocking_activity.pid AS blocking_pid, -- Process ID of the blocking query
+		  LEFT(blocking_statements.query, 4095) AS blocking_query, -- Blocking query text truncated to 4095 characters
+		  blocking_statements.queryid AS blocking_query_id, -- Unique identifier for the blocking query
+		  blocking_activity.query_start AS blocking_query_start -- Start time of the blocking query
+		FROM pg_stat_activity AS blocked_activity
+		JOIN pg_stat_statements AS blocked_statements ON AnonymizeQueryText(blocked_activity.query) = AnonymizeQueryText(blocked_statements.query)
+		JOIN pg_locks blocked_locks ON blocked_activity.pid = blocked_locks.pid
+		JOIN pg_locks blocking_locks ON blocked_locks.locktype = blocking_locks.locktype
+		  AND blocked_locks.database IS NOT DISTINCT FROM blocking_locks.database
+		  AND blocked_locks.relation IS NOT DISTINCT FROM blocking_locks.relation
+		  AND blocked_locks.page IS NOT DISTINCT FROM blocking_locks.page
+		  AND blocked_locks.tuple IS NOT DISTINCT FROM blocking_locks.tuple
+		  AND blocked_locks.transactionid IS NOT DISTINCT FROM blocking_locks.transactionid
+		  AND blocked_locks.classid IS NOT DISTINCT FROM blocking_locks.classid
+		  AND blocked_locks.objid IS NOT DISTINCT FROM blocking_locks.objid
+		  AND blocked_locks.objsubid IS NOT DISTINCT FROM blocking_locks.objsubid
+		  AND blocked_locks.pid <> blocking_locks.pid
+		JOIN pg_stat_activity AS blocking_activity ON blocking_locks.pid = blocking_activity.pid
+		JOIN pg_stat_statements AS blocking_statements ON AnonymizeQueryText(blocking_activity.query) = AnonymizeQueryText(blocking_statements.query)
+		WHERE NOT blocked_locks.granted
+		  AND blocked_activity.datname IN (%s) -- List of database names
+		  AND blocked_statements.query NOT LIKE 'EXPLAIN (FORMAT JSON) %%' -- Exclude EXPLAIN queries
+		  AND blocking_statements.query NOT LIKE 'EXPLAIN (FORMAT JSON) %%' -- Exclude EXPLAIN queries
+		ORDER BY blocked_activity.query_start ASC -- Order by the start time of the blocked query in ascending order
+		LIMIT %d; -- Limit the number of results`
+
 	// BlockingQueriesForV12AndV13 retrieves information about blocking and blocked queries for PostgreSQL versions 12 and 13
 	BlockingQueriesForV12AndV13 = `SELECT 'newrelic' as newrelic, -- Common value to filter with like operator in slow query metrics
 		blocked_activity.pid AS blocked_pid, -- Process ID of the blocked query
