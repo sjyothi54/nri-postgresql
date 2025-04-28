@@ -3,6 +3,7 @@ package commonparameters
 import (
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
+	"strings"
 )
 
 // The maximum number records that can be fetched in a single metrics
@@ -21,6 +22,7 @@ type CommonParameters struct {
 	QueryMonitoringResponseTimeThreshold int
 	Host                                 string
 	Port                                 string
+	IsRds								 bool
 }
 
 func SetCommonParameters(args args.ArgumentList, version uint64, databases string) *CommonParameters {
@@ -31,7 +33,12 @@ func SetCommonParameters(args args.ArgumentList, version uint64, databases strin
 		QueryMonitoringResponseTimeThreshold: validateAndGetQueryMonitoringResponseTimeThreshold(args),
 		Host:                                 args.Hostname,
 		Port:                                 args.Port,
+		IsRds:                                isRdsHost(args.Hostname),
 	}
+}
+
+func isRdsHost(hostname string) bool {
+	return strings.Contains(hostname, ".rds.amazonaws.com")
 }
 
 func validateAndGetQueryMonitoringResponseTimeThreshold(args args.ArgumentList) int {

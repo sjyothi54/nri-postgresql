@@ -19,10 +19,6 @@ func TestGetWaitEventMetrics(t *testing.T) {
 	conn, mock := connection.CreateMockSQL(t)
 	args := args.ArgumentList{QueryMonitoringCountThreshold: 10}
 	databaseName := "testdb"
-	enabledExtensions := map[string]bool{
-		"pg_wait_sampling":   true,
-		"pg_stat_statements": true,
-	}
 	version := uint64(14)
 	cp := common_parameters.SetCommonParameters(args, version, databaseName)
 	expectedQuery := queries.WaitEvents
@@ -37,7 +33,7 @@ func TestGetWaitEventMetrics(t *testing.T) {
 		"wait_event_name", "wait_category", "total_wait_time_ms", "collection_timestamp", "query_id", "query_text", "database_name",
 	}).AddRow(rowData...).AddRow(rowData...)
 	mock.ExpectQuery(regexp.QuoteMeta(query)).WillReturnRows(mockRows)
-	waitEventMetricsList, err := getWaitEventMetrics(conn, cp, enabledExtensions)
+	waitEventMetricsList, err := getWaitEventMetrics(conn, cp)
 	compareMockRowsWithWaitMetrics(t, expectedRows, waitEventMetricsList)
 	assert.NoError(t, err)
 	assert.Len(t, waitEventMetricsList, 2)
@@ -59,22 +55,17 @@ func compareMockRowsWithWaitMetrics(t *testing.T, expectedRows [][]driver.Value,
 }
 func TestGetWaitEventMetricsFromPgStatActivity(t *testing.T) {
 	conn, mock := connection.CreateMockSQL(t)
-	args := args.ArgumentList{QueryMonitoringCountThreshold: 10}
+	args := args.ArgumentList{QueryMonitoringCountThreshold: 10, Hostname: "testhost.rds.amazonaws.com"}
 	databaseName := "testdb"
 
 	cp := common_parameters.SetCommonParameters(args, uint64(14), databaseName)
-
-	enabledExtensions := map[string]bool{
-		"pg_wait_sampling":   false,
-		"pg_stat_statements": true,
-	}
 	query := fmt.Sprintf(queries.WaitEventsFromPgStatActivity, databaseName, args.QueryMonitoringCountThreshold)
 	mock.ExpectQuery(regexp.QuoteMeta(query)).WillReturnRows(sqlmock.NewRows([]string{
 		"wait_event_name", "wait_category", "total_wait_time_ms", "collection_timestamp", "query_id", "query_text", "database_name",
 	}).AddRow(
 		"Locks:Lock", "Locks", 500.0, "2023-01-01T00:00:00Z", "queryid2", "SELECT 2", "testdb",
 	))
-	waitEventsList, err := getWaitEventMetrics(conn, cp, enabledExtensions)
+	waitEventsList, err := getWaitEventMetrics(conn, cp)
 	assert.NoError(t, err)
 	assert.Len(t, waitEventsList, 1)
 
@@ -83,12 +74,8 @@ func TestGetWaitEventMetricsFromPgStatActivity(t *testing.T) {
 }
 func TestGetWaitEventEmptyMetrics(t *testing.T) {
 	conn, mock := connection.CreateMockSQL(t)
-	args := args.ArgumentList{QueryMonitoringCountThreshold: 10}
+	args := args.ArgumentList{QueryMonitoringCountThreshold: 10, Hostname: "testhost"}
 	databaseName := "testdb"
-	enabledExtensions := map[string]bool{
-		"pg_wait_sampling":   true,
-		"pg_stat_statements": true,
-	}
 	version := uint64(14)
 	cp := common_parameters.SetCommonParameters(args, version, databaseName)
 	expectedQuery := queries.WaitEvents
@@ -96,7 +83,7 @@ func TestGetWaitEventEmptyMetrics(t *testing.T) {
 	mock.ExpectQuery(regexp.QuoteMeta(query)).WillReturnRows(sqlmock.NewRows([]string{
 		"wait_event_name", "wait_category", "total_wait_time_ms", "collection_timestamp", "query_id", "query_text", "database_name",
 	}))
-	waitEventsList, err := getWaitEventMetrics(conn, cp, enabledExtensions)
+	waitEventsList, err := getWaitEventMetrics(conn, cp)
 	assert.NoError(t, err)
 	assert.Len(t, waitEventsList, 0)
 	assert.NoError(t, mock.ExpectationsWereMet())

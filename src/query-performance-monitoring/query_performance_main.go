@@ -63,7 +63,7 @@ func populateQueryPerformanceMetrics(newConnection *performancedbconnection.PGSQ
 	log.Debug("PopulateBlockingMetrics completed in ", time.Since(start))
 
 	// This check ensures metrics are collected even if the pg_stat_monitor extension is not enabled, as it alters the method of retrieving metrics and execution plans from different extensions.
-	if enabledExtensions[commonutils.PgStatMonitorExtension] {
+	if !cp.IsRds {
 		start = time.Now()
 		log.Debug("Starting PopulateSlowRunningMetrics at ", start)
 		slowRunningQueries := performancemetrics.PopulateSlowRunningMetrics(newConnection, pgIntegration, cp, enabledExtensions)
