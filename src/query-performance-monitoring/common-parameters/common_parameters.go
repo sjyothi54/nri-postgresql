@@ -22,7 +22,7 @@ type CommonParameters struct {
 	QueryMonitoringResponseTimeThreshold int
 	Host                                 string
 	Port                                 string
-	IsRds								 bool
+	IsRds                                bool
 }
 
 func SetCommonParameters(args args.ArgumentList, version uint64, databases string) *CommonParameters {
