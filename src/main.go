@@ -71,6 +71,7 @@ func main() {
 		os.Exit(1)
 	}
 	if args.QueryMonitoringOnly {
+		fmt.Println("args",args,"pgIntegration",pgIntegration,"collectionList",collectionList)
 		queryperformancemonitoring.QueryPerformanceMain(args, pgIntegration, collectionList)
 		return
 	}
