@@ -1,10 +1,10 @@
 package commonparameters
 
 import (
-    "strings"
-
-    "github.com/newrelic/infra-integrations-sdk/v3/log"
-    "github.com/newrelic/nri-postgresql/src/args"
+	"strings"
+	
+	"github.com/newrelic/infra-integrations-sdk/v3/log"
+	"github.com/newrelic/nri-postgresql/src/args"
 )
 
 // The maximum number records that can be fetched in a single metrics
@@ -23,7 +23,7 @@ type CommonParameters struct {
 	QueryMonitoringResponseTimeThreshold int
 	Host                                 string
 	Port                                 string
-	IsRds								 bool
+	IsRds                                bool
 }
 
 func SetCommonParameters(args args.ArgumentList, version uint64, databases string) *CommonParameters {
