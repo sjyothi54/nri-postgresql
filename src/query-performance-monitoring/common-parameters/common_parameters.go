@@ -2,7 +2,7 @@ package commonparameters
 
 import (
 	"strings"
-	
+
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"github.com/newrelic/nri-postgresql/src/args"
 )
