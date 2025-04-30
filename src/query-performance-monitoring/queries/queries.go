@@ -255,7 +255,6 @@ const (
 		ORDER BY blocked_activity.query_start ASC -- Order by the start time of the blocked query in ascending order
 		LIMIT %d; -- Limit the number of results`
 
-
 	BlockingQueriesForV14AndAboveQueryMatch = `SELECT 'newrelic' as newrelic, -- Common value to filter with like operator in slow query metrics
 		  blocked_activity.pid AS blocked_pid, -- Process ID of the blocked query
 		  LEFT(blocked_statements.query, 4095) AS blocked_query, -- Blocked query text truncated to 4095 characters
