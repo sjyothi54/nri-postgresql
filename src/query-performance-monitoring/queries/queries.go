@@ -337,7 +337,7 @@ const (
 		 exec_time_ms DESC -- Order by average execution time in descending order
 		LIMIT %d; -- Limit the number of results`
 
-	IndividualQueryFromPgStat = "select datname,query,query_id as queryid from pg_stat_activity where query_id is not null and query is not null and query !='';"
+	IndividualQueryFromPgStat = "select query  from pg_stat_activity where query is not null and query !='';"
 
 	// IndividualQuerySearchV12 retrieves individual query statistics for PostgreSQL version 12
 	IndividualQuerySearchV12 = `SELECT 'newrelic' as newrelic, -- Common value to filter with like operator in slow query metrics

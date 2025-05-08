@@ -12,6 +12,7 @@ type SlowRunningQueryMetrics struct {
 	AvgDiskWrites       *float64 `db:"avg_disk_writes"       metric_name:"avg_disk_writes"            source_type:"gauge"`
 	StatementType       *string  `db:"statement_type"        metric_name:"statement_type"             source_type:"attribute"`
 	CollectionTimestamp *string  `db:"collection_timestamp"  metric_name:"collection_timestamp"       source_type:"attribute"`
+	IndividualQuery     *string  `db:"individual_query"      metric_name:"individual_query"           source_type:"attribute" ingest_data:"false"`
 }
 
 type SlowRunningQueryMetricsPgStat struct {

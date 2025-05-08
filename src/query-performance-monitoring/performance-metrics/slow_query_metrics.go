@@ -65,48 +65,50 @@ func PopulateSlowRunningMetrics(conn *performancedbconnection.PGSQLConnection, p
 	return slowQueryMetricsList
 }
 
-func PopulateSlowQueriesPgStat(connection *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, enabledExtensions map[string]bool, cp *commonparameters.CommonParameters) []datamodels.SlowRunningQueryMetricsPgStat {
-	isEligible, _ := validations.CheckSlowQueryMetricsFetchEligibility(enabledExtensions)
+func PopulateSlowRunningMetricsPgStat(conn *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, cp *commonparameters.CommonParameters, enabledExtensions map[string]bool) []datamodels.SlowRunningQueryMetrics {
+	isEligible, err := validations.CheckSlowQueryMetricsFetchEligibility(enabledExtensions)
+	if err != nil {
+		log.Error("Error executing query: %v", err)
+		return nil
+	}
 	if !isEligible {
 		log.Debug("Extension 'pg_stat_statements' is not enabled or unsupported version.")
 		return nil
 	}
-	slowQueriesList, slowQueriesListInterface := getSlowQueriesFromPgStat(connection, cp)
-	err := commonutils.IngestMetric(slowQueriesListInterface, "PostgresSlowQueries", pgIntegration, cp)
+	individualQueries := getIndividualQueriesFromPgStat(conn)
+	slowQueryMetricsList, _, err := getSlowRunningMetrics(conn, cp)
+	filteredSlowQueryMetrics, filteredSlowQueryMetricsInterface := getFilteredIndividualAndSlowMetrics(individualQueries, slowQueryMetricsList)
+	if err != nil {
+		log.Error("Error fetching slow-running queries: %v", err)
+		return nil
+	}
+
+	if len(slowQueryMetricsList) == 0 {
+		log.Debug("No slow-running queries found.")
+		return nil
+	}
+	err = commonutils.IngestMetric(filteredSlowQueryMetricsInterface, "PostgresSlowQueries", pgIntegration, cp)
 	if err != nil {
 		log.Error("Error ingesting slow-running queries: %v", err)
 		return nil
 	}
-	return slowQueriesList
+	return filteredSlowQueryMetrics
 }
 
-func getSlowQueriesFromPgStat(connection *performancedbconnection.PGSQLConnection, cp *commonparameters.CommonParameters) ([]datamodels.SlowRunningQueryMetricsPgStat, []interface{}) {
-	versionSpecificSlowQuery, err := commonutils.FetchSlowAndIndividualQueriesPgStat(cp.Version)
-	if err != nil {
-		log.Error("Unsupported postgres version: %v", err)
-		return nil, nil
+func getFilteredIndividualAndSlowMetrics(individualQueries []string, slowQueryMetrics []datamodels.SlowRunningQueryMetrics) ([]datamodels.SlowRunningQueryMetrics, []interface{}) {
+	filteredSlowQueryMetrics := make([]datamodels.SlowRunningQueryMetrics, 0)
+	filteredSlowQueryMetricsInterface := make([]interface{}, 0)
+	individualQueryMap := make(map[string]string)
+	for _, individualQuery := range individualQueries {
+		individualQueryMap[commonutils.AnonymizeAndNormalize(individualQuery)] = individualQuery
 	}
-	var query = fmt.Sprintf(versionSpecificSlowQuery, cp.Databases, cp.QueryMonitoringCountThreshold)
-	rows, err := connection.Queryx(query)
-	if err != nil {
-		log.Error("Error executing query: %v", err)
-		return nil, nil
-	}
-	defer rows.Close()
-	var slowQueryMetricsList []datamodels.SlowRunningQueryMetricsPgStat
-	var slowQueryMetricsListInterface []interface{}
-	for rows.Next() {
-		var slowQuery datamodels.SlowRunningQueryMetricsPgStat
-		if scanErr := rows.StructScan(&slowQuery); scanErr != nil {
-			log.Error("Error scanning rows: %v", err)
-			return nil, nil
+	for _, slowQueryMetric := range slowQueryMetrics {
+		if _, exists := individualQueryMap[commonutils.AnonymizeQueryText(*slowQueryMetric.QueryText)]; exists {
+			individualQuerySample := individualQueryMap[commonutils.AnonymizeQueryText(*slowQueryMetric.QueryText)]
+			slowQueryMetric.QueryText = &individualQuerySample
+			slowQueryMetrics = append(slowQueryMetrics, slowQueryMetric)
+			filteredSlowQueryMetricsInterface = append(filteredSlowQueryMetricsInterface, slowQueryMetric)
 		}
-		slowQueryMetricsList = append(slowQueryMetricsList, slowQuery)
-		slowQueryMetricsListInterface = append(slowQueryMetricsListInterface, slowQuery)
 	}
-	if len(slowQueryMetricsList) == 0 {
-		log.Debug("No slow-running queries found.")
-		return nil, nil
-	}
-	return slowQueryMetricsList, slowQueryMetricsListInterface
+	return filteredSlowQueryMetrics, filteredSlowQueryMetricsInterface
 }

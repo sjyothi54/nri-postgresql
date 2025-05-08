@@ -81,7 +81,7 @@ func populateQueryPerformanceMetrics(newConnection *performancedbconnection.PGSQ
 	} else {
 		start = time.Now()
 		log.Debug("Starting PopulateSlowQueriesPgStat at ", start)
-		slowQueries := performancemetrics.PopulateSlowQueriesPgStat(newConnection, pgIntegration, enabledExtensions, cp)
+		slowQueries := performancemetrics.PopulateSlowRunningMetricsPgStat(newConnection, pgIntegration, cp, enabledExtensions)
 		log.Debug("PopulateSlowQueriesPgStat completed in ", time.Since(start))
 
 		start = time.Now()
