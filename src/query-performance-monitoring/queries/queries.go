@@ -191,7 +191,7 @@ const (
             sa.pid, -- Process ID
             sa.wait_event_type AS event_type, -- Type of the wait event
             sa.wait_event AS event, -- Wait event           
-            current_timestamp - sa.backend_start AS duration, -- Timestamp of the wait event
+            sa.backend_start AS duration, -- Timestamp of the wait event
             pg_database.datname AS database_name, -- Name of the database
             LEFT(ss.query, 4095) AS query_text, -- Query text truncated to 4095 characters
             ss.queryid AS query_id -- Unique identifier for the query
@@ -211,15 +211,14 @@ const (
             WHEN event_type = 'CPU' THEN 'CPU' -- Wait category is CPU
             ELSE 'Other' -- Wait category is Other
         END AS wait_category, -- Category of the wait event
-        EXTRACT(EPOCH FROM SUM(duration)) * 1000 AS total_wait_time_ms, -- Convert duration to milliseconds
         to_char(NOW() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS collection_timestamp, -- Timestamp of data collection
         query_id, -- Unique identifier for the query
         query_text, -- Query text
         database_name -- Name of the database
     FROM wait_history
     WHERE query_text NOT LIKE 'EXPLAIN (FORMAT JSON) %%' AND query_id IS NOT NULL AND event_type IS NOT NULL
-    GROUP BY event_type, event, query_id, query_text, database_name
-    ORDER BY total_wait_time_ms DESC -- Order by the total wait time in descending order
+    GROUP BY event_type, event, query_id, query_text, database_name,duration
+    ORDER BY duration DESC -- Order by the total wait time in descending order
     LIMIT %d;  -- Limit the number of results`
 
 	// BlockingQueriesForV14AndAbove retrieves information about blocking and blocked queries for PostgreSQL version 14 and above
