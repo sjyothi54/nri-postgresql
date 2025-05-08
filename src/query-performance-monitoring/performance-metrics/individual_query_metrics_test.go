@@ -49,7 +49,7 @@ func TestGetIndividualQueryMetrics(t *testing.T) {
 }
 
 func TestPopulateIndividualQueryMetricsPgStat(t *testing.T) {
-	slowQueries := []datamodels.SlowRunningQueryMetricsPgStat{
+	slowQueries := []datamodels.SlowRunningQueryMetrics{
 		{
 			QueryID:         stringPtr("query1"),
 			DatabaseName:    stringPtr("testdb"),

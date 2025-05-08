@@ -2,8 +2,8 @@ package performancemetrics
 
 import (
 	"fmt"
-	_ "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
-
+	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
+	
 	"github.com/jmoiron/sqlx"
 
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
@@ -121,7 +121,7 @@ func processForAnonymizeQueryMap(slowRunningMetricList []datamodels.SlowRunningQ
 	return anonymizeQueryMapByDB
 }
 
-func PopulateIndividualQueryMetricsPgStat(slowQueries []datamodels.SlowRunningQueryMetricsPgStat, pgIntegration *integration.Integration, cp *commonparameters.CommonParameters) []datamodels.IndividualQueryMetrics {
+func PopulateIndividualQueryMetricsPgStat(slowQueries []datamodels.SlowRunningQueryMetrics, pgIntegration *integration.Integration, cp *commonparameters.CommonParameters) []datamodels.IndividualQueryMetrics {
 	var individualQueriesList = make([]datamodels.IndividualQueryMetrics, 0)
 	var individualQueriesListInterface = make([]interface{}, 0)
 	for _, slowRunningMetric := range slowQueries {
@@ -145,4 +145,24 @@ func PopulateIndividualQueryMetricsPgStat(slowQueries []datamodels.SlowRunningQu
 		return nil
 	}
 	return individualQueriesList
+}
+
+func getIndividualQueriesFromPgStat(conn *performancedbconnection.PGSQLConnection) []string {
+	var individualQueryMetricsList []string
+	query := fmt.Sprintf(queries.IndividualQueryFromPgStat)
+	rows, err := conn.Queryx(query)
+	if err != nil {
+		log.Error("Error executing query: %v", err)
+		return nil
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var individualQuery string
+		if scanErr := rows.Scan(&individualQuery); scanErr != nil {
+			log.Error("Could not scan row: ", scanErr)
+			continue
+		}
+		individualQueryMetricsList = append(individualQueryMetricsList, individualQuery)
+	}
+	return individualQueryMetricsList
 }
