@@ -129,7 +129,7 @@ func TestIntegrationWithDatabaseLoadPerfEnabled(t *testing.T) {
 	}
 }
 
-func TestIntegrationWithDatabaseLoadPerfEnabled(t *testing.T) {
+func TestIntegrationWithDatabaseLoadPerfQueryMonitoringOnly(t *testing.T) {
 	tests := []struct {
 		name                string
 		expectedSampleTypes []string
