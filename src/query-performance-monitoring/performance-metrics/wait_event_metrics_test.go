@@ -65,7 +65,7 @@ func TestGetWaitEventMetricsFromPgStatActivity(t *testing.T) {
 	}).AddRow(
 		"Locks:Lock", "Locks", 500.0, "2023-01-01T00:00:00Z", "queryid2", "SELECT 2", "testdb",
 	))
-	waitEventsList, err := getWaitEventMetrics(conn, cp)
+	waitEventsList, err := getWaitEventMetricsPgStat(conn, cp)
 	assert.NoError(t, err)
 	assert.Len(t, waitEventsList, 1)
 

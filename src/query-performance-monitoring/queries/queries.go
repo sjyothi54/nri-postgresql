@@ -119,16 +119,13 @@ const (
             sa.wait_event AS event, -- Wait event           
             sa.backend_start AS duration, -- Timestamp of the wait event
             pg_database.datname AS database_name, -- Name of the database
-            LEFT(ss.query, 4095) AS query_text, -- Query text truncated to 4095 characters
-            ss.queryid AS query_id -- Unique identifier for the query
+			sa.query as query_text
         FROM
             pg_stat_activity sa
         LEFT JOIN
-            pg_stat_statements ss ON  AnonymizeQueryText(sa.query) = AnonymizeQueryText(ss.query)
-        LEFT JOIN
             pg_database ON pg_database.oid = sa.datid
-        WHERE pg_database.datname in (%s) -- List of database names
-    )
+        WHERE pg_database.datname in (%s) -- List of database names 
+      )
     SELECT
         event_type || ':' || event AS wait_event_name, -- Concatenated wait event name
         CASE
@@ -137,13 +134,12 @@ const (
             WHEN event_type = 'CPU' THEN 'CPU' -- Wait category is CPU
             ELSE 'Other' -- Wait category is Other
         END AS wait_category, -- Category of the wait event
+		query_text,
         to_char(NOW() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS collection_timestamp, -- Timestamp of data collection
-        query_id, -- Unique identifier for the query
-        query_text, -- Query text
         database_name -- Name of the database
     FROM wait_history
-    WHERE query_text NOT LIKE 'EXPLAIN (FORMAT JSON) %%' AND query_id IS NOT NULL AND event_type IS NOT NULL
-    GROUP BY event_type, event, query_id, query_text, database_name,duration
+    WHERE event_type IS NOT NULL
+    GROUP BY event_type, event, database_name,duration,query_text
     ORDER BY duration DESC -- Order by the total wait time in descending order
     LIMIT %d;  -- Limit the number of results`
 
@@ -182,12 +178,12 @@ const (
 
 	RDSPostgresBlockingQueryForV14AndAbove = `SELECT 'newrelic' as newrelic, -- Common value to filter with like operator in slow query metrics
 		  blocked_activity.pid AS blocked_pid, -- Process ID of the blocked query
-		  LEFT(blocked_statements.query, 4095) AS blocked_query, -- Blocked query text truncated to 4095 characters
+		  blocked_query AS blocked_query, -- Blocked query text truncated to 4095 characters
 		  blocked_statements.queryid AS blocked_query_id, -- Unique identifier for the blocked query
 		  blocked_activity.query_start AS blocked_query_start, -- Start time of the blocked query
 		  blocked_activity.datname AS database_name, -- Name of the database
 		  blocking_activity.pid AS blocking_pid, -- Process ID of the blocking query
-		  LEFT(blocking_statements.query, 4095) AS blocking_query, -- Blocking query text truncated to 4095 characters
+		  blocking_query AS blocking_query, -- Blocking query text truncated to 4095 characters
 		  blocking_statements.queryid AS blocking_query_id, -- Unique identifier for the blocking query
 		  blocking_activity.query_start AS blocking_query_start -- Start time of the blocking query
 		FROM pg_stat_activity AS blocked_activity
