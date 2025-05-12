@@ -14,7 +14,7 @@ import (
 func getSlowRunningMetrics(conn *performancedbconnection.PGSQLConnection, cp *commonparameters.CommonParameters) ([]datamodels.SlowRunningQueryMetrics, []interface{}, error) {
 	var slowQueryMetricsList []datamodels.SlowRunningQueryMetrics
 	var slowQueryMetricsListInterface []interface{}
-	versionSpecificSlowQuery, err := commonutils.FetchVersionSpecificSlowQueries(cp.Version)
+	versionSpecificSlowQuery, err := commonutils.FetchVersionSpecificSlowQuery(cp.Version)
 	if err != nil {
 		log.Error("Unsupported postgres version: %v", err)
 		return nil, nil, err
@@ -37,11 +37,7 @@ func getSlowRunningMetrics(conn *performancedbconnection.PGSQLConnection, cp *co
 }
 
 func PopulateSlowRunningMetrics(conn *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, cp *commonparameters.CommonParameters, enabledExtensions map[string]bool) []datamodels.SlowRunningQueryMetrics {
-	isEligible, err := validations.CheckSlowQueryMetricsFetchEligibility(enabledExtensions)
-	if err != nil {
-		log.Error("Error executing query: %v", err)
-		return nil
-	}
+	isEligible := validations.CheckSlowQueryMetricsFetchEligibility(enabledExtensions)
 	if !isEligible {
 		log.Debug("Extension 'pg_stat_statements' is not enabled or unsupported version.")
 		return nil
@@ -66,11 +62,7 @@ func PopulateSlowRunningMetrics(conn *performancedbconnection.PGSQLConnection, p
 }
 
 func PopulateSlowRunningMetricsPgStat(conn *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, cp *commonparameters.CommonParameters, enabledExtensions map[string]bool) []datamodels.SlowRunningQueryMetrics {
-	isEligible, err := validations.CheckSlowQueryMetricsFetchEligibility(enabledExtensions)
-	if err != nil {
-		log.Error("Error executing query: %v", err)
-		return nil
-	}
+	isEligible := validations.CheckSlowQueryMetricsFetchEligibility(enabledExtensions)
 	if !isEligible {
 		log.Debug("Extension 'pg_stat_statements' is not enabled or unsupported version.")
 		return nil

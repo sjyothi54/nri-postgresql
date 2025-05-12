@@ -1,11 +1,10 @@
 package commonutils
 
 import (
-	commonparameters "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-parameters"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
 )
 
-func FetchVersionSpecificSlowQueries(version uint64) (string, error) {
+func FetchVersionSpecificSlowQuery(version uint64) (string, error) {
 	switch {
 	case version == PostgresVersion12:
 		return queries.SlowQueriesForV12, nil
@@ -16,23 +15,12 @@ func FetchVersionSpecificSlowQueries(version uint64) (string, error) {
 	}
 }
 
-func FetchSlowAndIndividualQueriesPgStat(version uint64) (string, error) {
-	switch {
-	case version == PostgresVersion12:
-		return queries.SlowQueryPgStatV12, nil
-	case version >= PostgresVersion13:
-		return queries.SlowQueryPgStatV13AndAbove, nil
-	default:
-		return "", ErrUnsupportedVersion
-	}
-}
-
-func FetchVersionSpecificBlockingQueries(version uint64, isRds bool) (string, error) {
+func FetchVersionSpecificBlockingQuery(version uint64, isRds bool) (string, error) {
 	switch {
 	case version == PostgresVersion12, version == PostgresVersion13:
 		return queries.BlockingQueriesForV12AndV13, nil
 	case version >= PostgresVersion14 && isRds:
-		return queries.BlockingQueriesForV14AndAboveQueryMatch, nil
+		return queries.RDSPostgresBlockingQueryForV14AndAbove, nil
 	case version >= PostgresVersion14 && !isRds:
 		return queries.BlockingQueriesForV14AndAbove, nil
 	default:
@@ -51,8 +39,8 @@ func FetchVersionSpecificIndividualQueries(version uint64) (string, error) {
 	}
 }
 
-func FetchSupportedWaitEvents(cp *commonparameters.CommonParameters) (string, error) {
-	if cp.IsRds {
+func FetchSupportedWaitEventsQuery(isRDS bool) (string, error) {
+	if isRDS {
 		return queries.WaitEventsFromPgStatActivity, nil
 	} else {
 		return queries.WaitEvents, nil
