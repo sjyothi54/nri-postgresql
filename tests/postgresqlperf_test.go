@@ -137,10 +137,16 @@ func TestIntegrationWithDatabaseLoadPerfQueryMonitoringOnly(t *testing.T) {
 		args                []string
 	}{
 		{
-			name:                "Performance metrics collection test",
-			expectedSampleTypes: allSampleTypes,
-			containers:          perfContainers,
-			args:                []string{`-collection_list=all`, `-query_monitoring_only=true`},
+			name: "Performance metrics collection test",
+			expectedSampleTypes: []string{
+				"PostgresSlowQueries",
+				"PostgresWaitEvents",
+				"PostgresBlockingSessions",
+				"PostgresIndividualQueries",
+				"PostgresExecutionPlanMetrics",
+			},
+			containers: perfContainers,
+			args:       []string{`-collection_list=all`, `-query_monitoring_only=true`},
 		},
 		{
 			name: "Performance metrics collection test without collection list",
