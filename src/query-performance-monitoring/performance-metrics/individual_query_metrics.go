@@ -3,7 +3,7 @@ package performancemetrics
 import (
 	"fmt"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/queries"
-	
+
 	"github.com/jmoiron/sqlx"
 
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
@@ -19,11 +19,7 @@ type queryInfoMap map[string]string
 type databaseQueryInfoMap map[string]queryInfoMap
 
 func PopulateIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, slowRunningQueries []datamodels.SlowRunningQueryMetrics, pgIntegration *integration.Integration, cp *commonparameters.CommonParameters, enabledExtensions map[string]bool) []datamodels.IndividualQueryMetrics {
-	isEligible, err := validations.CheckIndividualQueryMetricsFetchEligibility(enabledExtensions)
-	if err != nil {
-		log.Error("Error executing query: %v", err)
-		return nil
-	}
+	isEligible := validations.CheckIndividualQueryMetricsFetchEligibility(enabledExtensions)
 	if !isEligible {
 		log.Debug("Extension 'pg_stat_monitor' is not enabled or unsupported version.")
 		return nil
@@ -34,7 +30,7 @@ func PopulateIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnectio
 		log.Debug("No individual queries found.")
 		return nil
 	}
-	err = commonutils.IngestMetric(individualQueryMetricsInterface, "PostgresIndividualQueries", pgIntegration, cp)
+	err := commonutils.IngestMetric(individualQueryMetricsInterface, "PostgresIndividualQueries", pgIntegration, cp)
 	if err != nil {
 		log.Error("Error ingesting individual queries: %v", err)
 		return nil
@@ -122,29 +118,29 @@ func processForAnonymizeQueryMap(slowRunningMetricList []datamodels.SlowRunningQ
 }
 
 func PopulateIndividualQueryMetricsPgStat(slowQueries []datamodels.SlowRunningQueryMetrics, pgIntegration *integration.Integration, cp *commonparameters.CommonParameters) []datamodels.IndividualQueryMetrics {
-	var individualQueriesList = make([]datamodels.IndividualQueryMetrics, 0)
-	var individualQueriesListInterface = make([]interface{}, 0)
+	var individualQueriesMetricsList = make([]datamodels.IndividualQueryMetrics, 0)
+	var individualQueriesMetricsListInterface = make([]interface{}, 0)
 	for _, slowRunningMetric := range slowQueries {
-		var individualQuery datamodels.IndividualQueryMetrics
-		individualQuery.QueryID = slowRunningMetric.QueryID
-		individualQuery.DatabaseName = slowRunningMetric.DatabaseName
-		individualQuery.QueryText = slowRunningMetric.QueryText
-		individualQuery.RealQueryText = slowRunningMetric.IndividualQuery
+		var individualQueryMetric datamodels.IndividualQueryMetrics
+		individualQueryMetric.QueryID = slowRunningMetric.QueryID
+		individualQueryMetric.DatabaseName = slowRunningMetric.DatabaseName
+		individualQueryMetric.QueryText = slowRunningMetric.QueryText
+		individualQueryMetric.RealQueryText = slowRunningMetric.IndividualQuery
 		generatedPlanID, err := commonutils.GeneratePlanID()
 		if err != nil {
 			log.Error("Error generating plan ID: %v", err)
 			continue
 		}
-		individualQuery.PlanID = &generatedPlanID
-		individualQueriesList = append(individualQueriesList, individualQuery)
-		individualQueriesListInterface = append(individualQueriesListInterface, individualQuery)
+		individualQueryMetric.PlanID = &generatedPlanID
+		individualQueriesMetricsList = append(individualQueriesMetricsList, individualQueryMetric)
+		individualQueriesMetricsListInterface = append(individualQueriesMetricsListInterface, individualQueryMetric)
 	}
-	err := commonutils.IngestMetric(individualQueriesListInterface, "PostgresIndividualQueries", pgIntegration, cp)
+	err := commonutils.IngestMetric(individualQueriesMetricsListInterface, "PostgresIndividualQueries", pgIntegration, cp)
 	if err != nil {
 		log.Error("Error ingesting individual queries: %v", err)
 		return nil
 	}
-	return individualQueriesList
+	return individualQueriesMetricsList
 }
 
 func getIndividualQueriesFromPgStat(conn *performancedbconnection.PGSQLConnection) []string {

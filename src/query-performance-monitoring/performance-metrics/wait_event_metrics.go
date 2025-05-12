@@ -13,13 +13,7 @@ import (
 )
 
 func PopulateWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, cp *commonparameters.CommonParameters, enabledExtensions map[string]bool) error {
-	var isEligible bool
-	var eligibleCheckErr error
-	isEligible, eligibleCheckErr = validations.CheckWaitEventMetricsFetchEligibility(enabledExtensions)
-	if eligibleCheckErr != nil {
-		log.Error("Error executing query: %v", eligibleCheckErr)
-		return commonutils.ErrUnExpectedError
-	}
+	var isEligible = validations.CheckWaitEventMetricsFetchEligibility(enabledExtensions)
 	if !isEligible {
 		log.Debug("Extension 'pg_wait_sampling' or 'pg_stat_statement' is not enabled or unsupported version.")
 		return commonutils.ErrNotEligible
@@ -43,7 +37,7 @@ func PopulateWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, pgI
 
 func getWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, cp *commonparameters.CommonParameters) ([]interface{}, error) {
 	var waitEventMetricsList []interface{}
-	supportedWaitQuery, err := commonutils.FetchSupportedWaitEvents(cp)
+	supportedWaitQuery, err := commonutils.FetchSupportedWaitEventsQuery(cp.IsRds)
 	if err != nil {
 		log.Error("Unsupported postgres version: %v", err)
 		return nil, err

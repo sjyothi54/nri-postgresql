@@ -41,8 +41,6 @@ func GeneratePlanID() (string, error) {
 	return result, nil
 }
 
-
-
 func AnonymizeAndNormalize(query string) string {
 	reNumbers := regexp.MustCompile(`\d+`)
 	cleanedQuery := reNumbers.ReplaceAllString(query, "?")

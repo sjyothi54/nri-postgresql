@@ -77,6 +77,17 @@ func TestPopulateIndividualQueryMetricsPgStat(t *testing.T) {
 	assert.Equal(t, "SELECT * FROM test where id = 1", *result[0].RealQueryText)
 }
 
+func TestPopulateIndividualQueryMetricsPgStatEmpty(t *testing.T) {
+	pgIntegration, _ := integration.New("test", "1.0.0")
+	args := args.ArgumentList{QueryMonitoringCountThreshold: 10}
+	version := uint64(13)
+	databaseName := "testdb"
+	cp := common_parameters.SetCommonParameters(args, version, databaseName)
+	result := PopulateIndividualQueryMetricsPgStat(nil, pgIntegration, cp)
+	assert.NotEmpty(t, pgIntegration.Entities)
+	assert.Len(t, result, 0)
+}
+
 func stringPtr(s string) *string {
 	return &s
 }
