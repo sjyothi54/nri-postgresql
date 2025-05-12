@@ -39,7 +39,7 @@ var (
 	port       = flag.Int("port", defaultPort, "Postgresql port")
 	database   = flag.String("database", defaultDB, "Postgresql database")
 
-	allSampleTypes = []string {
+	allSampleTypes = []string{
 		"PostgresqlInstanceSample",
 		"PostgresSlowQueries",
 		"PostgresWaitEvents",
@@ -199,6 +199,99 @@ func validateSample(t *testing.T, sample string, sampleType string) {
 		err = simulation.ValidateJSONSchema(schemaFile, sample)
 		assert.NoError(t, err, "Sample failed schema validation for type: %s", sampleType)
 	})
+}
+
+func TestIntegrationQueryMonitoringOnly(t *testing.T) {
+	tests := []struct {
+		name                string
+		expectedSampleTypes []string
+		args                []string
+	}{
+		{
+			name: "Query monitoring only enabled test",
+			expectedSampleTypes: []string{
+				"PostgresSlowQueries",
+				"PostgresWaitEvents",
+				"PostgresBlockingSessions",
+				"PostgresIndividualQueries",
+				"PostgresExecutionPlanMetrics",
+			},
+			args: []string{`-collection_list=all`, `-query_monitoring_only=true`},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			stdout, stderr, err := simulation.RunIntegration(*container, integrationContainer, *binaryPath, user, psw, database, tt.args...)
+			if stderr != "" {
+				fmt.Println(stderr)
+			}
+			assert.NoError(t, err, "Running Integration Failed")
+
+			samples := strings.Split(stdout, "\n")
+			foundSampleTypes := make(map[string]bool)
+
+			for _, sample := range samples {
+				sample = strings.TrimSpace(sample)
+				if sample == "" {
+					continue
+				}
+
+				sampleType := getSampleType(sample, allSampleTypes)
+				require.NotEmpty(t, sampleType, "No sample type found in JSON output: %s", sample)
+				require.Contains(t, tt.expectedSampleTypes, sampleType, "Found unexpected sample type %q", sampleType)
+				foundSampleTypes[sampleType] = true
+
+				validateSample(t, sample, sampleType)
+			}
+			samplesFound := getFoundSampleTypes(foundSampleTypes)
+			require.ElementsMatch(t, tt.expectedSampleTypes, samplesFound, "Not all expected sample types were found. Expected %v, found %v", tt.expectedSampleTypes, samplesFound)
+		})
+	}
+}
+
+func TestIntegrationQueryMonitoringDisabled(t *testing.T) {
+	tests := []struct {
+		name                  string
+		unexpectedSampleTypes []string
+		args                  []string
+	}{
+		{
+			name: "Query monitoring only disabled test",
+			unexpectedSampleTypes: []string{
+				"PostgresSlowQueries",
+				"PostgresWaitEvents",
+				"PostgresBlockingSessions",
+				"PostgresIndividualQueries",
+				"PostgresExecutionPlanMetrics",
+			},
+			args: []string{`-collection_list=all`, `-query_monitoring_only=false`},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			stdout, stderr, err := simulation.RunIntegration(*container, integrationContainer, *binaryPath, user, psw, database, tt.args...)
+			if stderr != "" {
+				fmt.Println(stderr)
+			}
+			assert.NoError(t, err, "Running Integration Failed")
+
+			samples := strings.Split(stdout, "\n")
+
+			for _, sample := range samples {
+				sample = strings.TrimSpace(sample)
+				if sample == "" {
+					continue
+				}
+
+				sampleType := getSampleType(sample, allSampleTypes)
+				require.NotContains(t, tt.unexpectedSampleTypes, sampleType, "Found unexpected sample type %q when query monitoring is disabled", sampleType)
+
+				validateSample(t, sample, sampleType)
+			}
+		})
+	}
 }
 
 func getFoundSampleTypes(foundSampleTypes map[string]bool) []string {
