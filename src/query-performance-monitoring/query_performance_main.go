@@ -84,7 +84,7 @@ func populateQueryPerformanceMetrics(newConnection *performancedbconnection.PGSQ
 		log.Debug("Starting PopulateSlowQueriesPgStat at ", start)
 		slowQueries := performancemetrics.PopulateSlowRunningMetricsPgStat(newConnection, pgIntegration, cp, enabledExtensions)
 		log.Debug("PopulateSlowQueriesPgStat completed in ", time.Since(start))
-
+		log.Info("Slow queries count: ", len(slowQueries))
 		start = time.Now()
 		log.Debug("Starting PopulateIndividualQueryMetricsPgStat at ", start)
 		individualQueries := performancemetrics.PopulateIndividualQueryMetricsPgStat(slowQueries, pgIntegration, cp)
