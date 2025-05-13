@@ -101,6 +101,7 @@ func getFilteredIndividualAndSlowMetrics(individualQueries []string, slowQueryMe
 			slowQueryMetric.IndividualQuery = &individualQuerySample
 			slowQueryMetrics = append(slowQueryMetrics, slowQueryMetric)
 			filteredSlowQueryMetricsInterface = append(filteredSlowQueryMetricsInterface, slowQueryMetric)
+			filteredSlowQueryMetrics = append(filteredSlowQueryMetrics, slowQueryMetric)
 		}
 	}
 	return filteredSlowQueryMetrics, filteredSlowQueryMetricsInterface
