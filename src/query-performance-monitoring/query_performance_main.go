@@ -53,7 +53,6 @@ func populateQueryPerformanceMetrics(newConnection *performancedbconnection.PGSQ
 		return
 	}
 
-	// This check ensures metrics are collected even if the pg_stat_monitor extension is not enabled, as it alters the method of retrieving metrics and execution plans from different extensions.
 	if !cp.IsRds {
 		start := time.Now()
 		log.Debug("Starting PopulateWaitEventMetrics at ", start)
