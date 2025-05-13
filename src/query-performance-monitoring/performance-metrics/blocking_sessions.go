@@ -93,7 +93,7 @@ func PopulateBlockingMetricsPgStat(conn *performancedbconnection.PGSQLConnection
 
 func getBlockingMetricsPgStat(conn *performancedbconnection.PGSQLConnection, cp *commonparameters.CommonParameters) ([]datamodels.BlockingSessionMetrics, error) {
 	var blockingQueriesMetricsList []datamodels.BlockingSessionMetrics
-	var query = fmt.Sprintf(queries.RDSPostgresBlockingQueryForV14AndAbove, cp.Databases, cp.QueryMonitoringCountThreshold)
+	var query = fmt.Sprintf(queries.RDSPostgresBlockingQuery, cp.Databases, cp.QueryMonitoringCountThreshold)
 	rows, err := conn.Queryx(query)
 	if err != nil {
 		log.Error("Failed to execute query: %v", err)
@@ -105,14 +105,8 @@ func getBlockingMetricsPgStat(conn *performancedbconnection.PGSQLConnection, cp 
 		if scanError := rows.StructScan(&blockingQueryMetric); scanError != nil {
 			return nil, scanError
 		}
-		// For PostgreSQL versions 13 and 12, anonymization of queries does not occur for blocking sessions, so it's necessary to explicitly anonymize them.
-		if cp.Version == commonutils.PostgresVersion13 || cp.Version == commonutils.PostgresVersion12 {
-			*blockingQueryMetric.BlockedQuery = commonutils.AnonymizeQueryText(*blockingQueryMetric.BlockedQuery)
-			*blockingQueryMetric.BlockingQuery = commonutils.AnonymizeQueryText(*blockingQueryMetric.BlockingQuery)
-		}
 		blockingQueriesMetricsList = append(blockingQueriesMetricsList, blockingQueryMetric)
 	}
-
 	return blockingQueriesMetricsList, nil
 }
 

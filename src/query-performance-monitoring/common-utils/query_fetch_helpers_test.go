@@ -51,15 +51,7 @@ func TestFetchVersionSpecificBlockingQueries(t *testing.T) {
 		{commonutils.PostgresVersion11, "", true},
 	}
 
-	for _, test := range tests {
-		result, err := commonutils.FetchVersionSpecificBlockingQuery(test.version)
-		if test.expectErr {
-			assert.Error(t, err)
-		} else {
-			assert.NoError(t, err)
-			assert.Equal(t, test.expected, result)
-		}
-	}
+	runTestCases(t, tests, commonutils.FetchVersionSpecificBlockingQuery)
 }
 
 func TestFetchVersionSpecificIndividualQueries(t *testing.T) {

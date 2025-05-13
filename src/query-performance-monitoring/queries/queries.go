@@ -176,7 +176,7 @@ const (
 		ORDER BY blocked_activity.query_start ASC -- Order by the start time of the blocked query in ascending order
 		LIMIT %d; -- Limit the number of results`
 
-	RDSPostgresBlockingQueryForV14AndAbove = `SELECT 'newrelic' as newrelic, -- Common value to filter with like operator in slow query metrics
+	RDSPostgresBlockingQuery = `SELECT 'newrelic' as newrelic, -- Common value to filter with like operator in slow query metrics
 		  blocked_activity.pid AS blocked_pid, -- Process ID of the blocked query
 		  blocked_activity.query AS blocked_query, -- Blocked query text truncated to 4095 characters
 		  blocked_activity.query_start AS blocked_query_start, -- Start time of the blocked query
