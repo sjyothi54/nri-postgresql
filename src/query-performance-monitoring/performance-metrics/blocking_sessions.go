@@ -122,7 +122,6 @@ func getFilteredBlockingSessions(blockingSessionMetrics []datamodels.BlockingSes
 	for _, metric := range slowQueryMetrics {
 		slowQueryTextMap[commonutils.AnonymizeAndNormalize(*metric.QueryText)] = metric
 	}
-	log.Info("Slow query text map: %v", slowQueryTextMap)
 	for _, blockingSessionMetric := range blockingSessionMetrics {
 		normalizedBlockingQuery := commonutils.AnonymizeAndNormalize(*blockingSessionMetric.BlockingQuery)
 		normalizedBlockedQuery := commonutils.AnonymizeAndNormalize(*blockingSessionMetric.BlockedQuery)
@@ -135,8 +134,6 @@ func getFilteredBlockingSessions(blockingSessionMetrics []datamodels.BlockingSes
 			blockingSessionMetric.BlockedQuery = slowQueryTextMap[normalizedBlockedQuery].QueryText
 			blockingSessionMetric.BlockedQueryID = slowQueryTextMap[normalizedBlockedQuery].QueryID
 			filteredBlockingSessionMetricList = append(filteredBlockingSessionMetricList, blockingSessionMetric)
-		} else {
-			log.Debug("Blocking session metric not found in slow query map: %v", *blockingSessionMetric.BlockedQuery)
 		}
 	}
 	return filteredBlockingSessionMetricList
