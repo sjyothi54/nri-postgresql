@@ -39,7 +39,7 @@ var (
 	port       = flag.Int("port", defaultPort, "Postgresql port")
 	database   = flag.String("database", defaultDB, "Postgresql database")
 
-	allSampleTypes = []string {
+	allSampleTypes = []string{
 		"PostgresqlInstanceSample",
 		"PostgresSlowQueries",
 		"PostgresWaitEvents",
@@ -75,6 +75,86 @@ func TestIntegrationWithDatabaseLoadPerfEnabled(t *testing.T) {
 			},
 			containers: perfContainers,
 			args:       []string{`-enable_query_monitoring=true`},
+		},
+		{
+			name: "Performance metrics collection test without query monitoring enabled",
+			expectedSampleTypes: []string{
+				"PostgresqlInstanceSample",
+			},
+			containers: perfContainers,
+			args:       []string{`-collection_list=all`},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			for _, container := range tt.containers {
+				t.Run(container, func(t *testing.T) {
+					// Create simulation controller
+					controller := simulation.NewSimulationController(container)
+					// Start all simulations
+					done := controller.StartAllSimulations(t)
+
+					time.Sleep(30 * time.Second)
+
+					stdout, stderr, err := simulation.RunIntegration(container, integrationContainer, *binaryPath, user, psw, database, tt.args...)
+					if stderr != "" {
+						fmt.Println(stderr)
+					}
+					assert.NoError(t, err, "Running Integration Failed")
+
+					samples := strings.Split(stdout, "\n")
+					foundSampleTypes := make(map[string]bool)
+
+					for _, sample := range samples {
+						sample = strings.TrimSpace(sample)
+						if sample == "" {
+							continue
+						}
+
+						sampleType := getSampleType(sample, allSampleTypes)
+						require.NotEmpty(t, sampleType, "No sample type found in JSON output: %s", sample)
+						require.Contains(t, tt.expectedSampleTypes, sampleType, "Found unexpected sample type %q", sampleType)
+						foundSampleTypes[sampleType] = true
+
+						validateSample(t, sample, sampleType)
+					}
+					samplesFound := getFoundSampleTypes(foundSampleTypes)
+					require.ElementsMatch(t, tt.expectedSampleTypes, samplesFound, "Not all expected sample types where found expected %v, found %v", tt.expectedSampleTypes, samplesFound)
+					// Wait for all simulations to complete
+					<-done
+				})
+			}
+		})
+	}
+}
+
+func TestIntegrationWithDatabaseLoadPerfQueryMonitoringOnly(t *testing.T) {
+	tests := []struct {
+		name                string
+		expectedSampleTypes []string
+		containers          []string
+		args                []string
+	}{
+		{
+			name: "Performance metrics collection test",
+			expectedSampleTypes: []string{
+				"PostgresSlowQueries",
+				"PostgresWaitEvents",
+				"PostgresBlockingSessions",
+				"PostgresIndividualQueries",
+				"PostgresExecutionPlanMetrics",
+			},
+			containers: perfContainers,
+			args:       []string{`-collection_list=all`, `-query_monitoring_only=true`},
+		},
+		{
+			name: "Performance metrics collection test without collection list",
+			expectedSampleTypes: []string{
+				"PostgresqlInstanceSample",
+			},
+			containers: perfContainers,
+			args:       []string{`-query_monitoring_only=false`},
 		},
 		{
 			name: "Performance metrics collection test without query monitoring enabled",
