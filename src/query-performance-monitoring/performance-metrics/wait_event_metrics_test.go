@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/newrelic/infra-integrations-sdk/v3/integration"
-	commonparameters "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-parameters"
 	commonutils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
 
 	"github.com/newrelic/nri-postgresql/src/args"
@@ -96,7 +95,7 @@ func TestGetWaitEventEmptyMetrics(t *testing.T) {
 func TestPopulateWaitEventMetricsPgStat_NoEligibility(t *testing.T) {
 	conn, _ := connection.CreateMockSQL(t)
 	pgIntegration := &integration.Integration{}
-	cp := &commonparameters.CommonParameters{}
+	cp := &common_parameters.CommonParameters{}
 	enabledExtensions := map[string]bool{"pg_wait_sampling": false}
 	slowQueries := []datamodels.SlowRunningQueryMetrics{}
 
@@ -108,7 +107,7 @@ func TestPopulateWaitEventMetricsPgStat_NoEligibility(t *testing.T) {
 
 func TestGetWaitEventMetricsPgStat_Success(t *testing.T) {
 	conn, mock := connection.CreateMockSQL(t)
-	cp := &commonparameters.CommonParameters{
+	cp := &common_parameters.CommonParameters{
 		Databases:                     "testdb",
 		QueryMonitoringCountThreshold: 10,
 	}

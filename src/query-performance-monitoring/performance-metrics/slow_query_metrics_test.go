@@ -2,9 +2,10 @@ package performancemetrics
 
 import (
 	"fmt"
-	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
 	"regexp"
 	"testing"
+
+	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
 
 	"github.com/newrelic/nri-postgresql/src/args"
 	"github.com/newrelic/nri-postgresql/src/connection"

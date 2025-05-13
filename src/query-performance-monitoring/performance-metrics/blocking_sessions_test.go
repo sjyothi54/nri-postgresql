@@ -6,7 +6,6 @@ import (
 	"regexp"
 	"testing"
 
-	commonparameters "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-parameters"
 	commonutils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
 	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
 
@@ -76,7 +75,7 @@ func TestGetBlockingMetricsErr(t *testing.T) {
 
 func TestGetBlockingMetricsPgStat_Success(t *testing.T) {
 	conn, mock := connection.CreateMockSQL(t)
-	cp := &commonparameters.CommonParameters{
+	cp := &common_parameters.CommonParameters{
 		Databases:                     "testdb",
 		QueryMonitoringCountThreshold: 10,
 		Version:                       14,
@@ -105,7 +104,7 @@ func TestGetBlockingMetricsPgStat_Success(t *testing.T) {
 
 func TestGetBlockingMetricsPgStat_Error(t *testing.T) {
 	conn, mock := connection.CreateMockSQL(t)
-	cp := &commonparameters.CommonParameters{
+	cp := &common_parameters.CommonParameters{
 		Databases:                     "testdb",
 		QueryMonitoringCountThreshold: 10,
 		Version:                       14,
