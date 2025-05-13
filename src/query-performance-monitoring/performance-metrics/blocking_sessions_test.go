@@ -80,7 +80,7 @@ func TestGetBlockingMetricsPgStat_Success(t *testing.T) {
 		QueryMonitoringCountThreshold: 10,
 		Version:                       14,
 	}
-	query := fmt.Sprintf(queries.RDSPostgresBlockingQueryForV14AndAbove, cp.Databases, cp.QueryMonitoringCountThreshold)
+	query := fmt.Sprintf(queries.RDSPostgresBlockingQuery, cp.Databases, cp.QueryMonitoringCountThreshold)
 	mockRows := sqlmock.NewRows([]string{
 		"newrelic", "blocked_pid", "blocked_query", "blocked_query_start", "database_name",
 		"blocking_pid", "blocking_query", "blocking_query_start",
@@ -109,7 +109,7 @@ func TestGetBlockingMetricsPgStat_Error(t *testing.T) {
 		QueryMonitoringCountThreshold: 10,
 		Version:                       14,
 	}
-	query := fmt.Sprintf(queries.RDSPostgresBlockingQueryForV14AndAbove, cp.Databases, cp.QueryMonitoringCountThreshold)
+	query := fmt.Sprintf(queries.RDSPostgresBlockingQuery, cp.Databases, cp.QueryMonitoringCountThreshold)
 	mock.ExpectQuery(regexp.QuoteMeta(query)).WillReturnError(commonutils.ErrUnExpectedError)
 
 	blockingMetrics, err := getBlockingMetricsPgStat(conn, cp)
