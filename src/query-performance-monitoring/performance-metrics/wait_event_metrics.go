@@ -56,11 +56,6 @@ func getWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, cp *comm
 }
 
 func PopulateWaitEventMetricsPgStat(conn *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, cp *commonparameters.CommonParameters, enabledExtensions map[string]bool, slowQueries []datamodels.SlowRunningQueryMetrics) error {
-	var isEligible = validations.CheckWaitEventMetricsFetchEligibility(enabledExtensions)
-	if !isEligible {
-		log.Debug("Extension 'pg_wait_sampling' or 'pg_stat_statement' is not enabled or unsupported version.")
-		return commonutils.ErrNotEligible
-	}
 	waitEventMetricsList, waitEventErr := getWaitEventMetricsPgStat(conn, cp)
 	if waitEventErr != nil {
 		log.Error("Error fetching wait event queries: %v", waitEventErr)

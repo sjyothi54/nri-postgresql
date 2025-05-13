@@ -5,9 +5,6 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/newrelic/infra-integrations-sdk/v3/integration"
-	commonutils "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-utils"
-
 	"github.com/newrelic/nri-postgresql/src/args"
 	"github.com/newrelic/nri-postgresql/src/connection"
 	common_parameters "github.com/newrelic/nri-postgresql/src/query-performance-monitoring/common-parameters"
@@ -70,18 +67,6 @@ func TestGetWaitEventMetricsFromPgStatActivity(t *testing.T) {
 
 	// Ensure all expectations were met
 	assert.NoError(t, mock.ExpectationsWereMet())
-}
-func TestPopulateWaitEventMetricsPgStat_NoEligibility(t *testing.T) {
-	conn, _ := connection.CreateMockSQL(t)
-	pgIntegration := &integration.Integration{}
-	cp := &common_parameters.CommonParameters{}
-	enabledExtensions := map[string]bool{"pg_wait_sampling": false}
-	slowQueries := []datamodels.SlowRunningQueryMetrics{}
-
-	err := PopulateWaitEventMetricsPgStat(conn, pgIntegration, cp, enabledExtensions, slowQueries)
-
-	assert.Error(t, err)
-	assert.Equal(t, commonutils.ErrNotEligible, err)
 }
 
 func TestGetWaitEventMetricsPgStat_Success(t *testing.T) {
