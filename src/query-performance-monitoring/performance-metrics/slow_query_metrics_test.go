@@ -2,6 +2,7 @@ package performancemetrics
 
 import (
 	"fmt"
+	"github.com/newrelic/nri-postgresql/src/query-performance-monitoring/datamodels"
 	"regexp"
 	"testing"
 
@@ -71,4 +72,57 @@ func TestGetSlowRunningMetricsUnsupportedVersion(t *testing.T) {
 	assert.EqualError(t, err, commonutils.ErrUnsupportedVersion.Error())
 	assert.Len(t, slowQueryList, 0)
 	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestGetFilteredIndividualAndSlowMetrics_MatchingQueries(t *testing.T) {
+	individualQueries := []string{"SELECT * FROM users", "SELECT * FROM orders"}
+	slowQueryMetrics := []datamodels.SlowRunningQueryMetrics{
+		{QueryText: stringPointer("SELECT * FROM users")},
+		{QueryText: stringPointer("SELECT * FROM products")},
+	}
+
+	filteredMetrics, _ := getFilteredIndividualAndSlowMetrics(individualQueries, slowQueryMetrics)
+
+	assert.Len(t, filteredMetrics, 1)
+	assert.Equal(t, "SELECT * FROM users", *filteredMetrics[0].QueryText)
+}
+
+func TestGetFilteredIndividualAndSlowMetrics_NoMatchingQueries(t *testing.T) {
+	individualQueries := []string{"SELECT * FROM customers"}
+	slowQueryMetrics := []datamodels.SlowRunningQueryMetrics{
+		{QueryText: stringPointer("SELECT * FROM users")},
+		{QueryText: stringPointer("SELECT * FROM products")},
+	}
+
+	filteredMetrics, filteredMetricsInterface := getFilteredIndividualAndSlowMetrics(individualQueries, slowQueryMetrics)
+
+	assert.Len(t, filteredMetrics, 0)
+	assert.Len(t, filteredMetricsInterface, 0)
+}
+
+func TestGetFilteredIndividualAndSlowMetrics_EmptyInputs(t *testing.T) {
+	individualQueries := []string{}
+	slowQueryMetrics := []datamodels.SlowRunningQueryMetrics{}
+
+	filteredMetrics, filteredMetricsInterface := getFilteredIndividualAndSlowMetrics(individualQueries, slowQueryMetrics)
+
+	assert.Len(t, filteredMetrics, 0)
+	assert.Len(t, filteredMetricsInterface, 0)
+}
+
+func TestGetFilteredIndividualAndSlowMetrics_DuplicateQueries(t *testing.T) {
+	individualQueries := []string{"SELECT * FROM users", "SELECT * FROM users"}
+	slowQueryMetrics := []datamodels.SlowRunningQueryMetrics{
+		{QueryText: stringPointer("SELECT * FROM users")},
+	}
+
+	filteredMetrics, filteredMetricsInterface := getFilteredIndividualAndSlowMetrics(individualQueries, slowQueryMetrics)
+
+	assert.Len(t, filteredMetrics, 1)
+	assert.Len(t, filteredMetricsInterface, 1)
+	assert.Equal(t, "SELECT * FROM users", *filteredMetrics[0].QueryText)
+}
+
+func stringPointer(s string) *string {
+	return &s
 }
