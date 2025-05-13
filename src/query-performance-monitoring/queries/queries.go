@@ -138,7 +138,7 @@ const (
         to_char(NOW() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS collection_timestamp, -- Timestamp of data collection
         database_name -- Name of the database
     FROM wait_history
-    WHERE event_type IS NOT NULL
+    WHERE query_text NOT LIKE 'EXPLAIN (FORMAT JSON) %%' AND event_type IS NOT NULL
     GROUP BY event_type, event, database_name,duration,query_text
     ORDER BY duration DESC -- Order by the total wait time in descending order
     LIMIT %d;  -- Limit the number of results`
