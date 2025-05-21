@@ -62,6 +62,83 @@ func TestMain(m *testing.M) {
 	os.Exit(result)
 }
 
+// runPerformanceTest executes a performance test for the given container with the specified arguments
+// and validates the expected sample types
+func runPerformanceTest(t *testing.T, container string, expectedSampleTypes []string, args []string) {
+	// Create simulation controller
+	controller := simulation.NewSimulationController(container)
+	// Start all simulations
+	done := controller.StartAllSimulations(t)
+
+	time.Sleep(30 * time.Second)
+
+	stdout, stderr, err := simulation.RunIntegration(container, integrationContainer, *binaryPath, user, psw, database, args...)
+	if stderr != "" {
+		fmt.Println(stderr)
+	}
+	assert.NoError(t, err, "Running Integration Failed")
+
+	samples := strings.Split(stdout, "\n")
+	foundSampleTypes := make(map[string]bool)
+
+	for _, sample := range samples {
+		sample = strings.TrimSpace(sample)
+		if sample == "" {
+			continue
+		}
+
+		sampleType := getSampleType(sample, allSampleTypes)
+		require.NotEmpty(t, sampleType, "No sample type found in JSON output: %s", sample)
+		require.Contains(t, expectedSampleTypes, sampleType, "Found unexpected sample type %q", sampleType)
+		foundSampleTypes[sampleType] = true
+
+		validateSample(t, sample, sampleType)
+	}
+
+	samplesFound := getFoundSampleTypes(foundSampleTypes)
+	require.ElementsMatch(t, expectedSampleTypes, samplesFound,
+		"Not all expected sample types where found expected %v, found %v", expectedSampleTypes, samplesFound)
+
+	// Wait for all simulations to complete
+	<-done
+}
+
+// runIntegrationTests is a helper function to run integration tests with test cases
+func runIntegrationTests(t *testing.T, tests []struct {
+	name                string
+	expectedSampleTypes []string
+	containers          []string
+	args                []string
+}) {
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			for _, container := range tt.containers {
+				t.Run(container, func(t *testing.T) {
+					runPerformanceTest(t, container, tt.expectedSampleTypes, tt.args)
+				})
+			}
+		})
+	}
+}
+
+func TestIntegrationWithDatabaseLoadPerfEnabledRDS(t *testing.T) {
+	tests := []struct {
+		name                string
+		expectedSampleTypes []string
+		containers          []string
+		args                []string
+	}{
+		{
+			name:                "Performance metrics collection test with enable_query_monitoring flag enabled and is rds flag enabled",
+			expectedSampleTypes: allSampleTypes,
+			containers:          perfContainers,
+			args:                []string{`-collection_list=all`, `-enable_query_monitoring=true`, `is_rds=true`},
+		},
+	}
+
+	runIntegrationTests(t, tests)
+}
+
 func TestIntegrationWithDatabaseLoadPerfEnabled(t *testing.T) {
 	tests := []struct {
 		name                string
@@ -98,60 +175,14 @@ func TestIntegrationWithDatabaseLoadPerfEnabled(t *testing.T) {
 			args:                []string{`-collection_list=all`, `-query_monitoring_only=true`},
 		},
 		{
-			name:                "Performance metrics collection test with enable_query_monitoring flag enabled and is rds flag enabled",
-			expectedSampleTypes: allSampleTypes,
+			name:                "Performance metrics collection test with query monitoring only flag enabled",
+			expectedSampleTypes: newSampleTypes,
 			containers:          perfContainers,
-			args:                []string{`-collection_list=all`, `-enable_query_monitoring=true`, `is_rds=true`},
-		},
-		{
-			name:                "Performance metrics collection test with enable_query_monitoring flag enabled and is rds flag enabled",
-			expectedSampleTypes: allSampleTypes,
-			containers:          perfContainers,
-			args:                []string{`-collection_list=all`, `-enable_query_monitoring=true`, `is_rds=false`},
+			args:                []string{`-collection_list=all`, `-query_monitoring_only=true`},
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			for _, container := range tt.containers {
-				t.Run(container, func(t *testing.T) {
-					// Create simulation controller
-					controller := simulation.NewSimulationController(container)
-					// Start all simulations
-					done := controller.StartAllSimulations(t)
-
-					time.Sleep(30 * time.Second)
-
-					stdout, stderr, err := simulation.RunIntegration(container, integrationContainer, *binaryPath, user, psw, database, tt.args...)
-					if stderr != "" {
-						fmt.Println(stderr)
-					}
-					assert.NoError(t, err, "Running Integration Failed")
-
-					samples := strings.Split(stdout, "\n")
-					foundSampleTypes := make(map[string]bool)
-
-					for _, sample := range samples {
-						sample = strings.TrimSpace(sample)
-						if sample == "" {
-							continue
-						}
-
-						sampleType := getSampleType(sample, allSampleTypes)
-						require.NotEmpty(t, sampleType, "No sample type found in JSON output: %s", sample)
-						require.Contains(t, tt.expectedSampleTypes, sampleType, "Found unexpected sample type %q", sampleType)
-						foundSampleTypes[sampleType] = true
-
-						validateSample(t, sample, sampleType)
-					}
-					samplesFound := getFoundSampleTypes(foundSampleTypes)
-					require.ElementsMatch(t, tt.expectedSampleTypes, samplesFound, "Not all expected sample types where found expected %v, found %v", tt.expectedSampleTypes, samplesFound)
-					// Wait for all simulations to complete
-					<-done
-				})
-			}
-		})
-	}
+	runIntegrationTests(t, tests)
 }
 
 func TestIntegrationUnsupportedDatabase(t *testing.T) {
