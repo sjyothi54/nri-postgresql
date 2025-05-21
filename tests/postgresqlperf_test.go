@@ -99,7 +99,7 @@ func TestIntegrationWithDatabaseLoadPerfEnabled(t *testing.T) {
 		},
 		{
 			name:                "Performance metrics collection test with enable query monitoring flag enabled and is_rds flag enabled",
-			expectedSampleTypes: newSampleTypes,
+			expectedSampleTypes: allSampleTypes,
 			containers:          perfContainers,
 			args:                []string{`-collection_list=all`, `-enable_query_monitoring=true`, `-is_rds=true`},
 		},
