@@ -103,6 +103,12 @@ func TestIntegrationWithDatabaseLoadPerfEnabled(t *testing.T) {
 			containers:          perfContainers,
 			args:                []string{`-collection_list=all`, `-enable_query_monitoring=true`, `is_rds=true`},
 		},
+		{
+			name:                "Performance metrics collection test with enable_query_monitoring flag enabled and is rds flag enabled",
+			expectedSampleTypes: allSampleTypes,
+			containers:          perfContainers,
+			args:                []string{`-collection_list=all`, `-enable_query_monitoring=true`, `is_rds=false`},
+		},
 	}
 
 	for _, tt := range tests {
