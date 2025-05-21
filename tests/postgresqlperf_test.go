@@ -92,10 +92,24 @@ func TestIntegrationWithDatabaseLoadPerfEnabled(t *testing.T) {
 			args:       []string{`-collection_list=all`},
 		},
 		{
-			name: "Performance metrics collection test with query moniotoring only flag enabled",
+			name:                "Performance metrics collection test with query moniotoring only flag enabled",
 			expectedSampleTypes: newSampleTypes,
-			containers: perfContainers,
-			args:       []string{`-collection_list=all`, `-query_monitoring_only=true`},
+			containers:          perfContainers,
+			args:                []string{`-collection_list=all`, `-query_monitoring_only=true`},
+		},
+		{
+			name:                "Performance metrics collection test with enable query monitoring flag enabled and is_rds flag enabled",
+			expectedSampleTypes: allSampleTypes,
+			containers:          perfContainers,
+			args:                []string{`-collection_list=all`, `-enable_query_monitoring=true`, `-is_rds=true`},
+		},
+		{
+			name:                "Performance metrics collection test with enable query monitoring flag enabled and is_rds flag disabled",
+			expectedSampleTypes: []string{
+				"PostgresqlInstanceSample",
+			},
+			containers:          perfContainers,
+			args:                []string{`-collection_list=all`, `-enable_query_monitoring=true`, `-is_rds=false`},
 		},
 	}
 
