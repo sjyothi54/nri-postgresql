@@ -15,6 +15,9 @@ import (
 
 func PopulateWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, pgIntegration *integration.Integration, cp *commonparameters.CommonParameters, enabledExtensions map[string]bool) error {
 	var isEligible = validations.CheckWaitEventMetricsFetchEligibility(enabledExtensions)
+	log.Info("Enabled Extensions: ", enabledExtensions)
+	log.Info("enabledExtensions[commonutils.PgStatStatementExtension]: ", enabledExtensions[commonutils.PgStatStatementExtension])
+	log.Info("enabledExtensions['pg_stat_statements']: ", enabledExtensions["pg_stat_statements"])
 	if !isEligible {
 		log.Debug("Extension 'pg_wait_sampling' or 'pg_stat_statement' is not enabled or unsupported version.")
 		return commonutils.ErrNotEligible
