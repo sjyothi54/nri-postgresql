@@ -16,33 +16,35 @@ func FetchAllExtensions(conn *performancedbconnection.PGSQLConnection) (map[stri
 	var enabledExtensions = make(map[string]bool)
 	for rows.Next() {
 		var extname string
+		log.Debug("Fetching extension name: ", extname)
 		if err := rows.Scan(&extname); err != nil {
 			log.Error("Error scanning rows: ", err.Error())
 			return nil, err
 		}
 		enabledExtensions[extname] = true
 	}
+	log.Debug("Enabled extensions: ", enabledExtensions)
 	return enabledExtensions, nil
 }
 
-func CheckSlowQueryMetricsFetchEligibility(enabledExtensions map[string]bool) (bool, error) {
-	return enabledExtensions["pg_stat_statements"], nil
+func CheckSlowQueryMetricsFetchEligibility(enabledExtensions map[string]bool) bool {
+	return enabledExtensions[commonutils.PgStatStatementExtension]
 }
 
-func CheckWaitEventMetricsFetchEligibility(enabledExtensions map[string]bool) (bool, error) {
-	return enabledExtensions["pg_wait_sampling"] && enabledExtensions["pg_stat_statements"], nil
+func CheckWaitEventMetricsFetchEligibility(enabledExtensions map[string]bool) bool {
+	return enabledExtensions[commonutils.PgStatStatementExtension] && enabledExtensions[commonutils.PgWaitSamplingExtension]
 }
 
-func CheckBlockingSessionMetricsFetchEligibility(enabledExtensions map[string]bool, version uint64) (bool, error) {
+func CheckBlockingSessionMetricsFetchEligibility(enabledExtensions map[string]bool, version uint64) bool {
 	// Version 12 and 13 do not require the pg_stat_statements extension
 	if version == commonutils.PostgresVersion12 || version == commonutils.PostgresVersion13 {
-		return true, nil
+		return true
 	}
-	return enabledExtensions["pg_stat_statements"], nil
+	return enabledExtensions[commonutils.PgStatStatementExtension]
 }
 
-func CheckIndividualQueryMetricsFetchEligibility(enabledExtensions map[string]bool) (bool, error) {
-	return enabledExtensions["pg_stat_monitor"], nil
+func CheckIndividualQueryMetricsFetchEligibility(enabledExtensions map[string]bool) bool {
+	return enabledExtensions[commonutils.PgStatMonitorExtension]
 }
 
 func CheckPostgresVersionSupportForQueryMonitoring(version uint64) bool {
