@@ -16,12 +16,14 @@ func FetchAllExtensions(conn *performancedbconnection.PGSQLConnection) (map[stri
 	var enabledExtensions = make(map[string]bool)
 	for rows.Next() {
 		var extname string
+		log.Debug("Fetching extension name: ", extname)
 		if err := rows.Scan(&extname); err != nil {
 			log.Error("Error scanning rows: ", err.Error())
 			return nil, err
 		}
 		enabledExtensions[extname] = true
 	}
+	log.Debug("Enabled extensions: ", enabledExtensions)
 	return enabledExtensions, nil
 }
 
