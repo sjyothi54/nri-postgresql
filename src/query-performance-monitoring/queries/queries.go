@@ -73,7 +73,81 @@ const (
 	LIMIT
 		 %d; -- Limit the number of results`
 
-	// WaitEvents retrieves wait events and their statistics
+	SlowQueryPgStatV13AndAbove = `SELECT 'newrelic' as newrelic, -- Common value to filter with like operator in slow query metrics
+		pss.queryid AS query_id, -- Unique identifier for the query
+		LEFT(pss.query, 4095) AS query_text, -- Query text truncated to 4095 characters
+		pd.datname AS database_name, -- Name of the database
+		current_schema() AS schema_name, -- Name of the current schema
+		pss.calls AS execution_count, -- Number of times the query was executed
+		ROUND((pss.total_exec_time / pss.calls)::numeric, 3) AS avg_elapsed_time_ms, -- Average execution time in milliseconds
+		pss.shared_blks_read / pss.calls AS avg_disk_reads, -- Average number of disk reads per execution
+		pss.shared_blks_written / pss.calls AS avg_disk_writes, -- Average number of disk writes per execution
+		psa.query AS individual_query, -- Current query being executed
+		CASE
+			WHEN pss.query ILIKE 'SELECT%%' THEN 'SELECT' -- Query type is SELECT
+			WHEN pss.query ILIKE 'INSERT%%' THEN 'INSERT' -- Query type is INSERT
+			WHEN pss.query ILIKE 'UPDATE%%' THEN 'UPDATE' -- Query type is UPDATE
+			WHEN pss.query ILIKE 'DELETE%%' THEN 'DELETE' -- Query type is DELETE
+			ELSE 'OTHER' -- Query type is OTHER
+		END AS statement_type, -- Type of SQL statement
+		to_char(NOW() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS collection_timestamp -- Timestamp of data collection
+	FROM
+		pg_stat_statements pss
+	JOIN
+		pg_database pd ON pss.dbid = pd.oid
+	JOIN 
+		pg_stat_activity psa ON AnonymizeQueryText(pss.query) = AnonymizeQueryText(psa.query)
+	WHERE 
+		pd.datname in (%s) -- List of database names
+		AND pss.query NOT ILIKE 'EXPLAIN (FORMAT JSON)%%' -- Exclude EXPLAIN queries
+		AND pss.query NOT ILIKE 'SELECT $1 as newrelic%%' -- Exclude specific New Relic queries
+		AND pss.query NOT ILIKE 'WITH wait_history AS%%' -- Exclude specific WITH queries
+		AND pss.query NOT ILIKE 'select -- BLOATQUERY%%' -- Exclude BLOATQUERY
+		AND pss.query NOT ILIKE 'select -- INDEXQUERY%%' -- Exclude INDEXQUERY
+		AND pss.query NOT ILIKE 'SELECT -- TABLEQUERY%%' -- Exclude TABLEQUERY
+		AND pss.query NOT ILIKE 'SELECT table_schema%%' -- Exclude table_schema queries
+	ORDER BY
+		avg_elapsed_time_ms DESC -- Order by the average elapsed time in descending order
+	LIMIT (%d)`
+
+	SlowQueryPgStatV12 = `SELECT 'newrelic' as newrelic, -- Common value to filter with like operator in slow query metrics
+		pss.queryid AS query_id, -- Unique identifier for the query
+		LEFT(pss.query, 4095) AS query_text, -- Query text truncated to 4095 characters
+		pd.datname AS database_name, -- Name of the database
+		current_schema() AS schema_name, -- Name of the current schema
+		pss.calls AS execution_count, -- Number of times the query was executed
+		ROUND((pss.total_time / pss.calls)::numeric, 3) AS avg_elapsed_time_ms, -- Average execution time in milliseconds
+		pss.shared_blks_read / pss.calls AS avg_disk_reads, -- Average number of disk reads per execution
+		pss.shared_blks_written / pss.calls AS avg_disk_writes, -- Average number of disk writes per execution
+		psa.query AS individual_query, -- Current query being executed
+		CASE
+			WHEN pss.query ILIKE 'SELECT%%' THEN 'SELECT' -- Query type is SELECT
+			WHEN pss.query ILIKE 'INSERT%%' THEN 'INSERT' -- Query type is INSERT
+			WHEN pss.query ILIKE 'UPDATE%%' THEN 'UPDATE' -- Query type is UPDATE
+			WHEN pss.query ILIKE 'DELETE%%' THEN 'DELETE' -- Query type is DELETE
+			ELSE 'OTHER' -- Query type is OTHER
+		END AS statement_type, -- Type of SQL statement
+		to_char(NOW() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS collection_timestamp -- Timestamp of data collection
+	FROM
+		pg_stat_statements pss
+	JOIN
+		pg_database pd ON pss.dbid = pd.oid
+	JOIN 
+		pg_stat_activity psa ON AnonymizeQueryText(pss.query) = AnonymizeQueryText(psa.query)
+	WHERE 
+		pd.datname in (%s) -- List of database names
+		AND pss.query NOT ILIKE 'EXPLAIN (FORMAT JSON)%%' -- Exclude EXPLAIN queries
+		AND pss.query NOT ILIKE 'SELECT $1 as newrelic%%' -- Exclude specific New Relic queries
+		AND pss.query NOT ILIKE 'WITH wait_history AS%%' -- Exclude specific WITH queries
+		AND pss.query NOT ILIKE 'select -- BLOATQUERY%%' -- Exclude BLOATQUERY
+		AND pss.query NOT ILIKE 'select -- INDEXQUERY%%' -- Exclude INDEXQUERY
+		AND pss.query NOT ILIKE 'SELECT -- TABLEQUERY%%' -- Exclude TABLEQUERY
+		AND pss.query NOT ILIKE 'SELECT table_schema%%' -- Exclude table_schema queries
+	ORDER BY
+		avg_elapsed_time_ms DESC -- Order by the average elapsed time in descending order
+	LIMIT (%s)`
+
+	// WaitEvents retrieves wait events and their statistics from pg_wait_sampling_history
 	WaitEvents = `WITH wait_history AS (
 		SELECT
 			wh.pid, -- Process ID
@@ -110,6 +184,43 @@ const (
 	GROUP BY event_type, event, query_id, query_text, database_name
 	ORDER BY total_wait_time_ms DESC -- Order by the total wait time in descending order
 	LIMIT %d; -- Limit the number of results`
+
+	// WaitEvents retrieves wait events and their statistics from pg_stat_activity
+	WaitEventsFromPgStatActivity = `WITH wait_history AS (
+        SELECT
+            sa.pid, -- Process ID
+            sa.wait_event_type AS event_type, -- Type of the wait event
+            sa.wait_event AS event, -- Wait event           
+            current_timestamp - sa.backend_start AS duration, -- Timestamp of the wait event
+            pg_database.datname AS database_name, -- Name of the database
+            LEFT(ss.query, 4095) AS query_text, -- Query text truncated to 4095 characters
+            ss.queryid AS query_id -- Unique identifier for the query
+        FROM
+            pg_stat_activity sa
+        LEFT JOIN
+            pg_stat_statements ss ON  AnonymizeQueryText(sa.query) = AnonymizeQueryText(ss.query)
+        LEFT JOIN
+            pg_database ON pg_database.oid = sa.datid
+        WHERE pg_database.datname in (%s) -- List of database names
+    )
+    SELECT
+        event_type || ':' || event AS wait_event_name, -- Concatenated wait event name
+        CASE
+            WHEN event_type IN ('LWLock', 'Lock') THEN 'Locks' -- Wait category is Locks
+            WHEN event_type = 'IO' THEN 'Disk IO' -- Wait category is Disk IO
+            WHEN event_type = 'CPU' THEN 'CPU' -- Wait category is CPU
+            ELSE 'Other' -- Wait category is Other
+        END AS wait_category, -- Category of the wait event
+        EXTRACT(EPOCH FROM SUM(duration)) * 1000 AS total_wait_time_ms, -- Convert duration to milliseconds
+        to_char(NOW() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS collection_timestamp, -- Timestamp of data collection
+        query_id, -- Unique identifier for the query
+        query_text, -- Query text
+        database_name -- Name of the database
+    FROM wait_history
+    WHERE query_text NOT LIKE 'EXPLAIN (FORMAT JSON) %%' AND query_id IS NOT NULL AND event_type IS NOT NULL
+    GROUP BY event_type, event, query_id, query_text, database_name
+    ORDER BY total_wait_time_ms DESC -- Order by the total wait time in descending order
+    LIMIT %d;  -- Limit the number of results`
 
 	// BlockingQueriesForV14AndAbove retrieves information about blocking and blocked queries for PostgreSQL version 14 and above
 	BlockingQueriesForV14AndAbove = `SELECT 'newrelic' as newrelic, -- Common value to filter with like operator in slow query metrics
@@ -193,6 +304,8 @@ const (
 		ORDER BY
 		 exec_time_ms DESC -- Order by average execution time in descending order
 		LIMIT %d; -- Limit the number of results`
+
+	IndividualQueryFromPgStat = "select datname,query,query_id as queryid from pg_stat_activity where query_id is not null and query is not null and query !='';"
 
 	// IndividualQuerySearchV12 retrieves individual query statistics for PostgreSQL version 12
 	IndividualQuerySearchV12 = `SELECT 'newrelic' as newrelic, -- Common value to filter with like operator in slow query metrics
