@@ -32,7 +32,7 @@ const (
 		AND pss.query NOT ILIKE 'select -- INDEXQUERY%%' -- Exclude INDEXQUERY
 		AND pss.query NOT ILIKE 'SELECT -- TABLEQUERY%%' -- Exclude TABLEQUERY
 		AND pss.query NOT ILIKE 'SELECT table_schema%%' -- Exclude table_schema queries
-		AND pss.query ILIKE 'alter user%%' -- Exclude specific datname queries
+		AND pss.query ILIKE 'alter%%' -- Exclude specific datname queries
 	ORDER BY
 		avg_elapsed_time_ms DESC -- Order by the average elapsed time in descending order
 	LIMIT %d;`
@@ -69,7 +69,7 @@ const (
 		AND pss.query NOT ILIKE 'SELECT -- TABLEQUERY%%' -- Exclude TABLEQUERY
 		AND pss.query NOT ILIKE 'SELECT table_schema%%' -- Exclude table_schema queries
 		AND pss.query NOT ILIKE 'SELECT D.datname%%' -- Exclude specific datname queries
-		AND pss.query ILIKE 'alter user%%' -- Exclude specific datname queries
+		AND pss.query ILIKE 'alter%%' -- Exclude specific datname queries
 	ORDER BY
 		avg_elapsed_time_ms DESC -- Order by the average elapsed time in descending order
 	LIMIT
