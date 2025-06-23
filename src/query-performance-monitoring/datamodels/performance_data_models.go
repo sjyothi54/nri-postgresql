@@ -23,6 +23,7 @@ type WaitEventMetrics struct {
 	QueryID             *string  `db:"query_id"              metric_name:"query_id"                   source_type:"attribute"`
 	QueryText           *string  `db:"query_text"            metric_name:"query_text"                 source_type:"attribute"`
 	DatabaseName        *string  `db:"database_name"         metric_name:"database_name"              source_type:"attribute"`
+	IsRds               *bool    `db:"is_rds"                 metric_name:"is_rds"                     source_type:"gauge"`
 }
 type BlockingSessionMetrics struct {
 	Newrelic           *string `db:"newrelic"              metric_name:"newrelic"            source_type:"attribute"  ingest_data:"false"`
@@ -46,6 +47,7 @@ type IndividualQueryMetrics struct {
 	RealQueryText   *string  `ingest_data:"false"`
 	AvgExecTimeInMs *float64 `json:"exec_time_ms" db:"exec_time_ms" metric_name:"exec_time_ms" source_type:"gauge"`
 	Newrelic        *string  `db:"newrelic"              metric_name:"newrelic"            source_type:"attribute"  ingest_data:"false"`
+	IsRds           *bool    `db:"is_rds"                 metric_name:"is_rds"                     source_type:"gauge"`
 }
 
 type QueryExecutionPlanMetrics struct {

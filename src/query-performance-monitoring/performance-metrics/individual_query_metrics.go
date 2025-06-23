@@ -64,6 +64,7 @@ func getIndividualQueryMetrics(conn *performancedbconnection.PGSQLConnection, sl
 		defer rows.Close()
 		individualQuerySamplesList := processRows(rows, anonymizedQueriesByDB)
 		for _, individualQuery := range individualQuerySamplesList {
+			individualQuery.IsRds = &cp.IsRds
 			individualQueryMetricsList = append(individualQueryMetricsList, individualQuery)
 			individualQueryMetricsListInterface = append(individualQueryMetricsListInterface, individualQuery)
 		}
@@ -126,6 +127,7 @@ func PopulateIndividualQueryMetricsPgStat(slowQueries []datamodels.SlowRunningQu
 		individualQueryMetric.DatabaseName = slowRunningMetric.DatabaseName
 		individualQueryMetric.QueryText = slowRunningMetric.QueryText
 		individualQueryMetric.RealQueryText = slowRunningMetric.IndividualQuery
+		individualQueryMetric.IsRds = &cp.IsRds
 		generatedPlanID, err := commonutils.GeneratePlanID()
 		if err != nil {
 			log.Error("Error generating plan ID: %v", err)

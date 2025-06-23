@@ -49,7 +49,7 @@ func getWaitEventMetrics(conn *performancedbconnection.PGSQLConnection, cp *comm
 		if waitScanErr := rows.StructScan(&waitEvent); waitScanErr != nil {
 			return nil, err
 		}
-
+		waitEvent.IsRds = &cp.IsRds
 		waitEventMetricsList = append(waitEventMetricsList, waitEvent)
 	}
 	return waitEventMetricsList, nil
@@ -87,7 +87,7 @@ func getWaitEventMetricsPgStat(conn *performancedbconnection.PGSQLConnection, cp
 		if waitScanErr := rows.StructScan(&waitEvent); waitScanErr != nil {
 			return nil, err
 		}
-
+		waitEvent.IsRds = &cp.IsRds
 		waitEventMetricsList = append(waitEventMetricsList, waitEvent)
 	}
 	return waitEventMetricsList, nil
